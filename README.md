@@ -2,7 +2,9 @@
 A StreamCraft chat bot that integrates with StreamLabs
 
 How to run it:
-- Define the env vars
+- Clone the source
+- Install using `npm install`
+- Define the required environment vars
   - **STREAMLABS_ID**: StreamLabs application ID
   - **STREAMLABS_SECRET**: StreamLabs application secret
-- Run *app/index.js*
+- Run using `npm start`
