@@ -111,14 +111,19 @@ function app_startup() {
 	// Static WWW folder
 	app.use(express.static("./www/"));
 
-	const serverPort 			= BotClient.config.port || 3200;
+	console.info("[bot] initializating client...");
 
-	// Start express and socket.io
-	server.listen(serverPort, function() {
-		console.info("[bot] listening on port", serverPort);
+	BotClient.init()
+	.then(() => {
+		const serverPort 			= process.env.PORT ? process.env.PORT : (BotClient.config && BotClient.config.port ? BotClient.config.port : 3200);
 
-		// Start bot client
-		BotClient.start();
+		// Start express and socket.io
+		server.listen(serverPort, function() {
+			console.info("[bot] listening on port", serverPort);
+
+			// Start bot client
+			BotClient.start();
+		});
 	});
 }
 

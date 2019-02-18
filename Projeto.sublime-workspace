@@ -1,0 +1,1031 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"Uin",
+				"Uint8Array\tconst"
+			],
+			[
+				"un",
+				"uint"
+			],
+			[
+				"Base",
+				"BaseResponse\twarning"
+			],
+			[
+				"pas",
+				"passiveClient\tproperty"
+			],
+			[
+				"entri",
+				"entriesCount\tlet"
+			],
+			[
+				"From",
+				"FromHeadImg\twarning"
+			],
+			[
+				"wr",
+				"writeFileSync\tfunction"
+			],
+			[
+				"reqe",
+				"requestClient\tlet"
+			],
+			[
+				"device",
+				"devicetype\twarning"
+			],
+			[
+				"message",
+				"messageQueue\twarning"
+			],
+			[
+				"textarea",
+				"textArea"
+			],
+			[
+				"process",
+				"processQueue"
+			],
+			[
+				"entries",
+				"entriesCount"
+			],
+			[
+				"saf",
+				"safeSize"
+			],
+			[
+				"current",
+				"currentSafeBlock"
+			],
+			[
+				"curren",
+				"currentSafeBlock"
+			],
+			[
+				"getPlayer",
+				"getPlayersAsArray"
+			],
+			[
+				"chara",
+				"characterLoader"
+			],
+			[
+				"power",
+				"powerup"
+			],
+			[
+				"game-pl",
+				"game-player-powerup"
+			],
+			[
+				"scae",
+				"scaleTween"
+			],
+			[
+				"removeA",
+				"removeAfterAnimation"
+			],
+			[
+				"remo",
+				"removeAfterAnimation"
+			],
+			[
+				"ex",
+				"exception"
+			],
+			[
+				"previous",
+				"previousId"
+			],
+			[
+				"call",
+				"callbackWrapper"
+			],
+			[
+				"escape",
+				"escapeHTML"
+			],
+			[
+				"event",
+				"eventemitter"
+			],
+			[
+				"id",
+				"previousId"
+			],
+			[
+				"casT",
+				"castTime"
+			],
+			[
+				"fre",
+				"freeArea"
+			],
+			[
+				"pos",
+				"position"
+			],
+			[
+				"new",
+				"newValue"
+			],
+			[
+				"basic",
+				"basicBomb"
+			],
+			[
+				"bais",
+				"basicBomb"
+			],
+			[
+				"searc",
+				"searchNode"
+			],
+			[
+				"can",
+				"canTrepass"
+			],
+			[
+				"loade",
+				"loadPercentage"
+			],
+			[
+				"fin",
+				"finalPosition"
+			],
+			[
+				"prop",
+				"properties"
+			],
+			[
+				"transl",
+				"translateX()\ttransform"
+			],
+			[
+				"objecT",
+				"objectData"
+			],
+			[
+				"objec",
+				"objectData"
+			],
+			[
+				"characteR",
+				"characterData"
+			],
+			[
+				"game_l",
+				"game_doLoad"
+			],
+			[
+				"cast",
+				"getCastRelative"
+			],
+			[
+				"coll",
+				"collisionGrid"
+			],
+			[
+				"points",
+				"pointsToAvoid"
+			],
+			[
+				"bomb",
+				"bombObject"
+			],
+			[
+				"sprites",
+				"spritesheet"
+			],
+			[
+				"matc",
+				"matchY"
+			],
+			[
+				"getPla",
+				"getPlayersAsArray"
+			],
+			[
+				"look",
+				"lookingPosition"
+			],
+			[
+				"allow",
+				"allowFullScreen"
+			],
+			[
+				"Game_Socket",
+				"Game_Socket_Emit"
+			],
+			[
+				"game",
+				"game-room-inline"
+			],
+			[
+				"backgroun",
+				"backgroundBar"
+			],
+			[
+				"backgr",
+				"backgroundBar"
+			],
+			[
+				"ser",
+				"setPercentage"
+			],
+			[
+				"GamePlayer",
+				"GamePlayerHandlerBar"
+			],
+			[
+				"game_chara",
+				"game_character_select_update_prop"
+			],
+			[
+				"transla",
+				"translateY()\ttransform"
+			],
+			[
+				"clear",
+				"clearTimeout"
+			],
+			[
+				"curr",
+				"currentStep"
+			],
+			[
+				"game-ch",
+				"game-character-select"
+			],
+			[
+				"game-",
+				"game-character-select"
+			],
+			[
+				"persis",
+				"persistentContainer"
+			],
+			[
+				"game-roo",
+				"game-room-map"
+			],
+			[
+				"data",
+				"dataPath"
+			],
+			[
+				"pror",
+				"progress-bar"
+			],
+			[
+				"need",
+				"needHidePrevious"
+			],
+			[
+				"hide",
+				"hidePrevious"
+			],
+			[
+				"inline",
+				"inline-block\tdisplay"
+			],
+			[
+				"game-ro",
+				"game-room-list-group"
+			],
+			[
+				"getPl",
+				"getPlayersAsArray"
+			],
+			[
+				"bas",
+				"getBasicData"
+			],
+			[
+				"game_",
+				"game_server_connectFailed"
+			],
+			[
+				"modal-d",
+				"modal-dialog-centered"
+			],
+			[
+				"list",
+				"list-group-item-preloader"
+			],
+			[
+				"after",
+				"afterShow"
+			],
+			[
+				"game-room",
+				"game-room-players"
+			],
+			[
+				"game_room",
+				"game_room_join_callback"
+			],
+			[
+				"list-gr",
+				"list-group-item"
+			],
+			[
+				"col-",
+				"col-9"
+			],
+			[
+				"list-g",
+				"list-group-item"
+			],
+			[
+				"cha",
+				"characters"
+			],
+			[
+				"vido",
+				"videoContainer"
+			],
+			[
+				"trans",
+				"transform\tproperty"
+			],
+			[
+				"sessio",
+				"sessionMiddleware"
+			],
+			[
+				"app-",
+				"app-post-comments"
+			],
+			[
+				"append",
+				"appendTo\t.appendTo()"
+			],
+			[
+				"app-comments",
+				"app-comments-load"
+			],
+			[
+				"app-po",
+				"app-post-comments-preloader"
+			],
+			[
+				"seque",
+				"Sequelize"
+			],
+			[
+				"minif",
+				"minifiedFile"
+			],
+			[
+				"For",
+				"forceJPEG"
+			],
+			[
+				"create",
+				"createPost"
+			],
+			[
+				"imagema",
+				"imagemagick"
+			],
+			[
+				"image",
+				"imagemin"
+			],
+			[
+				"mini",
+				"minifiedFile"
+			],
+			[
+				"regex",
+				"regexes"
+			],
+			[
+				"app_rege",
+				"app_regex_audio"
+			],
+			[
+				"app-post",
+				"app-post-repost"
+			],
+			[
+				"overf",
+				"overflow-x\tproperty"
+			],
+			[
+				"e",
+				"text\tcursor"
+			],
+			[
+				"post",
+				"postContent"
+			],
+			[
+				"backgorund-",
+				"background-image\tproperty"
+			],
+			[
+				"app-user",
+				"app-user-picture"
+			],
+			[
+				"app-post-t",
+				"app-post-type-text"
+			],
+			[
+				"app_post",
+				"app_post_create"
+			],
+			[
+				"app",
+				"append\t.append()"
+			],
+			[
+				"follw",
+				"following"
+			],
+			[
+				"password",
+				"passwordCur"
+			],
+			[
+				"serili",
+				"serializeArray\t.serializeArray()"
+			],
+			[
+				"atta",
+				"attachments"
+			],
+			[
+				"createPos",
+				"createPostTags"
+			],
+			[
+				"attach",
+				"attachmentArgs"
+			],
+			[
+				"max-",
+				"max-width\tproperty"
+			],
+			[
+				"Sequelize",
+				"SequelizeRedis"
+			],
+			[
+				"Seu",
+				"SequelizeRedis"
+			],
+			[
+				"sequeli",
+				"sequelizeRedis"
+			],
+			[
+				"sequeilze",
+				"sequelizeCache"
+			],
+			[
+				"seq",
+				"sequelize-transparent-cache-ioredis"
+			],
+			[
+				"text",
+				"textarea"
+			],
+			[
+				"data-",
+				"data-original-id"
+			],
+			[
+				"original",
+				"originalAttachment"
+			],
+			[
+				"origina",
+				"original"
+			],
+			[
+				"background-c",
+				"background-color\tproperty"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 137.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"ins",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Discover Packages"
+			],
+			[
+				"list",
+				"Package Control: List Packages"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			]
+		],
+		"width": 476.0
+	},
+	"console":
+	{
+		"height": 150.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/F/Projetos - Aleatórios/bot streamcraft",
+		"/F/Projetos - Aleatórios/bot streamcraft/app",
+		"/F/Projetos - Aleatórios/bot streamcraft/app/modules"
+	],
+	"file_history":
+	[
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/obs.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/inc/chat.emote.ejs",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/inc/chat.follow.ejs",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/obs.html",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/index.html",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/gifffer.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/css/bootstrap.css",
+		"/F/Projetos - Aleatórios/bot streamcraft/app/io.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/app/index.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/data/database.json",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/app.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/client.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/index.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/core/active.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/core/member.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/data/config.json",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/core/socket.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/data/commands.json",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/core/packets.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/app/modules/raffle.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/app/modules/vote.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/app/modules/ranking.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/core/command.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/inc/chat.message.ejs",
+		"/F/Projetos - Aleatórios/bot streamcraft/data/language.json",
+		"/F/Projetos - Aleatórios/bot streamcraft/Packet Order - 82.txt",
+		"/F/Projetos - Aleatórios/bot streamcraft/Packet Order - 81.txt",
+		"/F/Projetos - Aleatórios/bot streamcraft/app/modules/addon.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/enable debug.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/original sc files/room.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/original sc files/socket.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/original sc files/index.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/test/index.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/test/data.dat",
+		"/C/Users/Prometeus/AppData/Roaming/Wireshark/plugins/Wireshark.lua",
+		"/F/Projetos - Aleatórios/bot streamcraft/Wireshark.lua",
+		"/F/Projetos - Aleatórios/bot streamcraft/Run TShark.bat",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/core/auth.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/cloc_found.txt",
+		"/F/Projetos - Aleatórios/bot streamcraft/Lines of Code.bat",
+		"/C/Users/Prometeus/Desktop/pornhub kkkkkkk.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/data/debug.log",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/core/debug.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/package.json",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/inc/channel.follow.ejs",
+		"/F/Projetos - Aleatórios/bot streamcraft/index.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/app/modules/viewers.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/db.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/auth.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/bot.commands.js",
+		"/C/Users/Prometeus/Downloads/live_rel_WeLive-Ext-OL_21028730_1103_1162684.m3u8",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/bot.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/app/lang.json",
+		"/F/Projetos - Aleatórios/bot streamcraft/app/lang.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/lang.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/jszip.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/packets/historyContribution.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/packets/getcontribution.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/parser.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/packets/ping.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/node_modules/tough-cookie-filestore/package.json",
+		"/F/Projetos - Aleatórios/bot streamcraft/config.json",
+		"/F/Projetos - Aleatórios/bot streamcraft/config.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/module.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/core/ping.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket/binary.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/modules/viewers.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/modules/raffle.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/modules/vote.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/bot.loader.js",
+		"/C/Users/Prometeus/Downloads/download (5)",
+		"/C/Users/Prometeus/Downloads/download (4)",
+		"/C/Users/Prometeus/Downloads/download (3)",
+		"/C/Users/Prometeus/Downloads/live_rel_WeLive-Ext-OL_23944761_1027_1023686_hd.m3u8",
+		"/F/Projetos - Aleatórios/bot streamcraft/www/js/auth.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/bot.js",
+		"/F/Projetos - Aleatórios/bot streamcraft/socket.js",
+		"/F/Projetos - Jogos/Blasters Online/server/core/model/GameBlastersRoom.js",
+		"/F/Projetos - Jogos/Blasters Online/assets/Objects/final/safe/object.json",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/model/GameObject.js",
+		"/F/Projetos - Jogos/Blasters Online/server/core/model/GameMap.js",
+		"/F/Projetos - Jogos/Blasters Online/server/core/model/GameRoom.js",
+		"/F/Projetos - Jogos/Blasters Online/server/core/model/GameObject.js",
+		"/F/AD3Com/Servidor/Scripts/fix-all-permissions.sh",
+		"/C/Users/Prometeus/AppData/Local/Temp/BvSshSftp/Bv00022f/Bv00022f/wp-config.php",
+		"/F/Projetos - Jogos/Blasters Online/client/css/partials/views/app.css",
+		"/F/Projetos - Jogos/Blasters Online/.gitignore",
+		"/F/Projetos - Jogos/Blasters Online/server/config/generators/scripts.js",
+		"/F/Projetos - Jogos/Blasters Online/client/index.html",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/renderTpl.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/showTicker.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/game.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/app.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/authLock.js",
+		"/F/Projetos - Jogos/Blasters Online/Build Electron.bat",
+		"/F/Projetos - Jogos/Blasters Online/server/log.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/events/characterWalk.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/socket/game/player/powerup.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/audio/playSFX.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/scenes/preload.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/socket/game/sfx/play.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/socket/game/player/move.js",
+		"/F/Projetos - Jogos/Blasters Online/server/socket/room/list.js",
+		"/F/Projetos - Jogos/Blasters Online/server/core/model/GamePlayer.js",
+		"/F/Projetos - Jogos/Blasters Online/server/config/socket.js",
+		"/C/Users/Prometeus/Documents/blasters-online/server/data/database.json",
+		"/F/Projetos - Jogos/Blasters Online/client/views/game/powerup.ejs",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/socket/room/player/update.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/events/mouseMove.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/socket/room/option/update.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/events/mouseUp.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/scenes/helpers/renderPlayers.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/scenes/create.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/scenes/init.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/scenes/helpers/renderMap.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/scenes/helpers/getLayersByType.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/scenes/helpers/renderMarker.js",
+		"/F/Projetos - Jogos/Blasters Online/client/js/partials/views/core/game/events/fileComplete.js",
+		"/F/Projetos - Jogos/Blasters Online/server/core/model/GameSkillBasicBomb.js",
+		"/F/Projetos - Jogos/Blasters Online/server/utils.js",
+		"/F/Projetos - Jogos/Blasters Online/package.json",
+		"/F/Projetos - Jogos/Blasters Online/server/config/loader/characters.js",
+		"/F/Projetos - Jogos/Blasters Online/server/config/data.js",
+		"/F/Projetos - Jogos/Blasters Online/server/config/loader/maps.js",
+		"/F/Projetos - Jogos/Blasters Online/server/config/loader/powerUps.js",
+		"/F/Projetos - Jogos/Blasters Online/server/config/loader/objects.js",
+		"/F/Projetos - Jogos/Blasters Online/server/config/generators/characters.js",
+		"/F/Projetos - Jogos/Blasters Online/server/config.js"
+	],
+	"find":
+	{
+		"height": 41.0
+	},
+	"find_in_files":
+	{
+		"height": 106.0,
+		"where_history":
+		[
+			"F:\\Projetos - Jogos\\Blasters Online\\server",
+			"F:\\Projetos - Jogos\\Blasters Online\\client",
+			"F:\\Projetos - Jogos\\Blasters Online\\server",
+			"F:\\Projetos - Jogos\\Blasters Online\\client",
+			"F:\\Projetos - Jogos\\Blasters Online\\server",
+			"F:\\Projetos - Jogos\\Blasters Online\\client",
+			"F:\\Projetos - Jogos\\Blasters Online\\server",
+			"F:\\Projetos - Jogos\\Blasters Online\\client",
+			"F:\\Projetos - Jogos\\Blasters Online\\server",
+			"F:\\Projetos - Jogos\\Blasters Online\\client\\js",
+			"F:\\Projetos - Jogos\\Blasters Online\\server\\",
+			"F:\\Projetos - Jogos\\Blasters Online\\client\\,F:\\Projetos - Jogos\\Blasters Online\\server\\",
+			"F:\\Projetos - Jogos\\Blasters Online\\client\\js\\partials\\views\\",
+			"F:\\Projetos - Jogos\\Blasters Online\\client\\",
+			"F:\\Projetos - Jogos\\Blasters Online\\server",
+			"F:\\Projetos - Sites e Aplicativos\\socialnetwork.io\\server",
+			"F:\\Projetos - Jogos\\grid game\\src",
+			"F:\\Projetos - Jogos\\grid game\\static\\js",
+			"F:\\Projetos - Jogos\\grid game\\src",
+			"F:\\Projetos - Jogos\\grid game\\views\\inc\\",
+			"F:\\Projetos - Jogos\\grid game\\views\\inc",
+			"F:\\Projetos - Jogos\\grid game\\static",
+			"F:\\Projetos - Jogos\\grid game\\src",
+			"F:\\Projetos - Jogos\\grid game\\src\\",
+			"F:\\Projetos - Jogos\\grid game\\src",
+			"<open folders>",
+			"F:\\AD3Com\\Sites\\educadora.fm.br\\wp-content\\themes\\",
+			"F:\\AD3Com\\Sites\\educadora.fm.br\\wp-content\\themes\\onair2"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"this",
+			"testData",
+			"key",
+			"code",
+			"[type]",
+			"low",
+			"message",
+			"sendMessa",
+			"aduration",
+			"aout",
+			"ain",
+			"mDuration",
+			"duration",
+			"mod",
+			"out",
+			"in",
+			"duration",
+			"in",
+			"app_settings",
+			".Gift",
+			"gift",
+			"Gift",
+			"em",
+			"strong",
+			"i",
+			"socket",
+			"getLangMessage",
+			"10300100",
+			"deviceid(",
+			"deviceId",
+			"this.deviceId",
+			"original",
+			"getDeviceId",
+			"getDeviceType",
+			"this",
+			"ReconSec",
+			"contribution",
+			"rewardList",
+			"historyContribution",
+			"at",
+			"300113",
+			"historycontribution",
+			"response.Session",
+			"t",
+			"SessionKey",
+			"this.client.auth.getData().data.user.roomid",
+			"RYPT",
+			"CRYPT",
+			"Crypt",
+			"CRYPT",
+			"crypt",
+			"wrapper",
+			"enter(",
+			"300100",
+			"ping()",
+			"rewardlist",
+			"10300113",
+			"emit",
+			"getwatchliverewardlist",
+			"reward",
+			"response",
+			"300133",
+			"3001133",
+			"82",
+			"enter82",
+			"signin82",
+			"300104",
+			"10300113",
+			"emit",
+			"300100",
+			"900083",
+			"300104",
+			"docycle",
+			"contribution",
+			"getwatchliverewardlist",
+			"900083",
+			"URL.createObjectURL",
+			"createObjectURL",
+			"encodeURIComponent",
+			"Worker",
+			"this.debug",
+			"int",
+			"print",
+			"packet",
+			"tvbrange",
+			"tcp_data",
+			"a",
+			"tvb",
+			".",
+			"tvb",
+			"datatvb",
+			"set",
+			"datatvg",
+			"unit",
+			"udp_encap_table",
+			"30001",
+			"my_http_querystring_decoder",
+			"passive",
+			"implicitGrowth",
+			"passive",
+			"s",
+			"ReconSec",
+			"response.Response",
+			"docycle",
+			"ping()",
+			"isLogind",
+			"init82",
+			"getSid",
+			"t.sid",
+			"roomid",
+			"reauth",
+			"onopen",
+			"docycleping",
+			"docycle",
+			"o",
+			"message",
+			"channel",
+			"r",
+			"n",
+			"this.sendMessage",
+			"command",
+			"disconnected",
+			"                    \t\n",
+			"});\n",
+			"docycle",
+			"response",
+			"ht = ",
+			"600016"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"getDeviceId",
+			"getDeviceType",
+			"game.log",
+			"<br/>\\n",
+			"<br/>",
+			"",
+			"Game.Socket.emit",
+			"Game.Socket.on",
+			"Game.Socket",
+			"Game.Scenes",
+			"Game.Room",
+			"Game.Player",
+			"Game.Views",
+			"Game.Data",
+			"Game.",
+			"!socket.player.isInRoom()",
+			"socket.player.isInRoom()",
+			"var(--danger)",
+			"var(--warning)",
+			"var(--info)",
+			"var(--success)",
+			"var(--secondary)",
+			"social.db",
+			"app.db",
+			"config.db",
+			"res.minifyOptions\t\t= { cache: false };",
+			"_(",
+			"game_square_draw",
+			"game_player_current",
+			"game_player_me",
+			"game_player_square",
+			"game_turn_last",
+			"game_round_player"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 27.0
+	},
+	"input":
+	{
+		"height": 42.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.doc":
+	{
+		"height": 0.0
+	},
+	"output.exec":
+	{
+		"height": 127.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.mdpopups":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "Packages/User/CygWin C++.sublime-build",
+	"project": "Projeto.sublime-project",
+	"replace":
+	{
+		"height": 50.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 262.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
