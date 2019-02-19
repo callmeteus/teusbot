@@ -130,8 +130,6 @@ class BotClient extends EventEmitter {
 			// Unhandled action
 			default:
 				this.debug("unhandled data message", message.MsgType, data);
-
-				return false;
 			break;
 
 			// Member join

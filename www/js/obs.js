@@ -190,7 +190,7 @@
 		});
 
 		return true;
-	};
+	}
 
 	// Get module template
 	$.get("/inc/" + app.module + ".ejs", (tpl) => {

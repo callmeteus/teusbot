@@ -405,37 +405,40 @@ class BotSocket extends BotPackets {
 						}
 					}
 				}
-
-				switch(response.cmd) {
-					// Watch live reward list
-					case 900083:
-						return this.handleWatchLiveRewardList(response.Response);
-					break;
-
-					// History contribution
-					case 10300113:
-						return this.handleHistoryContribution(response.Response);
-					break;
-
-					// Reauth packet
-					case 10300003:
-						return this.handleAuth(response.Response);
-					break;
-
-					// Studio enter packet
-					case 10300100:
-						return this.handleEnter(response.Response);
-					break;
-
-					// Channel config
-					case 10300102:
-						return this.handleStudioConfig(response.Response);
-					break;
-				}
 			}
 
-			this.debug(colors.yellow("unhandled packet " + response.cmd), response);
-			this.emit("packet.response", response);
+			switch(response.cmd) {
+				// Default command
+				default:
+					this.debug(colors.yellow("unhandled packet " + response.cmd), response);
+					this.emit("packet.response", response);
+				break;
+
+				// Watch live reward list
+				case 900083:
+					this.handleWatchLiveRewardList(response.Response);
+				break;
+
+				// History contribution
+				case 10300113:
+					this.handleHistoryContribution(response.Response);
+				break;
+
+				// Reauth packet
+				case 10300003:
+					this.handleAuth(response.Response);
+				break;
+
+				// Studio enter packet
+				case 10300100:
+					this.handleEnter(response.Response);
+				break;
+
+				// Channel config
+				case 10300102:
+					this.handleStudioConfig(response.Response);
+				break;
+			}
 		});
 	}
 
