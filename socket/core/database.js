@@ -1,11 +1,15 @@
 const Sequelize 				= require("sequelize");
+
+const fs 						= require("fs");
 const path 						= require("path");
+
+const appRoot 					= path.dirname(require.main.filename);
 
 class BotDatabase {
 	constructor(deviceId) {
 		this.database 			= new Sequelize("db", "root", "root", {
 			dialect: 			"sqlite",
-			storage: 			path.join(path.dirname(require.main.filename), "/../", "data", "db.sqlite")
+			storage: 			path.join(appRoot, "/../", "data", "db.sqlite")
 		});
 
 		this.Members 			= this.database.define("member", {
