@@ -528,21 +528,21 @@ class BotSocket extends BotPackets {
 		}
 
 		const seq					= this.seqno(),
-		amount						= emojiAmount ? parseInt(emojiAmount) : 0,
-		date						= Math.ceil((new Date).getTime() / 1000),
-		id							= `IGG_TEXT#${this._sid}#${this._uin}#${amount}#${date}`,
-		data						= {
+			amount					= emojiAmount ? parseInt(emojiAmount) : 0,
+			date					= Math.ceil((new Date).getTime() / 1000),
+			id						= `IGG_TEXT#${this._sid}#${this._uin}#${amount}#${date}`,
+			data					= {
 			Count: 					1,
-			List: 					[{
-				MsgType: 			1,
-				StudioId: 			this._sid,
-				ToUin: 				amount,
-				ClientMsgId: 		this.wrapper(id),
-				MsgContent: 		this.wrapper(message),
-				EmojiFlag: 			emoji,
-				CreateTime: 		date
-			}]
-		}
+				List: 				[{
+					MsgType: 		1,
+					StudioId: 		this._sid,
+					ToUin: 			amount,
+					ClientMsgId: 	this.wrapper(id),
+					MsgContent: 	this.wrapper(message),
+					EmojiFlag: 		emoji,
+					CreateTime: 	date
+				}]
+		};
 
 		// Send the message to server
 		this.sendPacket(300103, this.jsonstr(data, seq), seq);

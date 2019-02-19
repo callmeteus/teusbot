@@ -29,6 +29,6 @@ class BotCommand {
 	getMember(id) {
 		return this._botClient.getMember(id);
 	}
-};
+}
 
 module.exports 					= BotCommand;

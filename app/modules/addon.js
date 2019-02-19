@@ -4,7 +4,7 @@ module.exports 							= function() {
 			return false;
 		}
 
-		const arg 						= processor.arguments.shift();
+		const args 						= processor.arguments.shift();
 		const index 					= processor.arguments.shift();
 
 		switch(args) {

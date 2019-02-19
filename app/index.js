@@ -39,6 +39,32 @@ BotClient.on("chat.message", function(data) {
 
 /**
  * -----------------------------------------------------------------
+ * Startup
+ * -----------------------------------------------------------------
+ */
+
+function app_startup() {
+	// Static WWW folder
+	app.use(express.static("./www/"));
+
+	console.info("[bot] initializating client...");
+
+	BotClient.init()
+	.then(() => {
+		const serverPort 			= process.env.PORT ? process.env.PORT : (BotClient.config && BotClient.config.port ? BotClient.config.port : 3200);
+
+		// Start express and socket.io
+		server.listen(serverPort, function() {
+			console.info("[bot] listening on port", serverPort);
+
+			// Start bot client
+			BotClient.start();
+		});
+	});
+}
+
+/**
+ * -----------------------------------------------------------------
  * Bot modules
  * -----------------------------------------------------------------
  */
@@ -103,29 +129,9 @@ glob(path.join(__dirname, "modules", "**/*.js"), function(err, files) {
 
 /**
  * -----------------------------------------------------------------
- * Startup
+ * Handlers
  * -----------------------------------------------------------------
  */
-
-function app_startup() {
-	// Static WWW folder
-	app.use(express.static("./www/"));
-
-	console.info("[bot] initializating client...");
-
-	BotClient.init()
-	.then(() => {
-		const serverPort 			= process.env.PORT ? process.env.PORT : (BotClient.config && BotClient.config.port ? BotClient.config.port : 3200);
-
-		// Start express and socket.io
-		server.listen(serverPort, function() {
-			console.info("[bot] listening on port", serverPort);
-
-			// Start bot client
-			BotClient.start();
-		});
-	});
-}
 
 process.on("uncaughtException", function(err) {
     console.log(err);

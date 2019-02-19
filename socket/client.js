@@ -28,7 +28,7 @@ class BotClient extends EventEmitter {
 
 		// Create a new streamlabs instance
 		this.streamlabs 					= new BotStreamlabs(process.env.STREAMLABS_ID, process.env.STREAMLABS_SECRET, "http://teus.herokuapp.com", "donations.create alerts.create");
-	};
+	}
 
 	init() {
 		return new Promise((resolve, reject) => {
@@ -62,15 +62,15 @@ class BotClient extends EventEmitter {
 
 			this.socket.to("bot").emit(type, arguments[1]);
 		}
-	};
+	}
 
 	getCharmAmount() {
 		return this.charmAmount;
-	};
+	}
 
 	getMessage(message, data) {
 		return new Function(...Object.keys(data), "return `" + message + "`;")(...Object.values(data));
-	};
+	}
 
 	getBotMember() {
 		return {
@@ -80,8 +80,8 @@ class BotClient extends EventEmitter {
 			messages: 						0,
 			charm: 							0,
 			isMod: 							true
-		};
-	};
+		}
+	}
 
 	start() {
 		if (this.config === null) {
@@ -104,7 +104,7 @@ class BotClient extends EventEmitter {
 				});
 			}
 		});
-	};
+	}
 
 	/**
 	 * Create a command handler
@@ -116,7 +116,7 @@ class BotClient extends EventEmitter {
 	 */
 	createCommand(command, args, socket, sender) {
 		return new BotCommand(command, args, socket, sender, this);
-	};
+	}
 
 	/**
 	 * Process data message
@@ -187,14 +187,14 @@ class BotClient extends EventEmitter {
 			break;
 
 			// Gift (emote) 
-		 	case 20015:
+			case 20015:
 				// Prepare emote data
 				const emote 			= {
 					id: 				data.GiftId,
 					amount: 			data.Nums,
 					cost: 				data.SendEventCost,
 					emote: 				this.config.giftList && this.config.giftList[data.GiftId]
-				};
+				}
 
 				// Process emote message
 				const emoteMessage 		= this.getMessage(this.getLangMessage("CHAT_EMOTE"), {
@@ -250,7 +250,7 @@ class BotClient extends EventEmitter {
 		}
 
 		return true;
-	};
+	}
 
 	/**
 	 * Creates a new WebSocket client
@@ -260,7 +260,7 @@ class BotClient extends EventEmitter {
 	 * @return {WebSocket}			Client WebSocket
 	 */
 	createClient(type, url, isRetry) {
-	   	url									= url || this.auth.getData().ws[type];
+		url									= url || this.auth.getData().ws[type];
 
 		const socket 						= new BotActiveSocket(url, type, this);
 
@@ -326,7 +326,7 @@ class BotClient extends EventEmitter {
 		});
 
 		return socket;
-	};
+	}
 }
 
 module.exports 								= BotClient;

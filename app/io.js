@@ -3,7 +3,7 @@ module.exports 		= function(io) {
 		socket.on("auth", (token) => {
 			console.info("[bot] authentication", token, this.config.token);
 
-			if (token === this.config.token) {
+			if (this.config.token === token) {
 				socket.emit("auth", true);
 				socket.join("bot");
 			} else {

@@ -19,16 +19,16 @@ class StreamLabs extends OAuth2 {
 		};
 
 		this.request 				= request.defaults({
-		  	baseUrl: 				"https://www.streamlabs.com/api/v1.0/"
+			baseUrl: 				"https://www.streamlabs.com/api/v1.0/"
 		});
-	};
+	}
 
 	getCredentials() {
 		const credentials			= super.getCredentials();
 		credentials.socketToken 	= this[credentialsStreamLabs].socketToken;
 
 		return credentials;
-	};
+	}
 
 	getDonations(limit) {
 		const url 					= this[urlsStreamLabs].donations;
@@ -41,21 +41,21 @@ class StreamLabs extends OAuth2 {
 		};
 
 		return this[getStreamLabs](url, params);
-	};
+	}
 
 	addDonation(donation) {
 		const url 					= this[urlsStreamLabs].donations;
 		donation.access_token 		= this.getCredentials().accessToken;
 
 		return this[postStreamLabs](url, donation);
-	};
+	}
 
 	addAlert(alert) {
 		const url 					= this[urlsStreamLabs].alerts;
 		alert.access_token 			= this.getCredentials().accessToken;
 
 		return this[postStreamLabs](url, alert);
-	};
+	}
 
 	connectWebSocket() {
 		const url 					= this[urlsStreamLabs].socketToken;
@@ -68,7 +68,7 @@ class StreamLabs extends OAuth2 {
 			this[credentialsStreamLabs].socketToken = result.data.socket_token; 
 			return result;
 		});
-	};
+	}
 
 	[getStreamLabs](url, params) {
 		return this.request({
@@ -76,7 +76,7 @@ class StreamLabs extends OAuth2 {
 			url: 					url,
 			body: 					params
 		});
-	};
+	}
 
 	[postStreamLabs](url, data) {
 		return this.request({
@@ -84,7 +84,7 @@ class StreamLabs extends OAuth2 {
 			url: 					url,
 			body:					data
 		});
-	};
+	}
 }
 
 module.exports 						= StreamLabs;
