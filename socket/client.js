@@ -5,6 +5,7 @@ const BotAuthenticator						= require("./core/auth");
 const BotCommand 							= require("./core/command");
 const BotDatabase 							= require("./core/database");
 const BotActiveSocket 						= require("./core/active");
+const BotStreamlabs 						= require("./core/streamlabs");
 
 class BotClient extends EventEmitter {
 	constructor(socket) {
@@ -24,6 +25,9 @@ class BotClient extends EventEmitter {
 
 		// Save database instance
 		this.database 						= new BotDatabase(BotActiveSocket.getRandomString(16));
+
+		// Create a new streamlabs instance
+		this.streamlabs 					= new BotStreamlabs(process.env.STREAMLABS_ID, process.env.STREAMLABS_SECRET, "http://teus.herokuapp.com", "donations.create alerts.create");
 	};
 
 	init() {
@@ -84,10 +88,13 @@ class BotClient extends EventEmitter {
 			return false;
 		}
 
+		// Authenticate the bot with given configuration
 		this.auth.login(this.config.email, this.config.password, (err, result) => {
 			this.emit("bot.auth", result, err);
 
+			// Check if any error happened
 			if (!err) {
+				// Get bot user info
 				this.auth.getInfo(() => {
 					this.createClient("passive");
 					this.createClient("active");
@@ -173,19 +180,39 @@ class BotClient extends EventEmitter {
 					emote: 				this.config.giftList && this.config.giftList[data.GiftId]
 				};
 
+				// Process emote message
+				const emoteMessage 		= this.getMessage(this.getLangMessage("CHAT_EMOTE"), {
+					sender: 			user,
+					emote: 				emote
+				});
+
 				// Emit chat message
 				this.emit("chat.message", {
 					sender: 			user,
-					message: 			this.getMessage(this.getLangMessage("CHAT_EMOTE"), {
-						sender: 		user,
-						emote: 			emote
-					})
+					message: 			emoteMessage
 				});
 
 				// Emit emote sent
 				this.emit("chat.emote", {
 					sender: 			user,
 					emote: 				emote
+				});
+
+				// Create a new donation at streamlabs
+				this.streamlabs.addDonations({
+					name: 				user.nickname,
+					identifier: 		"streamcraft#" + user.id,
+					amount: 			emote.cost / 1000,
+					currency: 			"USD",
+					message: 			emoteMessage
+				});
+
+				// Create a new alert at streamlabs
+				this.streamlabs.addDonations({
+					type: 				"donate",
+					image_href: 		emote.animation,
+					duration: 			emote.duration * 2,
+					message: 			emoteMessage
 				});
 			break;
 
