@@ -4,7 +4,7 @@ class BotDatabase {
 	constructor(deviceId) {
 		this.database 			= new Sequelize("db", "root", "root", {
 			dialect: 			"sqlite",
-			storage: 			"./data/db.sqlite"
+			storage: 			__dirname + "/../../data/db.sqlite"
 		});
 
 		this.Members 			= this.database.define("member", {

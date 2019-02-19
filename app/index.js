@@ -21,7 +21,7 @@ const io 					= socketIo(server, {
 });
 
 // Create a new bot client
-const BotClient 			= new require("../socket/index")(null, io);
+const BotClient 			= new require(__dirname + "/../socket/index")(null, io);
 
 // Use socket.io client
 require("./io").call(BotClient, io);
