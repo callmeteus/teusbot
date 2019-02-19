@@ -86,19 +86,20 @@ module.exports 							= function() {
 					where: 				{
 						addon: 			index
 					},
-					limit: 				amount
+					limit: 				amount,
+					order: 				"random()"
 				})
 				.then((members) => {					
 					if (members.length) {
 						processor.sendMessage(processor.getMessage(this.getLangMessage("ADDON_LIST"), {
 							addon: 	{
-								index: 		index,
-								value: 		members.join(", ")
+								index: 	index,
+								value: 	members.join(", ")
 							}
 						}));
 					} else {
 						processor.sendMessage(processor.getMessage(this.getLangMessage("ADDON_LIST_EMPTY"), {
-							addon: 	{ index }
+							addon: 		{ index }
 						}));
 					}
 				});

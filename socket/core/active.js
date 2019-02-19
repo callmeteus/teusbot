@@ -5,7 +5,7 @@ class BotActiveSocket extends BotSocket {
 		super(url, type, client);
 
 		this.giftList 					= {};
-	};
+	}
 
 	/**
 	 * Register new listeners
@@ -42,7 +42,7 @@ class BotActiveSocket extends BotSocket {
 
 			this.doCyclePing();
 		});
-	};
+	}
 
 	/**
 	 * Request studio configuration
@@ -54,7 +54,7 @@ class BotActiveSocket extends BotSocket {
 		};
 
 		this.sendPacket(300102, this.jsonstr(data, seq), seq);
-	};
+	}
 
 	getWatchLiveRewardList(initFlag = 1) {
 		const seq 						= this.seqno();
@@ -65,7 +65,7 @@ class BotActiveSocket extends BotSocket {
 		};
 
 		this.sendPacket(900083, this.jsonstr(data, seq), seq);
-	};
+	}
 
 	getHistoryContribution(offset = 0) {
 		const seq 						= this.seqno();
@@ -76,13 +76,13 @@ class BotActiveSocket extends BotSocket {
 		};
 
 		this.sendPacket(300113, this.jsonstr(data, seq), seq);
-	};
+	}
 
 	signIn(token, uin, sid) {
 		this._token 					= token;
 		this._uin 						= uin;
 		this._sid 						= parseInt(sid, 10);
-	};
+	}
 
 	reauth() {
 		const seq 						= this.seqno();
@@ -93,7 +93,7 @@ class BotActiveSocket extends BotSocket {
 
 		this.attaches(data);
 		this.sendPacket(300003, this.jsonstr(data, seq), seq);
-	};
+	}
 
 	enter(videoId) {
 		const seq 						= this.seqno();
@@ -106,7 +106,7 @@ class BotActiveSocket extends BotSocket {
 		};
 
 		this.sendPacket(300100, this.jsonstr(data, seq), seq);
-	};
-};
+	}
+}
 
 module.exports 							= BotActiveSocket;

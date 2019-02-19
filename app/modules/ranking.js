@@ -14,37 +14,47 @@ module.exports 									= function() {
 				case "likes":
 				case "charm":
 				case "charms":
-					let topCharm 			= this.database.get("members").sortBy("totalCharm").take(10).value();
-					let charmPos 			= 0;
+					this.database.Members.findAll({
+						attributes: 		["nickname", "totalCharm"],
+						order: 				["totalCharm", "DESC"],
+						limit: 				10
+					})
+					.then((members) => {
+						let finalCharm 		= "";
+						let charmPos 		= 1;
 
-					let finalCharm 			= "";
+						members.forEach((u) => {
+							finalCharm 		+= charmPos++ + ": " + u.nickname + " - " + (u.totalCharm || 0) + " ";
+						});
 
-					topCharm.forEach((u) => {
-						charmPos++;
-						finalCharm 			+= charmPos + ": " + u.nickname + " - " + (u.totalCharm || 0) + " ";
+						processor.sendMessage(finalCharm);
 					});
-
-					return processor.sendMessage(finalCharm);
 				break;
 
 				// Messaging ranking
 				case "message":
 				case "messages":
-					let topMessages 		= this.database.get("members").sortBy("totalMessages").take(10).value();
-					let messagePos 			= 0;
+					this.database.Members.findAll({
+						attributes: 		["nickname", "totalMessages"],
+						order: 				["totalMessages", "DESC"],
+						limit: 				10
+					})
+					.then((members) => {
+						let finalMsg 		= "";
+						let messagePos 		= 1;
 
-					let finalMsg 			= "";
+						members.forEach((u) => {
+							finalMsg 		+= messagePos++ + ": " + u.nickname + " - " + (u.totalMessages || 0) + " ";
+						});
 
-					topMessages.forEach((u) => {
-						messagePos++;
-						finalMsg 			+= messagePos + ": " + u.nickname + " - " + (u.totalMessages || 0) + " ";
+						processor.sendMessage(finalMsg);
 					});
-
-					return processor.sendMessage(finalMsg);
 				break;
 			}
 		} else {
 			processor.sendMessage(this.getLangMessage("RANKING_OPTIONS"));
 		}
+
+		return true;
 	});
 };

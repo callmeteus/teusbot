@@ -123,7 +123,7 @@ class BotSocket extends BotPackets {
 		let num, final 							= "";
 
 		if (!length) {
-			length 								= 4
+			length 								= 4;
 		}
 
 		for (let r = 0; r < length; r++) {
@@ -226,7 +226,7 @@ class BotSocket extends BotPackets {
 					Scene: 							0,
 					Seq: 							seq
 				}
-			}
+			};
 
 			for (let r in data) {
 				packet[r] 							= data[r];
@@ -521,7 +521,7 @@ class BotSocket extends BotPackets {
 		});
 	}
 
-		sendMessage(message, emoji, emojiAmount) {
+	sendMessage(message, emoji, emojiAmount) {
 		// Check if bot can reply
 		if (!this.client.config.canReply) {
 			return false;
@@ -553,6 +553,6 @@ class BotSocket extends BotPackets {
 			message: 				message
 		});
 	}
-};
+}
 
 module.exports 						= BotSocket;

@@ -194,7 +194,7 @@ class BotClient extends EventEmitter {
 					amount: 			data.Nums,
 					cost: 				data.SendEventCost,
 					emote: 				this.config.giftList && this.config.giftList[data.GiftId]
-				}
+				};
 
 				// Process emote message
 				const emoteMessage 		= this.getMessage(this.getLangMessage("CHAT_EMOTE"), {
