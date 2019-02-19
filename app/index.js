@@ -21,7 +21,7 @@ const io 					= socketIo(server, {
 });
 
 // Create a new bot client
-const BotClient 			= new require(__dirname + "/../socket/index")(null, io);
+const BotClient 			= new require.main.require("../socket/index")(null, io);
 
 // Use socket.io client
 require("./io").call(BotClient, io);
@@ -44,7 +44,7 @@ BotClient.on("chat.message", function(data) {
  */
 
 // Load and handler custom commands
-const BotCommands 			= require("../data/commands.json");
+const BotCommands 			= require.main.require("../data/commands.json");
 
 // Handle commands
 BotClient.on("chat.command", function(processor) {

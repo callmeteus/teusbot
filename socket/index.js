@@ -1,5 +1,5 @@
 const BotClient 			= require("./client");
-const BotLanguage 			= require(__dirname + "/../data/language.json");
+const BotLanguage 			= require.main.require("../data/language.json");
 
 module.exports 				= function(config, socket) {
 	const Client 			= new BotClient(socket);
