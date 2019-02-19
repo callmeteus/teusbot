@@ -1,0 +1,6 @@
+{
+  "viewers": {
+    "type": "text",
+    "content": "${channel.nickname} has ${channel.viewers} viewers."
+  }
+}
