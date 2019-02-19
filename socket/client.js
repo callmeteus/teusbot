@@ -74,13 +74,13 @@ class BotClient extends EventEmitter {
 
 	getBotMember() {
 		return {
-    		id: 							this.auth.getData().user.id,
-    		nickname:						this.auth.getData().user.nickname,
-    		level: 							1,
-    		messages: 						0,
-    		charm: 							0,
-    		isMod: 							true
-    	};
+			id: 							this.auth.getData().user.id,
+			nickname:						this.auth.getData().user.nickname,
+			level: 							1,
+			messages: 						0,
+			charm: 							0,
+			isMod: 							true
+		};
 	};
 
 	start() {
@@ -109,7 +109,7 @@ class BotClient extends EventEmitter {
 	/**
 	 * Create a command handler
 	 * @param  {String} command 	Command name
-	 * @param  {Array} args    		Command arguments
+	 * @param  {Array} args			Command arguments
 	 * @param  {BotSocket} socket  	Command socket
 	 * @param  {Object} sender  	Sender data
 	 * @return {BotCommand}
@@ -121,8 +121,8 @@ class BotClient extends EventEmitter {
 	/**
 	 * Process data message
 	 * @param  {Object} message  	StreamCraft message object
-	 * @param  {Object} user    	Message sender
-	 * @param  {Object} data    	Message data
+	 * @param  {Object} user		Message sender
+	 * @param  {Object} data		Message data
 	 * @return {Boolean}
 	 */
 	processDataMessage(message, user, data) {
@@ -255,30 +255,30 @@ class BotClient extends EventEmitter {
 	/**
 	 * Creates a new WebSocket client
 	 * @param  {String}  type   	Client type (active or passive)
-	 * @param  {String}  url     	Server URL
+	 * @param  {String}  url		Server URL
 	 * @param  {Boolean} isRetry 	Is a retry?
-	 * @return {WebSocket}        	Client WebSocket
+	 * @return {WebSocket}			Client WebSocket
 	 */
 	createClient(type, url, isRetry) {
 	   	url									= url || this.auth.getData().ws[type];
 
-	    const socket 						= new BotActiveSocket(url, type, this);
+		const socket 						= new BotActiveSocket(url, type, this);
 
-	    this.sockets[type] 					= socket;
+		this.sockets[type] 					= socket;
 
-	    // On socket error, reconnect
-	    socket.on("error", () => {
-	    	const newUrl 					= url.indexOf("5566") > -1 ? url.replace("5566", "6677") : url.replace("6677", "5566");
-	    	setTimeout(() => this.createClient(type, newUrl, true), socket.ReconSec++ * 1000);
-	    });
+		// On socket error, reconnect
+		socket.on("error", () => {
+			const newUrl 					= url.indexOf("5566") > -1 ? url.replace("5566", "6677") : url.replace("6677", "5566");
+			setTimeout(() => this.createClient(type, newUrl, true), socket.ReconSec++ * 1000);
+		});
 
-	    // On receive gift list
-	    socket.on("giftList", (list) => {
-	    	this.config 					= this.config || {};
-	    	this.config.giftList 			= list;
-	    });
+		// On receive gift list
+		socket.on("giftList", (list) => {
+			this.config 					= this.config || {};
+			this.config.giftList 			= list;
+		});
 
-	    // On receive chat
+		// On receive chat
 		socket.on("chat", (message) => {
 			// Get text from message content
 			const text 						= message.MsgContent.Buff;

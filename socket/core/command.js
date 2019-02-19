@@ -1,11 +1,12 @@
 class BotCommand {
 	constructor(command, args, socket, sender, client) {
-		this.command 			= command;
+		// Convert command to lowercase
+		this.command 			= command.toLowerCase();
 		this.arguments 			= args;
 		this.sender 			= sender;
 		this._botClient 		= client;
 		this.socket 			= socket;
-	};
+	}
 
 	getMessage(message, data) {
 		return this._botClient.getMessage(message, Object.assign({
@@ -19,15 +20,15 @@ class BotCommand {
 			Inflate: 			undefined,
 			eval: 				undefined
 		}, data));
-	};
+	}
 
 	sendMessage(message) {
 		return this.socket.sendMessage(message);
-	};
+	}
 
 	getMember(id) {
 		return this._botClient.getMember(id);
-	};
+	}
 };
 
 module.exports 					= BotCommand;

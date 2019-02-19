@@ -71,7 +71,7 @@ class BotDatabase {
 			addons: 			Sequelize.JSON,
 			token: 				Sequelize.STRING(32)
 		});
-	};
+	}
 
 	/**
 	 * Start the database sync
@@ -79,7 +79,7 @@ class BotDatabase {
 	 */
 	start() {
 		return this.database.sync();
-	};
+	}
 
 	/**
 	 * Get current bot configuration
@@ -87,7 +87,7 @@ class BotDatabase {
 	 */
 	getConfig() {
 		return this.Configs.findOne();
-	};
+	}
 
 	/**
 	 * Reset current stream bot members data
@@ -113,7 +113,7 @@ class BotDatabase {
 				}
 			]
 		});
-	};
+	}
 
 	/**
 	 * Find and update or create a bot member
@@ -153,8 +153,8 @@ class BotDatabase {
 				if (!created) {
 					// Try to update member with new data
 					this.Members.update(data, {
-						where: 		{
-							id: 	data.id
+						where: 	{
+							id: data.id
 						}
 					})
 					.catch((err) => {
@@ -164,7 +164,7 @@ class BotDatabase {
 			})
 			.catch(reject);
 		});
-	};
+	}
 
 	/**
 	 * Updates a bot member
@@ -178,7 +178,7 @@ class BotDatabase {
 				id: 			id
 			}
 		});
-	};
+	}
 }
 
 module.exports 					= BotDatabase;

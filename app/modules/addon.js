@@ -98,9 +98,7 @@ module.exports 							= function() {
 						}));
 					} else {
 						processor.sendMessage(processor.getMessage(this.getLangMessage("ADDON_LIST_EMPTY"), {
-							addon: 	{
-								index: 		index
-							}
+							addon: 	{ index }
 						}));
 					}
 				});

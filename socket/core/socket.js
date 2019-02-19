@@ -40,7 +40,7 @@ class BotSocket extends BotPackets {
 
 		// Register event listeners
 		this.registerListeners();
-	};
+	}
 
 	/**
 	 * Function to debug information
@@ -48,7 +48,7 @@ class BotSocket extends BotPackets {
 	debug(...args) {
 		args.unshift(this.type === "passive" ? colors.blue.bgWhite(this.type) : colors.green.bgWhite(this.type));
 		return realDebug(...args);
-	};
+	}
 
 	/**
 	 * Convert a ByteArray to string
@@ -64,7 +64,7 @@ class BotSocket extends BotPackets {
 		}
 
 		return final;
-	};
+	}
 
 	/**
 	 * Convert a String to a ByteArray
@@ -83,7 +83,7 @@ class BotSocket extends BotPackets {
 		}
 
 		return arr;
-	};
+	}
 
 	/**
 	 * Get device type (bot)
@@ -99,7 +99,7 @@ class BotSocket extends BotPackets {
 		this.DeviceType 						= this.str2byte(name, length);
 
 		return this.DeviceType;
-	};
+	}
 
 	/**
 	* Get device ID
@@ -112,7 +112,7 @@ class BotSocket extends BotPackets {
 		}
 
 		return this.deviceId;
-	};
+	}
 
 	/**
 	* Create a random string
@@ -124,7 +124,7 @@ class BotSocket extends BotPackets {
 
 		if (!length) {
 			length 								= 4
-		};
+		}
 
 		for (let r = 0; r < length; r++) {
 			num									= Math.ceil(Math.random() * randomString.length) - 1,
@@ -132,7 +132,7 @@ class BotSocket extends BotPackets {
 		}
 
 		return final;
-	};
+	}
 
 	// TODO: document this
 	crypt(t, e) {
@@ -151,7 +151,7 @@ class BotSocket extends BotPackets {
 		}
 
 		return s;
-	};
+	}
 
 	/**
 	 * Send a ping to the server
@@ -166,7 +166,7 @@ class BotSocket extends BotPackets {
 		packet.writeUnsignedInt(0, packet.BIG_ENDIAN);
 
 		this.send(packet.buffer);
-	};
+	}
 
 	/**
 	 * Register a cycle ping timer
@@ -179,7 +179,7 @@ class BotSocket extends BotPackets {
 		this.pingTimer 							= setInterval(() => {
 			this.ping();
 		}, this.pingInterval);
-	};
+	}
 
 		/**
 		* Create a packet with a data buffer to be sent
@@ -190,7 +190,7 @@ class BotSocket extends BotPackets {
 		return {
 			Buff: 								data
 		}
-	};
+	}
 
 	/**
 	* Attaches useful insformation to the packet
@@ -204,10 +204,10 @@ class BotSocket extends BotPackets {
 		packet.CountryCode 						= "cn";
 		packet.RandomEncryKey 					= {
 			Buff: 								BotSocket.getRandomString(4)
-		};
+		}
 
 		return packet;
-	};
+	}
 
 	/**
 	* Create a packet JSON string to be attached to the packet
@@ -226,14 +226,14 @@ class BotSocket extends BotPackets {
 					Scene: 							0,
 					Seq: 							seq
 				}
-			};
+			}
 
 			for (let r in data) {
 				packet[r] 							= data[r];
 			}
 
 			return JSON.stringify(packet);
-	};
+	}
 
 	/**
 		* Generate a sequential number
@@ -241,7 +241,7 @@ class BotSocket extends BotPackets {
 	*/
 	seqno() {
 		return this.seq++;
-	};
+	}
 
 	/**
 	* Register default listeners
@@ -371,7 +371,7 @@ class BotSocket extends BotPackets {
 							inflate.push(compressedData, true);
 							
 							// Check if any error ocurred
-							if (inflate.err || inflate.result.byteLength != response.CompressLen) {
+							if (inflate.err || inflate.result.byteLength !== response.CompressLen) {
 								if (!inflate.err) {
 									inflate.err = "uncompress length not matchs.";
 								}
@@ -388,7 +388,7 @@ class BotSocket extends BotPackets {
 
 						// Parse JSON from string
 						try {
-							string				= string.replace(/"GoldBoxId":.(\d+),/g, '"GoldBoxId":"$1",'),
+							string				= string.replace(/"GoldBoxId":.(\d+),/g, "\"GoldBoxId\":\"$1\","),
 							response.Response   = JSON.parse(string);
 						} catch (t) {
 							return this.debug("[error] json parse error:" + t + "!");
@@ -437,7 +437,7 @@ class BotSocket extends BotPackets {
 			this.debug(colors.yellow("unhandled packet " + response.cmd), response);
 			this.emit("packet.response", response);
 		});
-	};
+	}
 
 	sendPacket(packetId, packetJson, packetSeq) {
 		// Create the binary packet data
@@ -519,7 +519,7 @@ class BotSocket extends BotPackets {
 			json: 					packetJson,
 			data: 					packetSeq
 		});
-		};
+	}
 
 		sendMessage(message, emoji, emojiAmount) {
 		// Check if bot can reply
@@ -542,7 +542,7 @@ class BotSocket extends BotPackets {
 				EmojiFlag: 			emoji,
 				CreateTime: 		date
 			}]
-		};
+		}
 
 		// Send the message to server
 		this.sendPacket(300103, this.jsonstr(data, seq), seq);
@@ -552,7 +552,7 @@ class BotSocket extends BotPackets {
 			sender:					this.client.getBotMember(),
 			message: 				message
 		});
-		};
+	}
 };
 
 module.exports 						= BotSocket;

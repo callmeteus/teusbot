@@ -1,21 +1,22 @@
 const WebSocket						= require("ws");
+const colors 						= require("colors");
 
 class BotPackets extends WebSocket {
 	constructor(url, type, client) {
 		super(url);
 
 		this.config					= this.config || {};
-	};
+	}
 
 	handleWatchLiveRewardList(response) {
 		this.debug("rewardList", response);
 		return true;
-	};
+	}
 
 	handleHistoryContribution(response) {
 		this.debug("historyContribution", response);
 		return true;
-	};
+	}
 
 	handleStudioConfig(response) {
 		const giftList 				= {};
@@ -37,7 +38,7 @@ class BotPackets extends WebSocket {
 		this.config.giftList 		= giftList;
 
 		return this.emit("giftList", giftList);
-	};
+	}
 
 	handleAuth(response) {
 		// Login success
@@ -59,7 +60,7 @@ class BotPackets extends WebSocket {
 		return this.emit("bot.login", {
 			success:					false
 		});
-	};
+	}
 
 	handleEnter(response) {
 		// Login succeed
@@ -80,7 +81,7 @@ class BotPackets extends WebSocket {
 				success:		false
 			});
 		}
-	};
+	}
 }
 
 module.exports 						= BotPackets;

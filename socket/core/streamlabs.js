@@ -72,17 +72,17 @@ class StreamLabs extends OAuth2 {
 
 	[getStreamLabs](url, params) {
 		return this.request({
-		    method: 				"GET",
-		    url: 					url,
-		    body: 					params
+			method: 				"GET",
+			url: 					url,
+			body: 					params
 		});
 	};
 
 	[postStreamLabs](url, data) {
 		return this.request({
-		    method: 				"POST",
-		    url: 					url,
-		    body:					data
+			method: 				"POST",
+			url: 					url,
+			body:					data
 		});
 	};
 }

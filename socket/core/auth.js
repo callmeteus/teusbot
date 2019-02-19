@@ -45,7 +45,7 @@ module.exports 						= function(config) {
 				} catch(e) {
 					console.error("[http] failed to parse json for", body);
 					return callback(false);
-				};
+				}
 			});
 		},
 
