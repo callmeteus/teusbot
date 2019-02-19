@@ -1,1 +1,0 @@
-cloc.exe app/ socket/ --not-match-f="(.*\/node_modules\/.*|.*\/www\/.*|.*bootstrap.*|.*animate.*|.*jszip.*)" --found=cloc_found.txt --ignored=cloc_ignore.txt

@@ -1,8 +1,10 @@
 *.txt
+*.bat
 data/
 node_modules/
 original sc files/
 cloc_found.txt
 cloc_ignore.txt
+enable debug.js
 *.sublime-project
 *.sublime-workspace
