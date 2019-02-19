@@ -12,6 +12,7 @@ class BotDatabase {
 			storage: 			path.join(appRoot, "/../", "data", "db.sqlite")
 		});
 
+		// Define members
 		this.Members 			= this.database.define("member", {
 			id: 				{
 				type: 			Sequelize.INTEGER,
@@ -39,13 +40,20 @@ class BotDatabase {
 			totalMessages: 		{
 				type: 			Sequelize.INTEGER,
 				defaultValue: 	0
-			},
-			addons: 			{
-				type: 			Sequelize.JSON,
-				defaultValue: 	"[]"
 			}
 		});
 
+		// Define member addons
+		this.MemberAddons 		= this.database.define("memberAddon", {
+			member: 			{
+				type: 			Sequelize.INTEGER,
+				primaryKey: 	true
+			},
+			addon: 				Sequelize.STRING,
+			value: 				Sequelize.STRING,
+		});
+
+		// Define bot configuration
 		this.Configs 			= this.database.define("config", {
 			email: 				{
 				type: 			Sequelize.STRING(325),
@@ -82,7 +90,7 @@ class BotDatabase {
 	};
 
 	/**
-	 * Reset current stream members data
+	 * Reset current stream bot members data
 	 * @return {Promise}
 	 */
 	resetMembers() {
@@ -108,7 +116,7 @@ class BotDatabase {
 	};
 
 	/**
-	 * Find and update or create a member
+	 * Find and update or create a bot member
 	 * @param  {Object} message StreamCraft message object
 	 * @return {Promise}
 	 */
@@ -152,6 +160,20 @@ class BotDatabase {
 				});
 			})
 			.catch(reject);
+		});
+	};
+
+	/**
+	 * Updates a bot member
+	 * @param  {[type]} id   [description]
+	 * @param  {[type]} data [description]
+	 * @return {[type]}      [description]
+	 */
+	updateMember(id, data) {
+		return this.Members.update(data, {
+			where: 				{
+				id: 			id
+			}
 		});
 	};
 }

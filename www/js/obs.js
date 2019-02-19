@@ -1,33 +1,32 @@
 (function() {
-	const app_query 			= new URLSearchParams(window.location.search);
-	const app_token 			= app_query.get("token");
-	const app_module 			= app_query.get("module");
-	const app_test 				= (app_query.get("test") === "true" || app_query.get("test") === "1");
-	const app_isQueue 			= (app_query.get("queue") === "true" || app_query.get("queue") === "1");
+	const query 				= new URLSearchParams(window.location.search);
 
-	const app_queue 			= [];
+	const app 					= {
+		token: 					query.get("token"),
+		module: 				query.get("module"),
+		test: 					(query.get("test") === "true" || query.get("test") === "1"),
+		isQueue: 				(query.get("queue") === "true" || query.get("queue") === "1"),
+		queue: 					[],
+		testData: 				{
+			sender: 			{
+				id: 			1,
+				nickname: 		"Test",
+				picture: 		"https://via.placeholder.com/150"
 
-	// Test data with all possible data
-	// that is sent by the bot
-	const app_testData 			= {
-		sender: 				{
-			id: 				1,
-			nickname: 			"Test",
-			picture: 			"https://via.placeholder.com/150"
-
-		},
-		message: 				"test message",
-		emote: 					{
-			amount: 			1,
+			},
+			message: 			"test message",
 			emote: 				{
-				name: 			"Test Emote",
-				animation: 		"https://media2.giphy.com/media/nNxT5qXR02FOM/giphy.gif"
+				amount: 		1,
+				emote: 			{
+					name: 		"Test Emote",
+					animation: 	"https://media2.giphy.com/media/nNxT5qXR02FOM/giphy.gif"
+				}
 			}
 		}
 	};
 
 	// Check if token or module is set
-	if (app_token === null || app_module === null) {
+	if (app_token === null || app.module === null) {
 		return alert("No token or module inserted.");
 	}
 
@@ -65,20 +64,20 @@
 	 * -----------------------------------------------------------------
 	 */
 
-	const $parent 				= $("<div id='" + app_module.replace(/\./g, "-") + "-parent'/>").appendTo(document.body);
+	const $parent 				= $("<div id='" + app.module.replace(/\./g, "-") + "-parent'/>").appendTo(document.body);
 
-	const duration 				= app_query.has("duration") ? parseInt(app_query.get("duration")) : (5000);
-	const animateDuration 		= app_query.has("aduration") ? parseInt(app_query.get("aduration")) : 1000;
-	const animateIn 			= app_query.has("in") ? app_query.get("in") : "fadeInLeft";
-	const animateOut 			= app_query.has("out") ? app_query.get("out") : "fadeOutLeft";
+	const duration 				= query.has("duration") ? parseInt(query.get("duration")) : (5000);
+	const animateDuration 		= query.has("aduration") ? parseInt(query.get("aduration")) : 1000;
+	const animateIn 			= query.has("in") ? query.get("in") : "fadeInLeft";
+	const animateOut 			= query.has("out") ? query.get("out") : "fadeOutLeft";
 
 	let template 				= null;
 
 	function app_queue_process() {
-		let notification 		= app_queue.shift();
+		let notification 		= app.queue.shift();
 
 		app_notificate(notification, function() {
-			if (app_queue.length) {
+			if (app.queue.length) {
 				app_queue_process();
 			}
 		});
@@ -194,26 +193,26 @@
 	};
 
 	// Get module template
-	$.get("/inc/" + app_module + ".ejs", (tpl) => {
+	$.get("/inc/" + app.module + ".ejs", (tpl) => {
 		template 				= tpl;
 
 		// Check if test
-		if (app_test) {
+		if (app.test) {
 			// Create a test notification
-			app_notificate(app_testData);
+			app_notificate(app.testData);
 		}
 
 		// Add event listener to module
-		socket.on(app_module, (data) => {
+		socket.on(app.module, (data) => {
 			// Check if is queue
-			if (!app_isQueue) {
+			if (!app.isQueue) {
 				// Show notification imediately
 				app_notificate(data);
 			} else {
 				// Add notificationt to queue
-				app_queue.push(data);
+				app.queue.push(data);
 
-				if (app_queue.length === 1) {
+				if (app.queue.length === 1) {
 					app_queue_process();
 				}
 			}

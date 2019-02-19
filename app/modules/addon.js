@@ -1,107 +1,99 @@
-module.exports 								= function() {
+module.exports 							= function() {
 	this.on("chat.command", function(processor) {
-		if (processor.command !== "addon" || !processor.arguments.length) {
-			return true;
+		if (processor.command !== "addon" || processor.arguments.length < 2) {
+			return false;
 		}
 
-		switch(processor.arguments.shift()) {
+		const arg 						= processor.arguments.shift();
+		const index 					= processor.arguments.shift();
+
+		switch(args) {
 			case "set":
-				if (processor.arguments[0] !== undefined) {
-					const index 			= processor.arguments.shift();
-					const value 			= processor.arguments.join(" ");
+				const value 			= processor.arguments.join(" ");
 
-					// Check if it's a valid addon
-					if (!this.config.addons || this.config.addons.indexOf(index) === -1) {
-						return false;
-					}
+				// Check if it's a valid addon
+				if (!this.config.addons || this.config.addons.indexOf(index) === -1) {
+					return false;
+				}
 
-					// Get the current user
-					const user 				= this.database.get("members").find({
-						id: 				processor.sender.id
-					})
-					.value();
+				// Instantiate processor sender
+				const member 			= processor.sender;
 
-					// Check if user exists or the value is equal
-					if (user === undefined || user.addons[index] === value) {
-						return false;
-					}
+				// Check if user exists or the value is equal
+				if (member.addons[index] === value) {
+					return false;
+				}
 
-					// Update the user addon
-					this.database.get("members").find({
-						id: 				processor.sender.id
-					}).assign({
-						addons: 			{
-							[index]: 		value
-						}
-					}).write();
+				// Update sender addon
+				member.addons[index] 	= value;
 
+				// Update current member
+				this.database.MemberAddons.upsert({
+					member: 			member.id,
+					addon: 				index,
+					value: 				value
+				})
+				.then(() => {
 					// Send confirmation
 					processor.sendMessage(
 						processor.getMessage(this.getLangMessage("ADDON_SET"), {
-							addon: 			{
-								value: 		value,
-								index: 		index
+							addon: 		{
+								value: 	value,
+								index: 	index
+							}
+						})
+					);
+				})
+				.catch((e) => {
+					console.error("[db] addon error", e);
+					processor.sendMessage("Internal error");
+				});
+			break;
+
+			case "get":
+				// Check if sender has addno
+				if (processor.sender.addons[index] !== undefined) {
+					processor.sendMessage(
+						processor.getMessage(this.getLangMessage("ADDON_GET"), {
+							addon: 	{
+								index: 	index,
+								value: 	processor.sender.addons[index]
+							}
+						})
+					);
+				} else {
+					processor.sendMessage(
+						processor.getMessage(this.getLangMessage("ADDON_EMPTY"), {
+							addon: 	{
+								index: 	index
 							}
 						})
 					);
 				}
 			break;
 
-			case "get":
-				if (processor.arguments[0] !== undefined) {
-					const index 			= processor.arguments[0];
-					
-					const member 			= this.database.get("members").find({
-						id: 				processor.sender.id
-					})
-					.value();
-
-					if (member.addons[index] !== undefined) {
-						processor.sendMessage(
-							processor.getMessage(this.getLangMessage("ADDON_GET"), {
-								addon: 	{
-									index: 	index,
-									value: 	member.addons[index]
-								}
-							})
-						);
-					} else {
-						processor.sendMessage(
-							processor.getMessage(this.getLangMessage("ADDON_EMPTY"), {
-								addon: 	{
-									index: 	index
-								}
-							})
-						);
-					}
-				}
-			break;
-
 			case "list":
-				// Only mods can list users by addons
+				// Only mods can list members by addons
 				if (!processor.sender.isMod) {
 					return false;
 				}
 
-				if (processor.arguments[0] !== undefined) {
-					const index 			= processor.arguments[0];
-					const amount 			= processor.arguments[1] || 10;
+				const index 			= processor.arguments[0];
+				const amount 			= processor.arguments[1] || 10;
 
-					// Get users by index and that have sent one message
-					const users 			= this.database.get("members")
-					.filter((u) => {
-						return u.addons[index] !== undefined && u.messages > 0;
-					})
-					.shuffle()
-					.take(amount)
-					.map("addons." + index)
-					.value();
-
-					if (users.length) {
+				// Get members by index and that have sent one message
+				this.database.MemberAddons.findAll({
+					where: 				{
+						addon: 			index
+					},
+					limit: 				amount
+				})
+				.then((members) => {					
+					if (members.length) {
 						processor.sendMessage(processor.getMessage(this.getLangMessage("ADDON_LIST"), {
 							addon: 	{
 								index: 		index,
-								value: 		users.join(", ")
+								value: 		members.join(", ")
 							}
 						}));
 					} else {
@@ -111,7 +103,7 @@ module.exports 								= function() {
 							}
 						}));
 					}
-				}
+				});
 			break;
 		}
 	});

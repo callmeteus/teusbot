@@ -1,6 +1,41 @@
 {
-  "viewers": {
-    "type": "text",
-    "content": "${channel.nickname} has ${channel.viewers} viewers."
-  }
+	"discord": {
+		"type": "text",
+		"content": "Discord: https://discord.io/prometeus"
+	},
+
+	"instagram": {
+		"type": "text",
+		"content": "Instagram: https://instagram.com/gcprometeus"
+	},
+
+	"twitter": {
+		"type": "text",
+		"content": "Twitter: https://twitter.com/gcprometeus"
+	},
+
+	"facebook": {
+		"type": "text",
+		"content": "Facebook: https://facebook.com/canalprometeus"
+	},
+
+	"mensagens": {
+		"type": "text",
+		"content": "${sender.nickname} enviou ${sender.messages} mensagem(ns) até agora nesta transmissão."
+	},
+
+	"viewers": {
+		"type": "text",
+		"content": "${channel.nickname} tem ${channel.viewers} espectadores no momento."
+	},
+
+	"espectadores": {
+		"type": "alias",
+		"content": "!viewers"
+	},
+
+	"sorteio": {
+		"type": "alias",
+		"content": "!raffle"
+	}
 }

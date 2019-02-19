@@ -106,15 +106,31 @@ class BotClient extends EventEmitter {
 		});
 	};
 
+	/**
+	 * Create a command handler
+	 * @param  {String} command 	Command name
+	 * @param  {Array} args    		Command arguments
+	 * @param  {BotSocket} socket  	Command socket
+	 * @param  {Object} sender  	Sender data
+	 * @return {BotCommand}
+	 */
 	createCommand(command, args, socket, sender) {
 		return new BotCommand(command, args, socket, sender, this);
 	};
 
+	/**
+	 * Process data message
+	 * @param  {Object} message  	StreamCraft message object
+	 * @param  {Object} user    	Message sender
+	 * @param  {Object} data    	Message data
+	 * @return {Boolean}
+	 */
 	processDataMessage(message, user, data) {
 		switch(message.MsgType) {
-			// Default action
+			// Unhandled action
 			default:
 				this.debug("unhandled data message", message.MsgType, data);
+
 				return false;
 			break;
 
@@ -135,18 +151,18 @@ class BotClient extends EventEmitter {
 					})
 				});
 
+				// Emit chat join
 				this.emit("chat.join", {
 					sender: 			user
 				});
 			break;
 
 			// Like (charm) sent
-			case 4:		
-				// Increase member charm amount
-				this.database.get("members").find({ id: user.id }).update("charm", n => n ? n + data.CharmCount : 1).write();
-
-				// Increase member total charm amount
-				this.database.get("members").find({ id: user.id }).update("totalCharm", n => n ? n + data.CharmCount : 1).write();
+			case 4:
+				// Increase member charm and total charm amount
+				this.database.Members.increment(["charm", "totalCharm"], {
+					id: 						user.id
+				});
 
 				// Save total charm count
 				this.charmAmount 		= data.RecvUinCharm;
@@ -272,6 +288,7 @@ class BotClient extends EventEmitter {
 				// Bot has been connected in another place
 				if (message.MsgType === 20008) {
 					this.debug("bot has been connected in another place.");
+
 					return this.emit("bot.disconnect", "another_device");
 				}
 
@@ -279,7 +296,9 @@ class BotClient extends EventEmitter {
 				if (text.indexOf("{\n") > -1) {
 					// Parse JSON
 					const data 					= JSON.parse(text);
+
 					socket.debug("type", message.MsgType, "json", data);
+
 					return this.processDataMessage(message, user, data);
 				}
 
@@ -300,7 +319,9 @@ class BotClient extends EventEmitter {
 				}
 
 				// Increment user messages
-				this.database.Members.increment(["messages", "totalMessages"], { id: user.id });
+				this.database.Members.increment(["messages", "totalMessages"], {
+					id: 						user.id
+				});
 			});
 		});
 
