@@ -14,7 +14,7 @@ module.exports 				= function(config, socket) {
 	const Client 			= new BotClient(socket);
 
 	Client.getLangMessage 	= function(index, data) {
-		if (!BotLanguage[index]) {
+		if (BotLanguage[index] === undefined) {
 			return "Missing translation for '" + index + "'";
 		}
 

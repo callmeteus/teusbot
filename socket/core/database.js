@@ -104,7 +104,7 @@ class BotDatabase {
 					}
 				}
 			]
-		})
+		});
 	};
 
 	/**
@@ -154,6 +154,6 @@ class BotDatabase {
 			.catch(reject);
 		});
 	};
-};
+}
 
 module.exports 					= BotDatabase;

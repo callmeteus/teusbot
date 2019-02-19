@@ -69,14 +69,14 @@ class BotClient extends EventEmitter {
 	};
 
 	getBotMember() {
-		return new BotMember({
+		return {
     		id: 							this.auth.getData().user.id,
     		nickname:						this.auth.getData().user.nickname,
     		level: 							1,
     		messages: 						0,
     		charm: 							0,
     		isMod: 							true
-    	});
+    	};
 	};
 
 	start() {
