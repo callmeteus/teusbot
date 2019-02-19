@@ -10,10 +10,8 @@ class StreamLabs extends OAuth2 {
 	constructor(clientId, clientSecret, redirectUrl, scopes, socketToken="", accessToken="") {
 		super(clientId, clientSecret, redirectUrl, scopes, accessToken, "https://www.streamlabs.com/api/v1.0/");
 		
-		this[credentialsStreamLabs] = {
-			socketToken: 			socketToken
-		};
-		
+		this[credentialsStreamLabs] = { socketToken };
+
 		this[urlsStreamLabs] 		= {
 			socketToken: 			"socket/token",
 			donations: 				"donations",

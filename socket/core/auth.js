@@ -20,23 +20,32 @@ module.exports 						= function(config) {
 		},
 
 		getStudioInfo: 				function(callback) {
-			return requestClient(`https://webapi.streamcraft.com/live/room/anchorinfo?_t=${+new Date()}"&uin=${config.channel}`, (err, response, body) => {
+			let url 				= "https://webapi.streamcraft.com/live/room/anchorinfo?";
+				url 				+= "_t=" + (+new Date());
+				url 				+= "&uin=" + config.channel;
+
+			// Request studio inco
+			return requestClient(url, (err, response, body) => {
+				// Check if request succeeded
 				if (err || response.statusCode !== 200) {
 					return callback(false);
 				}
 
+				// Try to parse JSON
 				try {
+					// Save data to private var
 					_data 			= Object.assign({}, _data, JSON.parse(body));
+
+					// Check if studio info is retrieved correctly
+					if (_data.code === -1) {
+						return callback(false);
+					} else {
+						return callback && callback(_data);
+					}
 				} catch(e) {
 					console.error("[http] failed to parse json for", body);
 					return callback(false);
 				};
-
-				if (_data.code === -1) {
-					return callback(false);
-				}
-
-				callback && callback(_data);
 			});
 		},
 
@@ -51,7 +60,7 @@ module.exports 						= function(config) {
 				} catch(e) {
 					console.error("[http] failed to parse json for", body);
 					return callback(false);
-				};
+				}
 
 				this.getStudioInfo((data) => callback && callback(data));
 			});

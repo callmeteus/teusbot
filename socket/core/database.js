@@ -143,21 +143,24 @@ class BotDatabase {
 				},
 				defaults: 		data
 			})
-			.then((member) => {
-				console.log(member.toObject);
-
+			.spread((member, created) => {
 				// Return member
-				resolve(member.get({ plain: true }));
+				resolve(member[0]);
 
-				// Try to update member with new data
-				this.Members.update(data, {
-					where: 		{
-						id: 	data.id
-					}
-				})
-				.catch((err) => {
-					console.error("[db] error updating member", err);
-				});
+				console.log(member);
+
+				// Check if it was created now
+				if (!created) {
+					// Try to update member with new data
+					this.Members.update(data, {
+						where: 		{
+							id: 	data.id
+						}
+					})
+					.catch((err) => {
+						console.error("[db] error updating member", err);
+					});
+				}
 			})
 			.catch(reject);
 		});
