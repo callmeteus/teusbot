@@ -1,6 +1,7 @@
 *.txt
 *.bat
-data/
+data/*.json
+data/*.sqlite
 node_modules/
 original sc files/
 cloc_found.txt
