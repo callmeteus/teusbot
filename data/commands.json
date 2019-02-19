@@ -1,4 +1,9 @@
 {
+	"agenda": {
+		"type": "text",
+		"content": "As streams geralmente acontecem terça e quinta às 20h00, sexta e sábado às 19h00."
+	},
+
 	"discord": {
 		"type": "text",
 		"content": "Discord: https://discord.io/prometeus"

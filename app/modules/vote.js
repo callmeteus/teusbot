@@ -16,7 +16,7 @@ module.exports 									= function() {
 				}
 			break;
 
-			case "voteStart":
+			case "votestart":
 				if (!processor.sender.isMod) {
 					return false;
 				}
@@ -37,7 +37,7 @@ module.exports 									= function() {
 				}));
 			break;
 
-			case "voteEnd":
+			case "voteend":
 				if (!processor.sender.isMod) {
 					return false;
 				}
