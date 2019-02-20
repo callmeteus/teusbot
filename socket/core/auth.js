@@ -1,5 +1,4 @@
 const request 						= require("request");
-const md5 							= require("md5");
 
 module.exports 						= function(config) {
 	let _data 						= {};

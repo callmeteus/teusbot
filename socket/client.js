@@ -55,12 +55,14 @@ class BotClient extends EventEmitter {
 
 		// Check if client has socket
 		if (this.socket) {
+			const data 						= Object.assign({}, arguments[1]);
+
 			if (type === "chat.command") {
-				delete arguments[1]._botClient;
-				delete arguments[1].socket;
+				delete data._botClient;
+				delete data.socket;
 			}
 
-			this.socket.to("bot").emit(type, arguments[1]);
+			this.socket.to("bot").emit(type, data);
 		}
 	}
 
@@ -90,6 +92,10 @@ class BotClient extends EventEmitter {
 
 		// Authenticate the bot with given configuration
 		this.auth.login(this.config.email, this.config.password, (err, result) => {
+			if (err) {
+				throw new Error(err);
+			}
+
 			this.emit("bot.auth", result, err);
 
 			// Check if any error happened
@@ -159,7 +165,9 @@ class BotClient extends EventEmitter {
 			case 4:
 				// Increase member charm and total charm amount
 				this.database.Members.increment(["charm", "totalCharm"], {
-					id: 						user.id
+					where: 				{
+						id: 				user.id
+					}
 				});
 
 				// Save total charm count
@@ -216,13 +224,13 @@ class BotClient extends EventEmitter {
 				this.streamlabs.addDonations({
 					name: 				user.nickname,
 					identifier: 		"streamcraft#" + user.id,
-					amount: 			emote.cost / 1000,
+					amount: 			emote.cost / 100,
 					currency: 			"USD",
 					message: 			emoteMessage
 				});
 
 				// Create a new alert at streamlabs
-				this.streamlabs.addDonations({
+				this.streamlabs.addAlert({
 					type: 				"donate",
 					image_href: 		emote.animation,
 					duration: 			emote.duration * 2,
@@ -254,10 +262,10 @@ class BotClient extends EventEmitter {
 	 * Creates a new WebSocket client
 	 * @param  {String}  type   	Client type (active or passive)
 	 * @param  {String}  url		Server URL
-	 * @param  {Boolean} isRetry 	Is a retry?
+	 * @param  {Number}  retry 		Retry times
 	 * @return {WebSocket}			Client WebSocket
 	 */
-	createClient(type, url, isRetry) {
+	createClient(type, url, retry) {
 		url									= url || this.auth.getData().ws[type];
 
 		const socket 						= new BotActiveSocket(url, type, this);
@@ -266,8 +274,15 @@ class BotClient extends EventEmitter {
 
 		// On socket error, reconnect
 		socket.on("error", () => {
+			if (retry === 3) {
+				console.error("[bot] giving up. Impossible to reconnect to", type, "server!");
+				return false;
+			}
+
+			console.info("[bot] trying to reconnect in", socket.ReconSec, "seconds");
+
 			const newUrl 					= url.indexOf("5566") > -1 ? url.replace("5566", "6677") : url.replace("6677", "5566");
-			setTimeout(() => this.createClient(type, newUrl, true), socket.ReconSec++ * 1000);
+			setTimeout(() => this.createClient(type, newUrl, retry ? retry + 1 : 1), socket.ReconSec++ * 1000);
 		});
 
 		// On receive gift list
@@ -282,7 +297,8 @@ class BotClient extends EventEmitter {
 			const text 						= message.MsgContent.Buff;
 
 			// Get member from database
-			this.database.getMember(message, (user) => {
+			this.database.getMember(message)
+			.then((user) => {
 				// Bot has been connected in another place
 				if (message.MsgType === 20008) {
 					this.debug("bot has been connected in another place.");
@@ -318,7 +334,9 @@ class BotClient extends EventEmitter {
 
 				// Increment user messages
 				this.database.Members.increment(["messages", "totalMessages"], {
-					id: 						user.id
+					where: 						{
+						id: 					user.id
+					}
 				});
 			});
 		});

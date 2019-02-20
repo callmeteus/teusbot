@@ -4,8 +4,8 @@ module.exports 							= function() {
 			return false;
 		}
 
-		const args 						= processor.arguments.shift();
-		const index 					= processor.arguments.shift();
+		var args 						= processor.arguments.shift();
+		var index 						= processor.arguments.shift();
 
 		switch(args) {
 			case "set":
@@ -16,20 +16,17 @@ module.exports 							= function() {
 					return false;
 				}
 
-				// Instantiate processor sender
-				const member 			= processor.sender;
+				const setAddon 			= processor.sender.addons.filter((addon) => addon.addon === index)[0];
 
 				// Check if user exists or the value is equal
-				if (member.addons[index] === value) {
+				if (setAddon && setAddon.value === value) {
 					return false;
 				}
 
-				// Update sender addon
-				member.addons[index] 	= value;
-
 				// Update current member
 				this.database.MemberAddons.upsert({
-					member: 			member.id,
+					id: 				setAddon ? setAddon.id : null,
+					member: 			processor.sender.id,
 					addon: 				index,
 					value: 				value
 				})
@@ -51,13 +48,15 @@ module.exports 							= function() {
 			break;
 
 			case "get":
-				// Check if sender has addno
-				if (processor.sender.addons[index] !== undefined) {
+				const getAddon 			= processor.sender.addons.filter((addon) => addon.addon === index)[0];
+
+				// Check if sender has addon
+				if (getAddon !== undefined) {
 					processor.sendMessage(
 						processor.getMessage(this.getLangMessage("ADDON_GET"), {
 							addon: 	{
 								index: 	index,
-								value: 	processor.sender.addons[index]
+								value: 	getAddon.value
 							}
 						})
 					);
@@ -78,23 +77,23 @@ module.exports 							= function() {
 					return false;
 				}
 
-				const index 			= processor.arguments[0];
-				const amount 			= processor.arguments[1] || 10;
+				const amount 			= processor.arguments[0] || 10;
 
 				// Get members by index and that have sent one message
 				this.database.MemberAddons.findAll({
 					where: 				{
 						addon: 			index
 					},
+					attributes: 		["value"],
 					limit: 				amount,
-					order: 				"random()"
+					order: 				this.database.Sequelize.fn("RANDOM")
 				})
-				.then((members) => {					
+				.then((members) => {				
 					if (members.length) {
 						processor.sendMessage(processor.getMessage(this.getLangMessage("ADDON_LIST"), {
 							addon: 	{
 								index: 	index,
-								value: 	members.join(", ")
+								value: 	members.map((member) => member.value).join(", ")
 							}
 						}));
 					} else {

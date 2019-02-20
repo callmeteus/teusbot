@@ -26,8 +26,12 @@
 	};
 
 	// Check if token or module is set
-	if (app_token === null || app.module === null) {
+	if (app.token === null || app.module === null) {
 		return alert("No token or module inserted.");
+	}
+
+	if (!app.token.length) {
+		app.token 				= null;
 	}
 
 	/**
@@ -47,7 +51,7 @@
 		console.info("[socket] connected");
 
 		// Emit authentication
-		socket.emit("auth", app_token);
+		socket.emit("auth", app.token);
 	});
 
 	// On socket authenticate

@@ -7,6 +7,8 @@ const appRoot 					= path.dirname(require.main.filename);
 
 class BotDatabase {
 	constructor(deviceId) {
+		this.Sequelize 			= Sequelize;
+
 		this.database 			= new Sequelize("db", "root", "root", {
 			dialect: 			"sqlite",
 			storage: 			path.join(appRoot, "/../", "data", "db.sqlite")
@@ -47,7 +49,10 @@ class BotDatabase {
 		this.MemberAddons 		= this.database.define("memberAddon", {
 			member: 			{
 				type: 			Sequelize.INTEGER,
-				primaryKey: 	true
+				references: 	{
+					model: 		this.Members,
+					key: 		"id"
+				}
 			},
 			addon: 				Sequelize.STRING,
 			value: 				Sequelize.STRING,
@@ -71,6 +76,18 @@ class BotDatabase {
 			addons: 			Sequelize.JSON,
 			token: 				Sequelize.STRING(32)
 		});
+
+		this.MemberAddons.belongsTo(this.Members, {
+			as: 				"memberAddon",
+			foreignKey: 		"member",
+			targetKey: 			"id"
+		});
+
+		this.Members.hasMany(this.MemberAddons, {
+			as: 				"addons",
+			foreignKey: 		"member",
+			targetKey: 			"member"
+		});
 	}
 
 	/**
@@ -86,7 +103,13 @@ class BotDatabase {
 	 * @return {Promise}
 	 */
 	getConfig() {
-		return this.Configs.findOne();
+		return new Promise((resolve, reject) => {
+			this.Configs.findOne()
+			.then((config) => {
+				resolve(JSON.parse(JSON.stringify(config)));
+			})
+			.catch(reject);
+		});
 	}
 
 	/**
@@ -124,33 +147,46 @@ class BotDatabase {
 		return new Promise((resolve, reject) => {
 			// Check if message is set
 			if (message === undefined) {
-				return reject(new Error("Message is not defined."));
+				return reject(new Error("Message or ID is not defined."));
 			}
 
-			// Prepare member data from message
-			const data 			= {
-				id: 			message.FromUin,
-				nickname: 		message.FromNickName,
-				picture: 		message.FromHeadImg,
-				isMod: 			message.FromAccess ? message.FromAccess > 1 : false,
-				level: 			message.FromUserLv
-			};
+			let data 			= {};
+
+			if (typeof message === "object") {
+				// Prepare member data from message
+				data 			= {
+					id: 		message.FromUin,
+					nickname: 	message.FromNickName.trim(),
+					picture: 	message.FromHeadImg,
+					isMod: 		message.FromAccess ? message.FromAccess > 1 : false,
+					level: 		message.FromUserLv
+				};
+			} else {
+				data.id 		= message;
+			}
 
 			// Find or create member
 			this.Members.findOrCreate({
 				where: 			{
 					id: 		data.id
 				},
+				include: 		{
+					model: 		this.MemberAddons,
+					as: 		"addons",
+					attributes: ["id", "addon", "value"],
+					required: 	false
+				},
 				defaults: 		data
 			})
 			.spread((member, created) => {
-				// Return member
-				resolve(member[0]);
+				member 			= member.dataValues;
 
-				console.log(member);
+				// Return member
+				resolve(member);
 
 				// Check if it was created now
-				if (!created) {
+				// and it's a full member
+				if (!created && data.nickname !== undefined) {
 					// Try to update member with new data
 					this.Members.update(data, {
 						where: 	{

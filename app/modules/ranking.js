@@ -16,7 +16,7 @@ module.exports 									= function() {
 				case "charms":
 					this.database.Members.findAll({
 						attributes: 		["nickname", "totalCharm"],
-						order: 				["totalCharm", "DESC"],
+						order: 				[["totalCharm", "DESC"]],
 						limit: 				10
 					})
 					.then((members) => {
@@ -36,7 +36,7 @@ module.exports 									= function() {
 				case "messages":
 					this.database.Members.findAll({
 						attributes: 		["nickname", "totalMessages"],
-						order: 				["totalMessages", "DESC"],
+						order: 				[["totalMessages", "DESC"]],
 						limit: 				10
 					})
 					.then((members) => {
