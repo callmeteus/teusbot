@@ -71,18 +71,46 @@ class StreamLabs extends OAuth2 {
 	}
 
 	[getStreamLabs](url, params) {
-		return this.request({
-			method: 				"GET",
-			url: 					url,
-			body: 					params
+		return new Promise((resolve, reject) => {
+			this.request({
+				method: 				"GET",
+				url: 					url,
+				body: 					params,
+				json: 					true
+			}, (err, response, body) => {
+				if (err || response.statusCode !== 200) {
+					const error 		= err || body.error + ": " + body.error_description || body.message;
+					return reject(error);
+				}
+
+				resolve(body);
+			});
 		});
 	}
 
 	[postStreamLabs](url, data) {
-		return this.request({
-			method: 				"POST",
-			url: 					url,
-			body:					data
+		if (data.name) {
+			// Strip spaces
+			data.name 					= data.name.replace(/ /g, "");
+
+			// Remove emojis
+			data.name 					= data.name.replace(/([\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "");
+		}
+
+		return new Promise((resolve, reject) => {
+			this.request({
+				method: 				"POST",
+				url: 					url,
+				form:					data,
+				json: 					true
+			}, (err, response, body) => {
+				if (err || response.statusCode !== 200) {
+					const error 		= err || body;
+					return reject(error);
+				}
+
+				resolve(body);
+			});
 		});
 	}
 }

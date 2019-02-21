@@ -1,0 +1,55 @@
+<div class="container mt-3">
+	<h3><%-data.bot.user.nickname%></h3>
+
+	<ul class="nav nav-tabs">
+		<li class="nav-item">
+			<a class="nav-link active" href="#nav-commands">Commands</a>
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link" href="#nav-language">Language</a>
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link" href="#nav-settings">Settings</a>
+		</li>
+
+		<li class="nav-item ml-auto">
+			<a class="nav-link" href="#nav-test-alert">Test Alert</a>
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link" href="#nav-test-donation">Test Donation</a>
+		</li>
+	</ul>
+
+	<div class="tab-content" id="nav-tabContent">
+		<div class="tab-pane fade show active" id="nav-commands" role="tabpanel">
+			<div class="list-group">
+				<% Object.keys(data.commands).forEach((command) => { %>
+					<div class="list-group-item">
+						<div class="d-flex justify-content-between mb-1">
+							<strong><%=command%></strong>
+
+							<%=
+								(
+									data.commands[command].type === "text" ? "Text" :
+									data.commands[command].type === "alias" ? "Alias" :
+									data.commands[command].type === "script" ? "Script" :
+									"Unknown command type"
+								)
+							%>
+						</div>
+
+						<input class="form-control" type="text" value="<%-data.commands[command].content%>" />
+					</div>
+				<% });%>
+			</div>
+		</div>
+
+		<div class="tab-pane fade" id="nav-language" role="tabpanel">...</div>
+		<div class="tab-pane fade" id="nav-settings" role="tabpanel">...</div>
+	</div>
+
+	<script type="text/javascript" src="/js/pages/test.js"></script>
+</div>

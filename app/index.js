@@ -47,11 +47,13 @@ function app_startup() {
 	// Static WWW folder
 	app.use(express.static("./www/"));
 
+	require("./web")(app, BotClient);
+
 	console.info("[bot] initializating client...");
 
 	BotClient.init()
 	.then(() => {
-		const serverPort 			= process.env.PORT ? process.env.PORT : (BotClient.config && BotClient.config.port ? BotClient.config.port : 3200);
+		const serverPort 			= process.env.PORT || (BotClient.config && BotClient.config.port ? BotClient.config.port : 3200);
 
 		// Start express and socket.io
 		server.listen(serverPort, function() {
@@ -72,36 +74,10 @@ function app_startup() {
 // Load and handler custom commands
 const BotCommands 			= require.main.require("../data/commands.json");
 
-// Handle commands
-BotClient.on("chat.command", function(processor) {
-	// Check if command exists
-	if (BotCommands[processor.command] !== undefined) {
-		const handler 		= BotCommands[processor.command];
-
-		// Check if it's a text command
-		if (handler.type === "text") {
-			let txt 		= handler.content;
-
-			// Convert text into chat message
-			txt 			= processor.getMessage(txt);
-
-			// Send the message
-			processor.sendMessage(txt);
-		} else 
-		// Check if it's an alias command
-		if (handler.type === "alias") {
-			// Separate command from arguments
-			const args 		= handler.content.split(" ");
-			const cmd 		= args.shift().replace("!", "");
-
-			const command 	= BotClient.createCommand(cmd, args, BotClient.sockets.passive, processor.sender);
-
-			// Emit a new command as alias
-			BotClient.emit("chat.command", command);
-		} else {
-			console.error("[bot] unknown command type '" + handler.type + "' for command", processor.command);
-		}
-	}
+// Iterate over commands
+Object.keys(BotCommands).forEach((command) => {
+	// Register command
+	BotClient.registerCommand(command, BotCommands[command]);
 });
 
 // Load all modules

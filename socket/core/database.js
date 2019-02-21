@@ -74,7 +74,10 @@ class BotDatabase {
 			},
 			deviceId: 			Sequelize.STRING(16),
 			addons: 			Sequelize.JSON,
-			token: 				Sequelize.STRING(32)
+			token: 				Sequelize.STRING(32),
+			slId: 				Sequelize.STRING,
+			slToken: 			Sequelize.STRING,
+			slAccessToken: 		Sequelize.STRING
 		});
 
 		this.MemberAddons.belongsTo(this.Members, {

@@ -197,7 +197,7 @@
 	}
 
 	// Get module template
-	$.get("/inc/" + app.module + ".ejs", (tpl) => {
+	$.get("/inc/tpl/" + app.module + ".ejs", (tpl) => {
 		template 				= tpl;
 
 		// Check if test

@@ -26,8 +26,8 @@ class BotClient extends EventEmitter {
 		// Save database instance
 		this.database 						= new BotDatabase(BotActiveSocket.getRandomString(16));
 
-		// Create a new streamlabs instance
-		this.streamlabs 					= new BotStreamlabs(process.env.STREAMLABS_ID, process.env.STREAMLABS_SECRET, "http://teus.herokuapp.com", "donations.create alerts.create");
+		// Commands handler
+		this.commands 						= {};
 	}
 
 	init() {
@@ -41,6 +41,16 @@ class BotClient extends EventEmitter {
 
 					// Create a new bot authentication client
 					this.auth 				= new BotAuthenticator(this.config);
+
+					const slConfig 			= {
+						id: 				process.env.STREAMLABS_ID || this.config.slId,
+						secret: 			process.env.STREAMLABS_SECRET || this.config.slToken,
+						url: 				process.env.STREAMLABS_SECRET ? "https://teus.herokuapp.com" : "http://127.0.0.1:3200/streamlabs",
+						scopes: 			"donations.create alerts.create"
+					};
+
+					// Create a new streamlabs instance
+					this.streamlabs 		= new BotStreamlabs(slConfig.id, slConfig.secret, slConfig.url, slConfig.scopes, "", this.config.slAccessToken);
 
 					// Success
 					resolve();
@@ -125,6 +135,57 @@ class BotClient extends EventEmitter {
 	}
 
 	/**
+	 * Register a command
+	 * @param  {String} command 	Command without the "!"
+	 * @param  {Object} data    	Command data
+	 * @return {Object}
+	 */
+	registerCommand(command, data) {
+		this.commands[command] 		= data;
+		return this.commands[command];
+	}
+
+	/**
+	 * Process a command
+	 * @param  {BotCommand} processor Command processor
+	 * @return {Boolean}
+	 */
+	processCommand(processor) {
+		// Check if command exists
+		if (this.commands[processor.command] !== undefined) {
+			const handler 		= this.commands[processor.command];
+
+			// Check if it's a text command
+			if (handler.type === "text") {
+				let txt 		= handler.content;
+
+				// Convert text into chat message
+				txt 			= processor.getMessage(txt);
+
+				// Send the message
+				processor.sendMessage(txt);
+			} else 
+			// Check if it's an alias command
+			if (handler.type === "alias") {
+				// Separate command from arguments
+				const args 		= handler.content.split(" ");
+				const cmd 		= args.shift().replace("!", "");
+
+				const command 	= this.createCommand(cmd, args, this.sockets.passive, processor.sender);
+
+				// Emit a new command as alias
+				this.emit("chat.command", command);
+			} else {
+				console.error("[bot] unknown command type '" + handler.type + "' for command", processor.command);
+			}
+
+			return true;
+		}
+
+		return false;
+	};
+
+	/**
 	 * Process data message
 	 * @param  {Object} message  	StreamCraft message object
 	 * @param  {Object} user		Message sender
@@ -166,7 +227,7 @@ class BotClient extends EventEmitter {
 				// Increase member charm and total charm amount
 				this.database.Members.increment(["charm", "totalCharm"], {
 					where: 				{
-						id: 				user.id
+						id: 			user.id
 					}
 				});
 
@@ -221,19 +282,11 @@ class BotClient extends EventEmitter {
 				});
 
 				// Create a new donation at streamlabs
-				this.streamlabs.addDonations({
+				this.streamlabs.addDonation({
 					name: 				user.nickname,
 					identifier: 		"streamcraft#" + user.id,
 					amount: 			emote.cost / 100,
 					currency: 			"USD",
-					message: 			emoteMessage
-				});
-
-				// Create a new alert at streamlabs
-				this.streamlabs.addAlert({
-					type: 				"donate",
-					image_href: 		emote.animation,
-					duration: 			emote.duration * 2,
 					message: 			emoteMessage
 				});
 			break;
@@ -328,8 +381,13 @@ class BotClient extends EventEmitter {
 					let command 				= args.shift();
 					let realCommand 			= command.substr(1, command.length - 1);
 
-					// Emit the command
-					this.emit("chat.command", this.createCommand(realCommand, args, socket, user));
+					const processor 			= this.createCommand(realCommand, args, socket, user);
+
+					// Check if command can be processed
+					if (!this.processCommand(processor)) {
+						// If not, emit the command
+						this.emit("chat.command", processor);
+					}
 				}
 
 				// Increment user messages
