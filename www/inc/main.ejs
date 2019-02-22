@@ -1,5 +1,11 @@
 <div class="container mt-3">
-	<h3><%-data.bot.user.nickname%></h3>
+	<div class="mb-3">
+		<h3>
+			Teus Bot 🤖
+		</h3>
+
+		<small>Logged as <%-data.bot.user.nickname%></small>
+	</div>
 
 	<ul class="nav nav-tabs">
 		<li class="nav-item">
@@ -23,25 +29,22 @@
 		</li>
 	</ul>
 
-	<div class="tab-content" id="nav-tabContent">
+	<div class="tab-content mb-3">
 		<div class="tab-pane fade show active" id="nav-commands" role="tabpanel">
 			<div class="list-group">
-				<% Object.keys(data.commands).forEach((command) => { %>
-					<div class="list-group-item">
-						<div class="d-flex justify-content-between mb-1">
-							<strong><%=command%></strong>
+				<% Object.keys(data.commands).forEach((command) => { let cmd = data.commands[command]; %>
+					<div class="list-group-item" data-id="<%=command%>">
+						<div class="d-flex justify-content-between mb-1 bot-command">
+							<h5 class="mt-2">!<%=command%></h5>
 
-							<%=
-								(
-									data.commands[command].type === "text" ? "Text" :
-									data.commands[command].type === "alias" ? "Alias" :
-									data.commands[command].type === "script" ? "Script" :
-									"Unknown command type"
-								)
-							%>
+							<select class="form-control col-2">
+								<option value="text" <%=(cmd.type === "text" ? "selected" : "")%>>Text</option>
+								<option value="alias" <%=(cmd.type === "alias" ? "selected" : "")%>>Alias</option>
+								<option value="script" <%=(cmd.type === "script" ? "selected" : "")%>>Script</option>
+							</select>
 						</div>
 
-						<input class="form-control" type="text" value="<%-data.commands[command].content%>" />
+						<input class="form-control" type="text" value="<%-cmd.content%>" />
 					</div>
 				<% });%>
 			</div>

@@ -49,7 +49,9 @@ module.exports 						= function() {
 			})
 			.catch((e) => {
 				console.error("[bot] raffle end error:", e);
-				processor.sendMessege("Internal error");
+				
+				// Send an internal error message
+				processor.sendMessage(this.getLangMessage("INTERNAL_ERROR"));
 			});
 		}
 	};

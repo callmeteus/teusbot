@@ -196,7 +196,17 @@ class BotClient extends EventEmitter {
 		switch(message.MsgType) {
 			// Unhandled action
 			default:
-				this.debug("unhandled data message", message.MsgType, data);
+				console.log("[bot] unhandled data message", message.MsgType, data);
+			break;
+
+			// Member quit?
+			case 20003:
+				// Instantiate channel data
+				const channel 			= this.auth.getData().data.user;
+
+				// Update current viewers and views
+				channel.viewers 		= data.RealCount;
+				channel.views 			= data.TotalViewCount;
 			break;
 
 			// Member join
@@ -390,8 +400,12 @@ class BotClient extends EventEmitter {
 					}
 				}
 
-				// Increment user messages
-				this.database.Members.increment(["messages", "totalMessages"], {
+				// Increment user messages, total messages and points
+				this.database.Members.increment({
+					messages: 					1,
+					totalMessages: 				1,
+					points: 					0.2
+				}, {
 					where: 						{
 						id: 					user.id
 					}

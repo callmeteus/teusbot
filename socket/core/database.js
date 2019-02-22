@@ -2,25 +2,27 @@ const Sequelize 				= require("sequelize");
 
 const fs 						= require("fs");
 const path 						= require("path");
-
 const appRoot 					= path.dirname(require.main.filename);
 
 class BotDatabase {
 	constructor(deviceId) {
 		this.Sequelize 			= Sequelize;
 
-		this.database 			= new Sequelize("db", "root", "root", {
+		this.sequelize 			= new Sequelize("db", "root", "root", {
 			dialect: 			"sqlite",
 			storage: 			path.join(appRoot, "/../", "data", "db.sqlite")
 		});
 
 		// Define members
-		this.Members 			= this.database.define("member", {
+		this.Members 			= this.sequelize.define("member", {
 			id: 				{
 				type: 			Sequelize.INTEGER,
 				primaryKey: 	true
 			},
-			nickname: 			Sequelize.STRING,
+			nickname: 			{
+				type: 			Sequelize.STRING,
+				allowNull: 		false
+			},
 			picture: 			Sequelize.STRING,
 			isMod: 				{
 				type: 			Sequelize.BOOLEAN,
@@ -42,11 +44,15 @@ class BotDatabase {
 			totalMessages: 		{
 				type: 			Sequelize.INTEGER,
 				defaultValue: 	0
+			},
+			points: 			{
+				type: 			Sequelize.FLOAT(100, 2),
+				defaultValue: 	0
 			}
 		});
 
 		// Define member addons
-		this.MemberAddons 		= this.database.define("memberAddon", {
+		this.MemberAddons 		= this.sequelize.define("memberAddon", {
 			member: 			{
 				type: 			Sequelize.INTEGER,
 				references: 	{
@@ -59,7 +65,7 @@ class BotDatabase {
 		});
 
 		// Define bot configuration
-		this.Configs 			= this.database.define("config", {
+		this.Configs 			= this.sequelize.define("config", {
 			email: 				{
 				type: 			Sequelize.STRING(325),
 				validate: 		{
@@ -98,7 +104,9 @@ class BotDatabase {
 	 * @return {Promise}
 	 */
 	start() {
-		return this.database.sync();
+		return this.sequelize.sync().then(() => {
+			return this.resetMembers();
+		});
 	}
 
 	/**

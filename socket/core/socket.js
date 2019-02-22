@@ -252,25 +252,25 @@ class BotSocket extends BotPackets {
 			this.debug("error", err);
 		});
 
-			// On connection close
-			this.on("close", function() {
-				this.debug(colors.red("disconnected"));
+		// On connection close
+		this.on("close", function() {
+			this.debug(colors.red("disconnected"));
 
-				// Clear ping timer
-				clearInterval(this.pingTimer);
+			// Clear ping timer
+			clearInterval(this.pingTimer);
 
-				this.emit("disconnected");
-			});
+			this.emit("disconnected");
+		});
 
-			// On connection open
-			this.on("open", function() {
-				this.debug(colors.green("connected to " + this.server));
+		// On connection open
+		this.on("open", function() {
+			this.debug(colors.green("connected to " + this.server));
 
-				// Set websocket binary type to array buffer
-				this.binaryType 					= "arraybuffer";
+			// Set websocket binary type to array buffer
+			this.binaryType 					= "arraybuffer";
 
-				this.emit("connected");
-			});
+			this.emit("connected");
+		});
 
 		// On connection message
 		this.on("message", function(data) {

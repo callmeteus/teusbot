@@ -43,7 +43,9 @@ module.exports 							= function() {
 				})
 				.catch((e) => {
 					console.error("[db] addon error", e);
-					processor.sendMessage("Internal error");
+					
+					// Send an internal error message
+					processor.sendMessage(this.getLangMessage("INTERNAL_ERROR"));
 				});
 			break;
 
@@ -80,20 +82,29 @@ module.exports 							= function() {
 				const amount 			= processor.arguments[0] || 10;
 
 				// Get members by index and that have sent one message
-				this.database.MemberAddons.findAll({
+				this.database.Members.findAll({
 					where: 				{
-						addon: 			index
+						messages: 		{
+							$gt: 		1
+						}
 					},
-					attributes: 		["value"],
+					include: 			{
+						as: 			"addons",
+						model:  		this.database.MemberAddons,
+						where: 			{
+							addon: 		index
+						},
+						required: 		true
+					},
 					limit: 				amount,
 					order: 				this.database.Sequelize.fn("RANDOM")
 				})
-				.then((members) => {				
+				.then((members) => {
 					if (members.length) {
 						processor.sendMessage(processor.getMessage(this.getLangMessage("ADDON_LIST"), {
 							addon: 	{
 								index: 	index,
-								value: 	members.map((member) => member.value).join(", ")
+								value: 	members.map((member) => member.addons[0].dataValues.value).join(", ")
 							}
 						}));
 					} else {
@@ -101,6 +112,12 @@ module.exports 							= function() {
 							addon: 		{ index }
 						}));
 					}
+				})
+				.catch((e) => {
+					console.error("[db] addon error", e);
+					
+					// Send an internal error message
+					processor.sendMessage(this.getLangMessage("INTERNAL_ERROR"));
 				});
 			break;
 		}

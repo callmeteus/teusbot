@@ -77,22 +77,26 @@
 
 	let template 				= null;
 
-	function app_queue_process() {
+	function appProcessQueue() {
 		let notification 		= app.queue.shift();
 
-		app_notificate(notification, function() {
+		appNotificate(notification, function() {
 			if (app.queue.length) {
-				app_queue_process();
+				appProcessQueue();
 			}
 		});
 	}
 
-	function app_notificate_prepare($element, callback) {
+	function appPrepareNotification($element, callback) {
 		const $preload 			= $element.find("img, audio");
 		const count 			= $preload.length;
 
 		let actual 				= 0;
 		let cancelled 			= false;
+
+		if ($preload.length === 0) {
+			callback();
+		}
 
 		// Preloader images
 		$preload.each(function() {
@@ -128,7 +132,7 @@
 	 * @param  {Object} data Notification data
 	 * @returns {Boolean} Success
 	 */
-	function app_notificate(data, callback) {
+	function appNotificate(data, callback) {
 		// Check if template is loaded
 		if (template === null) {
 			return false;
@@ -138,7 +142,7 @@
 		const $element 			= $(content);
 
 		// Prepare element
-		app_notificate_prepare($element, () => {
+		appPrepareNotification($element, () => {
 			$element.prependTo($parent);
 
 			let fDuration 		= duration;
@@ -203,7 +207,7 @@
 		// Check if test
 		if (app.test) {
 			// Create a test notification
-			app_notificate(app.testData);
+			appNotificate(app.testData);
 		}
 
 		// Add event listener to module
@@ -211,13 +215,13 @@
 			// Check if is queue
 			if (!app.isQueue) {
 				// Show notification imediately
-				app_notificate(data);
+				appNotificate(data);
 			} else {
 				// Add notificationt to queue
 				app.queue.push(data);
 
 				if (app.queue.length === 1) {
-					app_queue_process();
+					appProcessQueue();
 				}
 			}
 		});
