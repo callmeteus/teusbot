@@ -189,7 +189,7 @@ class BotSocket extends BotPackets {
 	wrapper(data) {
 		return {
 			Buff: 								data
-		}
+		};
 	}
 
 	/**
@@ -204,7 +204,7 @@ class BotSocket extends BotPackets {
 		packet.CountryCode 						= "cn";
 		packet.RandomEncryKey 					= {
 			Buff: 								BotSocket.getRandomString(4)
-		}
+		};
 
 		return packet;
 	}

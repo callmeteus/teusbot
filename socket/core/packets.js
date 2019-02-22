@@ -18,7 +18,7 @@ class BotPackets extends WebSocket {
 		return true;
 	}
 
-	handleStudioConfig(response) {
+	handleStudioConfig(response, force) {
 		const giftList 				= {};
 
 		response.LiveGiftConf.GiftList.forEach(function(gift) {
@@ -36,6 +36,22 @@ class BotPackets extends WebSocket {
 		});
 
 		this.config.giftList 		= giftList;
+
+		if (!force) {
+			this.client.database.Configs.upsert({
+				channel: 			this.config.channel,
+				key: 				"studioConfig",
+				value: 				JSON.stringify(response)
+			}, {
+				where: 				{
+					channel: 		this.config.channel,
+					key: 			"studioConfig"
+				}
+			})
+			.catch((err) => {
+				console.error("[db] error upserting channel studio config", err);
+			});
+		}
 
 		return this.emit("giftList", giftList);
 	}

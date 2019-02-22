@@ -60,6 +60,7 @@ module.exports 						= function(io) {
 
 			data.commands 			= this.commands;
 			data.bot 				= this.auth.getData();
+			data.timers 			= this.timers;
 
 			socket.emit("data", data);
 		});

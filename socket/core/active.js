@@ -3,7 +3,6 @@ const BotSocket 						= require("./socket");
 class BotActiveSocket extends BotSocket {
 	constructor(url, type, client) {
 		super(url, type, client);
-
 		this.giftList 					= {};
 	}
 
@@ -35,9 +34,16 @@ class BotActiveSocket extends BotSocket {
 
 		this.on("bot.login", (data) => {
 			if (data.success === true && this.type === "active") {
-				this.client.sockets.active.getStudioConfig();
-				this.client.sockets.active.getHistoryContribution();
-				this.client.sockets.active.getWatchLiveRewardList();
+				this.getHistoryContribution();
+				this.getWatchLiveRewardList();
+
+				// Check if configuration has studio configuration
+				if (this.client.config.studioConfig) {
+					// Parse and handle it
+					this.handleStudioConfig(JSON.parse(this.client.config.studioConfig), true);
+				} else {
+					this.getStudioConfig();
+				}
 			}
 
 			this.doCyclePing();
@@ -49,7 +55,8 @@ class BotActiveSocket extends BotSocket {
 	 */
 	getStudioConfig() {
 		const seq 						= this.seqno();
-			const data 					= {
+
+		const data 						= {
 			ConfigureType: 				287
 		};
 

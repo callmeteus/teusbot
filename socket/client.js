@@ -27,7 +27,10 @@ class BotClient extends EventEmitter {
 		this.database 						= new BotDatabase(BotActiveSocket.getRandomString(16));
 
 		// Commands handler
-		this.commands 						= {};
+		this.commands 						= [];
+
+		// Timers handlers
+		this.timers 						= [];
 	}
 
 	init() {
@@ -92,7 +95,7 @@ class BotClient extends EventEmitter {
 			messages: 						0,
 			charm: 							0,
 			isMod: 							true
-		}
+		};
 	}
 
 	start() {
@@ -135,14 +138,30 @@ class BotClient extends EventEmitter {
 	}
 
 	/**
-	 * Register a command
-	 * @param  {String} command 	Command without the "!"
+	 * Registers a command
 	 * @param  {Object} data    	Command data
+	 * @return {Number}
+	 */
+	registerCommand(data) {
+		return this.commands.push({
+			name: 							data.name ? data.name.toLowerCase() : null,
+			type: 							data.type ? data.type : "unknown",
+			content: 						data.content ? data.content : null
+		});
+	}
+
+	/**
+	 * Registers a timer
+	 * @param  {Object} data 		Timer data
 	 * @return {Object}
 	 */
-	registerCommand(command, data) {
-		this.commands[command] 		= data;
-		return this.commands[command];
+	registerTimer(data) {
+		return this.timers.push({
+			name: 							data.name ? data.name : null,
+			type: 							data.type ? data.type : "invalid",
+			content: 						data.content ? data.content : null,
+			interval: 						data.interval ? data.interval : Number.MAX_SAFE_INTEGER
+		});
 	}
 
 	/**
@@ -151,16 +170,22 @@ class BotClient extends EventEmitter {
 	 * @return {Boolean}
 	 */
 	processCommand(processor) {
-		// Check if command exists
-		if (this.commands[processor.command] !== undefined) {
-			const handler 		= this.commands[processor.command];
+		// Get all available command handlers
+		const handlers 						= this.commands.filter((cmd) => cmd.name === processor.command);
 
+		// Check if command exists
+		if (handlers.length === 0) {
+			return false;
+		}
+
+		// Iterate over all handlers
+		handlers.forEach((handler) => {
 			// Check if it's a text command
 			if (handler.type === "text") {
-				let txt 		= handler.content;
+				let txt 					= handler.content;
 
 				// Convert text into chat message
-				txt 			= processor.getMessage(txt);
+				txt 						= processor.getMessage(txt);
 
 				// Send the message
 				processor.sendMessage(txt);
@@ -168,22 +193,20 @@ class BotClient extends EventEmitter {
 			// Check if it's an alias command
 			if (handler.type === "alias") {
 				// Separate command from arguments
-				const args 		= handler.content.split(" ");
-				const cmd 		= args.shift().replace("!", "");
+				const args 					= handler.content.split(" ");
+				const cmd 					= args.shift().replace("!", "");
 
-				const command 	= this.createCommand(cmd, args, this.sockets.passive, processor.sender);
+				const command 				= this.createCommand(cmd, args, this.sockets.passive, processor.sender);
 
 				// Emit a new command as alias
 				this.emit("chat.command", command);
 			} else {
 				console.error("[bot] unknown command type '" + handler.type + "' for command", processor.command);
 			}
-
-			return true;
-		}
+		});
 
 		return false;
-	};
+	}
 
 	/**
 	 * Process data message
@@ -193,6 +216,9 @@ class BotClient extends EventEmitter {
 	 * @return {Boolean}
 	 */
 	processDataMessage(message, user, data) {
+		// Instantiate channel data
+		const channel 						= this.auth.getData().data.user;
+
 		switch(message.MsgType) {
 			// Unhandled action
 			default:
@@ -201,34 +227,28 @@ class BotClient extends EventEmitter {
 
 			// Member quit?
 			case 20003:
-				// Instantiate channel data
-				const channel 			= this.auth.getData().data.user;
-
 				// Update current viewers and views
-				channel.viewers 		= data.RealCount;
-				channel.views 			= data.TotalViewCount;
+				channel.viewers 			= data.RealCount;
+				channel.views 				= data.TotalViewCount;
 			break;
 
 			// Member join
 			case 20002:
-				// Instantiate channel data
-				const channel 			= this.auth.getData().data.user;
-
 				// Update current viewers and views
-				channel.viewers 		= data.RealCount;
-				channel.views 			= data.TotalViewCount;
+				channel.viewers 			= data.RealCount;
+				channel.views 				= data.TotalViewCount;
 
 				// Emit chat message
 				this.emit("chat.message", {
-					sender: 			user,
-					message: 			this.getMessage(this.getLangMessage("CHAT_JOIN"), {
-						sender: 		user
+					sender: 				user,
+					message: 				this.getMessage(this.getLangMessage("CHAT_JOIN"), {
+						sender: 			user
 					})
 				});
 
 				// Emit chat join
 				this.emit("chat.join", {
-					sender: 			user
+					sender: 				user
 				});
 			break;
 
@@ -236,68 +256,68 @@ class BotClient extends EventEmitter {
 			case 4:
 				// Increase member charm and total charm amount
 				this.database.Members.increment(["charm", "totalCharm"], {
-					where: 				{
-						id: 			user.id
+					where: 					{
+						id: 				user.id
 					}
 				});
 
 				// Save total charm count
-				this.charmAmount 		= data.RecvUinCharm;
+				this.charmAmount 			= data.RecvUinCharm;
 
 				// Emit chat message
 				this.emit("chat.message", {
-					sender: 			user,
-					message: 			this.getMessage(this.getLangMessage("CHAT_CHARM"), {
-						sender: 		user,
-						charm: 			{
-							amount: 	data.CharmCount
+					sender: 				user,
+					message: 				this.getMessage(this.getLangMessage("CHAT_CHARM"), {
+						sender: 			user,
+						charm: 				{
+							amount: 		data.CharmCount
 						}
 					})
 				});
 
 				// Emit charm amount
 				this.emit("chat.charm", {
-					sender: 			user,
-					amount: 			data.CharmCount,
-					total: 				data.RecvUinCharm
+					sender: 				user,
+					amount: 				data.CharmCount,
+					total: 					data.RecvUinCharm
 				});
 			break;
 
 			// Gift (emote) 
 			case 20015:
 				// Prepare emote data
-				const emote 			= {
-					id: 				data.GiftId,
-					amount: 			data.Nums,
-					cost: 				data.SendEventCost,
-					emote: 				this.config.giftList && this.config.giftList[data.GiftId]
+				const emote 				= {
+					id: 					data.GiftId,
+					amount: 				data.Nums,
+					cost: 					data.SendEventCost,
+					emote: 					this.config.giftList && this.config.giftList[data.GiftId]
 				};
 
 				// Process emote message
-				const emoteMessage 		= this.getMessage(this.getLangMessage("CHAT_EMOTE"), {
-					sender: 			user,
-					emote: 				emote
+				const emoteMessage 			= this.getMessage(this.getLangMessage("CHAT_EMOTE"), {
+					sender: 				user,
+					emote: 					emote
 				});
 
 				// Emit chat message
 				this.emit("chat.message", {
-					sender: 			user,
-					message: 			emoteMessage
+					sender: 				user,
+					message: 				emoteMessage
 				});
 
 				// Emit emote sent
 				this.emit("chat.emote", {
-					sender: 			user,
-					emote: 				emote
+					sender: 				user,
+					emote: 					emote
 				});
 
 				// Create a new donation at streamlabs
 				this.streamlabs.addDonation({
-					name: 				user.nickname,
-					identifier: 		"streamcraft#" + user.id,
-					amount: 			emote.cost / 100,
-					currency: 			"USD",
-					message: 			emoteMessage
+					name: 					user.nickname,
+					identifier: 			"streamcraft#" + user.id,
+					amount: 				emote.cost / 100,
+					currency: 				"USD",
+					message: 				emoteMessage
 				});
 			break;
 
@@ -305,15 +325,15 @@ class BotClient extends EventEmitter {
 			case 10005:
 				// Emit chat message
 				this.emit("chat.message", {
-					sender: 			user,
-					message: 			this.getMessage(this.getLangMessage("CHAT_FOLLOW"), {
-						sender: 		user
+					sender: 				user,
+					message: 				this.getMessage(this.getLangMessage("CHAT_FOLLOW"), {
+						sender: 			user
 					})
 				});
 
 				// Emit emote sent
 				this.emit("chat.follow", {
-					sender: 			user
+					sender: 				user
 				});
 			break;
 		}
@@ -332,13 +352,23 @@ class BotClient extends EventEmitter {
 		url									= url || this.auth.getData().ws[type];
 
 		const socket 						= new BotActiveSocket(url, type, this);
-
 		this.sockets[type] 					= socket;
 
 		// On socket error, reconnect
 		socket.on("error", () => {
 			if (retry === 3) {
 				console.error("[bot] giving up. Impossible to reconnect to", type, "server!");
+
+				// Check if active server failed
+				if (type === "active") {
+					// Pass authority to passive server
+					// Maybe this works
+					this.sockets.active 	= this.sockets.passive;
+					this.sockets.active.getStudioConfig();
+
+					console.info("[bot] active authority is now with passive socket");
+				}
+
 				return false;
 			}
 

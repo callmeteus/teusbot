@@ -23,7 +23,7 @@ const socket 				= io({
 		$.get("/inc/" + url + ".ejs", (tpl) => {
 			appContainer.html(ejs.render(tpl, { data: appData }));
 		});
-	}
+	};
 
 	/**
 	 * -----------------------------------------------------------------
@@ -47,20 +47,16 @@ const socket 				= io({
 		}
 	});
 
-	/**
-	 * -----------------------------------------------------------------
-	 * Initialize
-	 * -----------------------------------------------------------------
-	 */
+	socket.on("data", (data) => {
+		appData 			= data;
+		renderTemplate("main");
+	});
 
-	if (appToken !== null) {
-		socket.once("data", (data) => {
-			appData 		= data;
-			renderTemplate("main");
-		});
-
-		socket.emit("auth", appToken);
-	} else {
-		renderTemplate("login");
-	}
+	socket.on("connect", () => {
+		if (appToken !== null) {
+			socket.emit("auth", appToken);
+		} else {
+			renderTemplate("login");
+		}
+	});
 })();

@@ -66,25 +66,14 @@ class BotDatabase {
 
 		// Define bot configuration
 		this.Configs 			= this.sequelize.define("config", {
-			email: 				{
-				type: 			Sequelize.STRING(325),
-				validate: 		{
-					isEmail: 	true
-				}
-			},
-			password: 			Sequelize.STRING(32),
 			channel: 			Sequelize.INTEGER,
-			canReply: 			{
-				type: 			Sequelize.BOOLEAN,
-				defaultValue: 	true
-			},
-			deviceId: 			Sequelize.STRING(16),
-			addons: 			Sequelize.JSON,
-			token: 				Sequelize.STRING(32),
-			slId: 				Sequelize.STRING,
-			slToken: 			Sequelize.STRING,
-			slAccessToken: 		Sequelize.STRING
+			key: 				Sequelize.STRING(325),
+			value: 				Sequelize.STRING(325)
+		}, {
+			timestamps: 		false
 		});
+
+		this.Configs.removeAttribute("id");
 
 		this.MemberAddons.belongsTo(this.Members, {
 			as: 				"memberAddon",
@@ -115,9 +104,18 @@ class BotDatabase {
 	 */
 	getConfig() {
 		return new Promise((resolve, reject) => {
-			this.Configs.findOne()
-			.then((config) => {
-				resolve(JSON.parse(JSON.stringify(config)));
+			this.Configs.findAll()
+			.then((data) => {
+				const config 		= {};
+
+				data.forEach((f) => {
+					config[f.key]	= f.value;
+				});
+
+				config.addons 		= config.addons.split(",");
+				config.channel 		= data[0].channel;
+
+				resolve(config);
 			})
 			.catch(reject);
 		});

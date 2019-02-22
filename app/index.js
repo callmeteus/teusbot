@@ -43,7 +43,7 @@ BotClient.on("chat.message", function(data) {
  * -----------------------------------------------------------------
  */
 
-function app_startup() {
+function doStartup() {
 	// Static WWW folder
 	app.use(express.static("./www/"));
 
@@ -75,9 +75,18 @@ function app_startup() {
 const BotCommands 			= require.main.require("../data/commands.json");
 
 // Iterate over commands
-Object.keys(BotCommands).forEach((command) => {
+BotCommands.forEach((command) => {
 	// Register command
-	BotClient.registerCommand(command, BotCommands[command]);
+	BotClient.registerCommand(command);
+});
+
+// Load and handler custom commands
+const BotTimers 			= require.main.require("../data/timers.json");
+
+// Iterate over timers
+BotTimers.forEach((timer) => {
+	// Register timer
+	BotClient.registerCommand(timer);
 });
 
 // Load all modules
@@ -100,7 +109,7 @@ glob(path.join(__dirname, "modules", "**/*.js"), function(err, files) {
 
 	console.info("[bot]", files.length, "modules loaded");
 
-	app_startup();
+	doStartup();
 });
 
 /**
