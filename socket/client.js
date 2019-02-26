@@ -1,21 +1,36 @@
-const fs 									= require("fs");
 const EventEmitter 							= require("events");
+const m3u8Parser 							= require("m3u8-parser");
 
-const BotAuthenticator						= require("./core/auth");
 const BotCommand 							= require("./core/command");
-const BotDatabase 							= require("./core/database");
 const BotActiveSocket 						= require("./core/active");
-const BotStreamlabs 						= require("./core/streamlabs");
 
 class BotClient extends EventEmitter {
-	constructor(socket) {
+	constructor(app) {
 		super();
 
-		// Save socket instance
-		this.socket 		 				= socket;
+		this.isDebug 						= true;
 
-		// Start charm amount
-		this.charmAmount 					= 0;
+		// Save socket instance
+		this.socket 		 				= app.socket;
+
+		// Save database instance
+		this.database 						= app.database;
+
+		// Save auth instance
+		this.auth 							= app.auth;
+
+		// Save Streamlabs instance
+		this.streamlabs 					= app.streamlabs;
+
+		// Stream data
+		this.stream 						= {
+			// Stream status
+			online: 						false,
+			// Stream start date
+			started: 						new Date(),
+			// Stream title
+			title: 							null
+		};
 
 		// Socket handler
 		this.sockets 						= {};
@@ -23,44 +38,14 @@ class BotClient extends EventEmitter {
 		// Config handler
 		this.config 						= {};
 
-		// Save database instance
-		this.database 						= new BotDatabase(BotActiveSocket.getRandomString(16));
-
 		// Commands handler
 		this.commands 						= [];
 
 		// Timers handlers
 		this.timers 						= [];
-	}
 
-	init() {
-		return new Promise((resolve, reject) => {
-			// Startup the database
-			this.database.start().then(() => {
-				// Get bot config
-				return this.database.getConfig().then((config) => {
-					// Save config
-					this.config 			= config;
-
-					// Create a new bot authentication client
-					this.auth 				= new BotAuthenticator(this.config);
-
-					const slConfig 			= {
-						id: 				process.env.STREAMLABS_ID || this.config.slId,
-						secret: 			process.env.STREAMLABS_SECRET || this.config.slToken,
-						url: 				process.env.STREAMLABS_SECRET ? "https://teus.herokuapp.com" : "http://127.0.0.1:3200/streamlabs",
-						scopes: 			"donations.create alerts.create"
-					};
-
-					// Create a new streamlabs instance
-					this.streamlabs 		= new BotStreamlabs(slConfig.id, slConfig.secret, slConfig.url, slConfig.scopes, "", this.config.slAccessToken);
-
-					// Success
-					resolve();
-				});
-			})
-			.catch(reject);
-		});
+		// Data handler
+		this.data 							= {};
 	}
 
 	emit(type, ...args) {
@@ -79,49 +64,68 @@ class BotClient extends EventEmitter {
 		}
 	}
 
-	getCharmAmount() {
-		return this.charmAmount;
-	}
-
 	getMessage(message, data) {
 		return new Function(...Object.keys(data), "return `" + message + "`;")(...Object.values(data));
 	}
 
 	getBotMember() {
 		return {
-			id: 							this.auth.getData().user.id,
-			nickname:						this.auth.getData().user.nickname,
+			id: 							this.data.user.id,
+			nickname:						this.data.user.nickname,
 			level: 							1,
 			messages: 						0,
-			charm: 							0,
 			isMod: 							true
 		};
 	}
 
 	start() {
-		if (this.config === null) {
-			return false;
-		}
-
-		// Authenticate the bot with given configuration
-		this.auth.login(this.config.email, this.config.password, (err, result) => {
-			if (err) {
-				throw new Error(err);
-			}
-
-			this.emit("bot.auth", result, err);
-
-			// Check if any error happened
-			if (!err) {
+		return new Promise((resolve, reject) => {
+			// Authenticate the bot with given configuration
+			return this.auth.login(this.config.email, this.config.password).then((result) => {
 				// Get bot user info
-				this.auth.getInfo(() => {
+				this.auth.getInfo(this.config.channel).then((data) => {
+					this.data 				= data;
+
 					this.createClient("passive");
 					this.createClient("active");
 
-					this.emit("bot.data", this.auth.getData());
+					const authData 			= this.data;
+
+					this.emit("bot.data", authData);
 					this.emit("bot.ready");
+
+					// Get stream basic data
+					this.stream.online 		= (authData.data.streams.LiveStatus === 1);
+					this.stream.title 		= authData.data.streams.LiveTitle;
+
+					// Check if stream is online
+					if (!authData.data.streams.RecvRtmpResolutionList.length) {
+						return resolve();
+					}
+
+					// Get M3U8 file to parse stream start time
+					this.auth.request({
+						url: 				authData.data.streams.RecvRtmpResolutionList[0].ResolutionHls,
+						method: 			"GET",
+						json: 				false
+					}, function(err, res, body) {
+						if (err) {
+							return reject(new Error("Error retrieving m3u8 stream information file: " + err));
+						}
+
+						const parser 		= new m3u8Parser();
+						parser.push(body);
+						parser.end();
+
+						// Calculate stream start date
+						this.stream.started = new Date() - (parser.manifest.mediaSequence * parser.manifest.targetDuration);
+						this.stream.online 	= true;
+
+						resolve();
+					});
 				});
-			}
+			})
+			.catch(reject);
 		});
 	}
 
@@ -143,6 +147,12 @@ class BotClient extends EventEmitter {
 	 * @return {Number}
 	 */
 	registerCommand(data) {
+		// Check if is an addon
+		if (data.type === "addon") {
+			// Instantiate it
+			return data.content.call(this);;
+		}
+
 		return this.commands.push({
 			name: 							data.name ? data.name.toLowerCase() : null,
 			type: 							data.type ? data.type : "unknown",
@@ -160,7 +170,47 @@ class BotClient extends EventEmitter {
 			name: 							data.name ? data.name : null,
 			type: 							data.type ? data.type : "invalid",
 			content: 						data.content ? data.content : null,
-			interval: 						data.interval ? data.interval : Number.MAX_SAFE_INTEGER
+			interval: 						data.interval ? data.interval * 1000 : Number.MAX_SAFE_INTEGER,
+			sequential: 					data.sequential || false
+		});
+	}
+
+	/**
+	 * Starts all bot timers
+	 */
+	startTimers() {
+		// Iterate over all timers
+		this.timers.forEach((timer) => {
+			// Check if timer type is text
+			if (timer.type === "text") {
+				// Create a new instance to send 'timer.content' every 'timer.interval'
+				timer.instance 				= setInterval(() => this.sockets.passive.sendMessage(timer.content), timer.interval);
+			} else
+			// Check if timer type is command
+			if (timer.type === "command") {
+				// Split timer content
+				let command 				= timer.content.split(" ");
+
+				// Create the command handler
+				command 					= this.createCommand(command.shift().replace("!", ""), command, this.sockets.passive, this.getBotMember());
+
+				// Create a new instance to run 'command' every 'timer.interval'
+				timer.instance 				= setInterval(() => this.processCommand(command), timer.interval);
+			}
+		});
+	}
+
+	/**
+	 * Stops all bot timers
+	 */
+	stopTimers() {
+		// Iterate over all timers
+		this.timers.forEach((timer) => {
+			// Check if timer is active
+			if (timer.instance) {
+				// Clear timer interval
+				clearInterval(timer.instance);
+			}
 		});
 	}
 
@@ -170,6 +220,10 @@ class BotClient extends EventEmitter {
 	 * @return {Boolean}
 	 */
 	processCommand(processor) {
+		if (processor.command === "commands" || processor.command === "comandos") {
+			return processor.sendMessage(this.commands.filter((cmd) => cmd !== null).map((cmd) => "!" + cmd.name).join(", "));
+		}
+
 		// Get all available command handlers
 		const handlers 						= this.commands.filter((cmd) => cmd.name === processor.command);
 
@@ -182,13 +236,10 @@ class BotClient extends EventEmitter {
 		handlers.forEach((handler) => {
 			// Check if it's a text command
 			if (handler.type === "text") {
-				let txt 					= handler.content;
-
-				// Convert text into chat message
-				txt 						= processor.getMessage(txt);
-
 				// Send the message
-				processor.sendMessage(txt);
+				processor.sendMessage(
+					processor.getMessage(handler.content)
+				);
 			} else 
 			// Check if it's an alias command
 			if (handler.type === "alias") {
@@ -196,12 +247,20 @@ class BotClient extends EventEmitter {
 				const args 					= handler.content.split(" ");
 				const cmd 					= args.shift().replace("!", "");
 
+				// Add current command arguments
+				processor.arguments.forEach((arg) => args.push(arg));
+
+				// Create the processor
 				const command 				= this.createCommand(cmd, args, this.sockets.passive, processor.sender);
 
 				// Emit a new command as alias
 				this.emit("chat.command", command);
+			} else
+			// Check if it's a module command
+			if (handler.type === "module") {
+				handler.content.call(this, processor);
 			} else {
-				console.error("[bot] unknown command type '" + handler.type + "' for command", processor.command);
+				console.error("[bot] unknown command type", handler.type, "for command", processor.command);
 			}
 		});
 
@@ -217,7 +276,7 @@ class BotClient extends EventEmitter {
 	 */
 	processDataMessage(message, user, data) {
 		// Instantiate channel data
-		const channel 						= this.auth.getData().data.user;
+		const channel 						= this.data.data.user;
 
 		switch(message.MsgType) {
 			// Unhandled action
@@ -225,7 +284,30 @@ class BotClient extends EventEmitter {
 				console.log("[bot] unhandled data message", message.MsgType, data);
 			break;
 
-			// Member quit?
+			// Mute
+			// TODO: handle this packet properly
+			case 20005:
+				const from 					= data.AdminUin;
+				const to 					= data.GagUin;
+				const length 				= data.GagTimeLne;
+				const expires 				= data.GagExpire;
+			break;
+
+			// Authority change
+			// TODO: handle this packet properly
+			case 20019:
+				const level 				= data.Access;
+				const admin					= data.AdminUin;
+			break;
+
+			// Stream status?
+			case 20000:
+				this.stream.online 			= (data.Status === 1);
+				this.stream.title 			= data.Title;
+				this.stream.started 		= new Date();
+			break;
+
+			// Member quit
 			case 20003:
 				// Update current viewers and views
 				channel.viewers 			= data.RealCount;
@@ -253,34 +335,9 @@ class BotClient extends EventEmitter {
 			break;
 
 			// Like (charm) sent
+			// Just ignore it
 			case 4:
-				// Increase member charm and total charm amount
-				this.database.Members.increment(["charm", "totalCharm"], {
-					where: 					{
-						id: 				user.id
-					}
-				});
 
-				// Save total charm count
-				this.charmAmount 			= data.RecvUinCharm;
-
-				// Emit chat message
-				this.emit("chat.message", {
-					sender: 				user,
-					message: 				this.getMessage(this.getLangMessage("CHAT_CHARM"), {
-						sender: 			user,
-						charm: 				{
-							amount: 		data.CharmCount
-						}
-					})
-				});
-
-				// Emit charm amount
-				this.emit("chat.charm", {
-					sender: 				user,
-					amount: 				data.CharmCount,
-					total: 					data.RecvUinCharm
-				});
 			break;
 
 			// Gift (emote) 
@@ -311,13 +368,13 @@ class BotClient extends EventEmitter {
 					emote: 					emote
 				});
 
-				// Create a new donation at streamlabs
+				// Create a new donation at StreamLabs
 				this.streamlabs.addDonation({
 					name: 					user.nickname,
 					identifier: 			"streamcraft#" + user.id,
 					amount: 				emote.cost / 100,
 					currency: 				"USD",
-					message: 				emoteMessage
+					message: 				user.nickname + " " + emoteMessage.replace(/<(?:.|\n)*?>/gm, "")
 				});
 			break;
 
@@ -349,7 +406,7 @@ class BotClient extends EventEmitter {
 	 * @return {WebSocket}			Client WebSocket
 	 */
 	createClient(type, url, retry) {
-		url									= url || this.auth.getData().ws[type];
+		url									= url || this.data.ws[type];
 
 		const socket 						= new BotActiveSocket(url, type, this);
 		this.sockets[type] 					= socket;
@@ -364,7 +421,7 @@ class BotClient extends EventEmitter {
 					// Pass authority to passive server
 					// Maybe this works
 					this.sockets.active 	= this.sockets.passive;
-					this.sockets.active.getStudioConfig();
+					this.sockets.packets.active.getStudioConfig();
 
 					console.info("[bot] active authority is now with passive socket");
 				}
@@ -375,7 +432,10 @@ class BotClient extends EventEmitter {
 			console.info("[bot] trying to reconnect in", socket.ReconSec, "seconds");
 
 			const newUrl 					= url.indexOf("5566") > -1 ? url.replace("5566", "6677") : url.replace("6677", "5566");
-			setTimeout(() => this.createClient(type, newUrl, retry ? retry + 1 : 1), socket.ReconSec++ * 1000);
+
+			setTimeout(() => {
+				this.createClient(type, newUrl, retry ? retry + 1 : 1);
+			}, socket.ReconSec++ * 1000);
 		});
 
 		// On receive gift list
@@ -394,8 +454,7 @@ class BotClient extends EventEmitter {
 			.then((user) => {
 				// Bot has been connected in another place
 				if (message.MsgType === 20008) {
-					this.debug("bot has been connected in another place.");
-
+					socket.debug("bot has been connected in another place.");
 					return this.emit("bot.disconnect", "another_device");
 				}
 
@@ -403,9 +462,7 @@ class BotClient extends EventEmitter {
 				if (text.indexOf("{\n") > -1) {
 					// Parse JSON
 					const data 					= JSON.parse(text);
-
 					socket.debug("type", message.MsgType, "json", data);
-
 					return this.processDataMessage(message, user, data);
 				}
 
@@ -415,31 +472,35 @@ class BotClient extends EventEmitter {
 					message: 					text
 				});
 
-				// Check if it's a command
-				if (text.split(" ")[0][0] === "!") {
-					let args 					= text.split(" ");
-					let command 				= args.shift();
-					let realCommand 			= command.substr(1, command.length - 1);
+				// Check if stream is online
+				// or is debug
+				if (this.stream.online || this.isDebug) {
+					// Check if it's a command
+					if (text.split(" ")[0][0] === "!") {
+						let args 				= text.split(" ");
+						let command 			= args.shift();
+						let realCommand 		= command.substr(1, command.length - 1);
 
-					const processor 			= this.createCommand(realCommand, args, socket, user);
+						const processor 		= this.createCommand(realCommand, args, socket, user);
 
-					// Check if command can be processed
-					if (!this.processCommand(processor)) {
-						// If not, emit the command
-						this.emit("chat.command", processor);
+						// Check if command can be processed
+						if (!this.processCommand(processor)) {
+							// If not, emit the command
+							this.emit("chat.command", processor);
+						}
 					}
+
+					// Increment user messages, total messages and points
+					this.database.Members.increment({
+						messages: 				1,
+						totalMessages: 			1,
+						points: 				this.config.pointsPerMessage || 0.2
+					}, {
+						where: 					{
+							id: 				user.id
+						}
+					});
 				}
-
-				// Increment user messages, total messages and points
-				this.database.Members.increment({
-					messages: 					1,
-					totalMessages: 				1,
-					points: 					0.2
-				}, {
-					where: 						{
-						id: 					user.id
-					}
-				});
 			});
 		});
 

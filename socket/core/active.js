@@ -3,6 +3,7 @@ const BotSocket 						= require("./socket");
 class BotActiveSocket extends BotSocket {
 	constructor(url, type, client) {
 		super(url, type, client);
+
 		this.giftList 					= {};
 	}
 
@@ -15,14 +16,14 @@ class BotActiveSocket extends BotSocket {
 		this.on("connected", function() {
 			this.emit("bot.connected");
 
-			this.signIn(this.client.auth.getData().user.token, this.client.auth.getData().user.uin, this.client.auth.getData().data.user.roomid);
+			this.packets.signIn(this.client.data.user.token, this.client.data.user.uin, this.client.data.data.user.roomid);
 
 			if (this.type === "active") {
 				// Send authentication packet
-				this.reauth();
+				this.packets.reauth();
 			} else {
 				// Send enter packet
-				this.enter();
+				this.packets.enter();
 			}
 		});
 
@@ -33,86 +34,33 @@ class BotActiveSocket extends BotSocket {
 		/* ----------------------------------------------------------------------------- */
 
 		this.on("bot.login", (data) => {
-			if (data.success === true && this.type === "active") {
-				this.getHistoryContribution();
-				this.getWatchLiveRewardList();
+			if (!data.success === true) {
+				return false;
+			}
+
+			// Check if it was active client
+			if (this.type === "active") {
+				this.packets.getHistoryContribution();
+				this.packets.getWatchLiveRewardList();
 
 				// Check if configuration has studio configuration
 				if (this.client.config.studioConfig) {
-					// Parse and handle it
-					this.handleStudioConfig(JSON.parse(this.client.config.studioConfig), true);
+					try {
+						const config 	= JSON.parse(this.client.config.studioConfig);
+						this.handlers.handleStudioConfig(config, true);
+					} catch(e) {
+						this.packets.getStudioConfig();
+					}
 				} else {
-					this.getStudioConfig();
+					this.packets.getStudioConfig();
 				}
+			} else {
+				// Start the timers
+				this.client.startTimers();
 			}
 
 			this.doCyclePing();
 		});
-	}
-
-	/**
-	 * Request studio configuration
-	 */
-	getStudioConfig() {
-		const seq 						= this.seqno();
-
-		const data 						= {
-			ConfigureType: 				287
-		};
-
-		this.sendPacket(300102, this.jsonstr(data, seq), seq);
-	}
-
-	getWatchLiveRewardList(initFlag = 1) {
-		const seq 						= this.seqno();
-
-		const data 						= {
-			RoomId: 					this._sid,
-			InitFlag: 					initFlag
-		};
-
-		this.sendPacket(900083, this.jsonstr(data, seq), seq);
-	}
-
-	getHistoryContribution(offset = 0) {
-		const seq 						= this.seqno();
-
-		const data 						= {
-			RoomId: 					this._sid,
-			Offset: 					offset
-		};
-
-		this.sendPacket(300113, this.jsonstr(data, seq), seq);
-	}
-
-	signIn(token, uin, sid) {
-		this._token 					= token;
-		this._uin 						= uin;
-		this._sid 						= parseInt(sid, 10);
-	}
-
-	reauth() {
-		const seq 						= this.seqno();
-
-		const data 						= {
-			RandomEncryKey: 			this.wrapper(BotSocket.getRandomString(4))
-		};
-
-		this.attaches(data);
-		this.sendPacket(300003, this.jsonstr(data, seq), seq);
-	}
-
-	enter(videoId) {
-		const seq 						= this.seqno();
-
-		this._vid 						= videoId ? parseInt(videoId, 10) : 0;
-
-		const data 						= {
-			StudioId: 					this._sid,
-			VideoId: 					this._vid
-		};
-
-		this.sendPacket(300100, this.jsonstr(data, seq), seq);
 	}
 }
 

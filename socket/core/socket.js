@@ -4,11 +4,13 @@ const jszip 									= require("../jszip");
 const realDebug 								= require("debug")("bot:socket");
 const colors 									= require("colors");
 
-const BotPackets 								= require("./packets");
+const BotHandlers 								= new require("./handlers");
+const BotPackets 								= new require("./packets");
 
+const WebSocket									= require("ws");
 const randomString 								= "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPLKJHGFDSAZXCVBNM";
 
-class BotSocket extends BotPackets {
+class BotSocket extends WebSocket {
 	constructor(url, type, client) {
 		super(url, [], {
 			protocolVersion: 					13,
@@ -22,6 +24,9 @@ class BotSocket extends BotPackets {
 		this.type								= type;
 
 		this.server 							= url.split("/")[2];
+
+		this.packets 							= new BotPackets(this);
+		this.handlers 							= new BotHandlers(this);
 
 		/**
 		 * Random StreamCraft data
@@ -215,24 +220,24 @@ class BotSocket extends BotPackets {
 	* @param  {Number} seq 	Sequential number
 	* @return {Object}   		New JSON string
 	*/
-		jsonstr(data, seq) {
-			const packet 							= {
-				BaseRequest: 						{
-					SessionKey: 					this.str2byte(this._token, 36),
-					Uin: 							this._uin,
-					DeviceID: 						this.getDeviceId(16),
-					ClientVersion: 					this.ClientVer,
-					DeviceType: 					this.getDeviceType(132),
-					Scene: 							0,
-					Seq: 							seq
-				}
-			};
-
-			for (let r in data) {
-				packet[r] 							= data[r];
+	jsonstr(data, seq) {
+		const packet 							= {
+			BaseRequest: 						{
+				SessionKey: 					this.str2byte(this._token, 36),
+				Uin: 							this._uin,
+				DeviceID: 						this.getDeviceId(16),
+				ClientVersion: 					this.ClientVer,
+				DeviceType: 					this.getDeviceType(132),
+				Scene: 							0,
+				Seq: 							seq
 			}
+		};
 
-			return JSON.stringify(packet);
+		for (let r in data) {
+			packet[r] 							= data[r];
+		}
+
+		return JSON.stringify(packet);
 	}
 
 	/**
@@ -314,11 +319,9 @@ class BotSocket extends BotPackets {
 			if (response.cmd === 300104) {
 				response.Len 					= packet.readInt(ByteArray.BIG_ENDIAN);
 
-					const json						= new ByteArray(packet.raw.slice(packet.index, -1)).readString();
+				const json						= new ByteArray(packet.raw.slice(packet.index, -1)).readString();
 
 				response.Response 				= JSON.parse(json);
-
-				this.debug("chat message", response.Response);
 
 				return this.emit("chat", response.Response);
 			} else
@@ -410,33 +413,40 @@ class BotSocket extends BotPackets {
 			switch(response.cmd) {
 				// Default command
 				default:
-					this.debug(colors.yellow("unhandled packet " + response.cmd), response);
+					this.debug(colors.red("unhandled packet " + response.cmd));
+
+					console.dir(response);
+
+					if (response.Response) {
+						console.dir(response.Response);
+					}
+
 					this.emit("packet.response", response);
 				break;
 
 				// Watch live reward list
 				case 900083:
-					this.handleWatchLiveRewardList(response.Response);
+					this.handlers.handleWatchLiveRewardList(response.Response);
 				break;
 
 				// History contribution
 				case 10300113:
-					this.handleHistoryContribution(response.Response);
+					this.handlers.handleHistoryContribution(response.Response);
 				break;
 
 				// Reauth packet
 				case 10300003:
-					this.handleAuth(response.Response);
+					this.handlers.handleAuth(response.Response);
 				break;
 
 				// Studio enter packet
 				case 10300100:
-					this.handleEnter(response.Response);
+					this.handlers.handleEnter(response.Response);
 				break;
 
 				// Channel config
 				case 10300102:
-					this.handleStudioConfig(response.Response);
+					this.handlers.handleStudioConfig(response.Response);
 				break;
 			}
 		});
@@ -516,17 +526,13 @@ class BotSocket extends BotPackets {
 		this.send(packet.buffer);
 
 		this.debug(colors.green(">>"), packetId);
-
-		this.emit("packet.sent", {
-			id: 					packetId,
-			json: 					packetJson,
-			data: 					packetSeq
-		});
 	}
 
 	sendMessage(message, emoji, emojiAmount) {
-		// Check if bot can reply
-		if (!this.client.config.canReply) {
+		// Check if bot can reply or
+		// if the stream is online
+		// and it's not a debug
+		if ((!this.client.config.canReply || !this.client.stream.online) && !this.client.isDebug) {
 			return false;
 		}
 

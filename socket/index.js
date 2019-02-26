@@ -5,7 +5,7 @@ const appRoot 				= path.dirname(require.main.filename);
 
 // Create bot data files if they doesn't exists
 !fs.existsSync(path.join(appRoot, "../", "data", "language.json")) && fs.writeFileSync(path.join(appRoot, "../", "data", "language.json"), "{}");
-!fs.existsSync(path.join(appRoot, "../", "data", "commands.json")) && fs.writeFileSync(path.join(appRoot, "../", "data", "commands.json"), "{}");
+!fs.existsSync(path.join(appRoot, "../", "data", "timers.json")) && fs.writeFileSync(path.join(appRoot, "../", "data", "timers.json"), "[]");
 
 const BotClient 			= require("./client");
 const BotLanguage 			= require.main.require("../data/language.json");

@@ -5,18 +5,22 @@ const path 						= require("path");
 const appRoot 					= path.dirname(require.main.filename);
 
 class BotDatabase {
-	constructor(deviceId) {
+	constructor() {
+		// Instantiate sequelize
 		this.Sequelize 			= Sequelize;
 
-		this.sequelize 			= new Sequelize("db", "root", "root", {
-			dialect: 			"sqlite",
-			storage: 			path.join(appRoot, "/../", "data", "db.sqlite")
+		// Create the sequelize instance
+		this.sequelize 			= new Sequelize(process.env.JAWSDB_URL, {
+			dialect: 			"mysql",
+			dialecOptions: 		{
+				charset: 		"utf8mb4"
+			}
 		});
 
 		// Define members
 		this.Members 			= this.sequelize.define("member", {
 			id: 				{
-				type: 			Sequelize.INTEGER,
+				type: 			Sequelize.INTEGER.UNSIGNED,
 				primaryKey: 	true
 			},
 			nickname: 			{
@@ -28,33 +32,31 @@ class BotDatabase {
 				type: 			Sequelize.BOOLEAN,
 				defaultValue: 	false
 			},
-			level: 				Sequelize.INTEGER,
-			charm: 				{
-				type: 			Sequelize.INTEGER,
-				defaultValue: 	0
-			},
+			level: 				Sequelize.INTEGER.UNSIGNED,
 			messages: 			{
-				type: 			Sequelize.INTEGER,
-				defaultValue: 	0
-			},
-			totalCharm: 		{
-				type: 			Sequelize.INTEGER,
+				type: 			Sequelize.INTEGER.UNSIGNED,
 				defaultValue: 	0
 			},
 			totalMessages: 		{
-				type: 			Sequelize.INTEGER,
+				type: 			Sequelize.INTEGER.UNSIGNED,
 				defaultValue: 	0
 			},
 			points: 			{
-				type: 			Sequelize.FLOAT(100, 2),
+				type: 			Sequelize.FLOAT(255, 2),
 				defaultValue: 	0
+			},
+			channel: 			{
+				type: 			Sequelize.INTEGER.UNSIGNED,
+				defaultValue: 	null
 			}
+		}, {
+			charset: 			"utf8mb4"
 		});
 
 		// Define member addons
 		this.MemberAddons 		= this.sequelize.define("memberAddon", {
 			member: 			{
-				type: 			Sequelize.INTEGER,
+				type: 			Sequelize.INTEGER.UNSIGNED,
 				references: 	{
 					model: 		this.Members,
 					key: 		"id"
@@ -62,18 +64,44 @@ class BotDatabase {
 			},
 			addon: 				Sequelize.STRING,
 			value: 				Sequelize.STRING,
+			channel: 			{
+				type: 			Sequelize.INTEGER.UNSIGNED,
+				defaultValue: 	null
+			}
+		});
+
+		// Define bot commands
+		this.BotCommands 		= this.sequelize.define("botCommand", {
+			channel: 			{
+				type: 			Sequelize.INTEGER.UNSIGNED,
+				allowNull: 		false
+			},
+			name: 				{
+				type: 			Sequelize.STRING,
+				allowNull: 		false
+			},
+			type: 				{
+				type: 			Sequelize.ENUM("text", "alias", "script"),
+				allowNull: 		false
+			},
+			content: 			{
+				type: 			Sequelize.STRING,
+				allowNull: 		false
+			},
+			active: 			{
+				type: 			Sequelize.BOOLEAN,
+				defaultValue: 	true
+			}
 		});
 
 		// Define bot configuration
 		this.Configs 			= this.sequelize.define("config", {
-			channel: 			Sequelize.INTEGER,
+			channel: 			Sequelize.INTEGER.UNSIGNED,
 			key: 				Sequelize.STRING(325),
 			value: 				Sequelize.STRING(325)
 		}, {
 			timestamps: 		false
 		});
-
-		this.Configs.removeAttribute("id");
 
 		this.MemberAddons.belongsTo(this.Members, {
 			as: 				"memberAddon",
@@ -93,8 +121,27 @@ class BotDatabase {
 	 * @return {Promise}
 	 */
 	start() {
-		return this.sequelize.sync().then(() => {
+		return this.sequelize.sync({
+			alter: 				true
+		}).then(() => {
 			return this.resetMembers();
+		});
+	}
+
+	/**
+	 * Get current bot commands
+	 * @return {Promise}
+	 */
+	getCommands(channel) {
+		return new Promise((resolve, reject) => {
+			this.BotCommands.findAll({
+				where: 				{
+					channel: 		channel
+				},
+				attributes: 		["id", "name", "type", "content", "createdAt", "updatedAt"]
+			})
+			.then(resolve)
+			.catch(reject);
 		});
 	}
 
@@ -102,9 +149,13 @@ class BotDatabase {
 	 * Get current bot configuration
 	 * @return {Promise}
 	 */
-	getConfig() {
+	getConfig(channel) {
 		return new Promise((resolve, reject) => {
-			this.Configs.findAll()
+			this.Configs.findAll({
+				where: 				{
+					channel: 		channel
+				}
+			})
 			.then((data) => {
 				const config 		= {};
 
@@ -112,8 +163,9 @@ class BotDatabase {
 					config[f.key]	= f.value;
 				});
 
-				config.addons 		= config.addons.split(",");
-				config.channel 		= data[0].channel;
+				config.addons 		= config.addons ? config.addons.split(",") : [];
+				config.channel 		= channel;
+				config.canReply 	= config.canReply === "1";
 
 				resolve(config);
 			})
@@ -130,20 +182,12 @@ class BotDatabase {
 		// where messages or charm are greater than zero
 		return this.Members.update({
 			messages: 			0,
-			charm: 				0
 		}, {
 			where: 				{
 				messages: 		{
 					$gt: 		0
 				}
-			},
-			$or: 				[
-				{
-					charm: 		{
-						$gt: 	0
-					}
-				}
-			]
+			}
 		});
 	}
 

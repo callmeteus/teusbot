@@ -1,11 +1,13 @@
-module.exports 									= function() {
-	let voting 									= {};
+let voting 									= {};
 
-	this.on("chat.command", function(processor) {
+module.exports 								= {
+	name: 									"vote",
+	type: 									"module",
+	content: 								function(processor) {
 		switch(processor.command) {
 			case "vote":
 				if (Object.keys(voting).length > 0) {
-					const index 				= processor.arguments[0].toLowerCase();
+					const index 			= processor.arguments[0].toLowerCase();
 
 					// Check if index exists and if
 					// user has voted on it
@@ -18,7 +20,7 @@ module.exports 									= function() {
 
 			case "votestart":
 				if (!processor.sender.isMod) {
-					return false;
+					return processor.noPermission();
 				}
 
 				// Check if have at least 2 arguments
@@ -39,7 +41,7 @@ module.exports 									= function() {
 
 			case "voteend":
 				if (!processor.sender.isMod) {
-					return false;
+					return processor.noPermission();
 				}
 
 				let message 					= "";
@@ -61,5 +63,5 @@ module.exports 									= function() {
 				}));
 			break;
 		}
-	});
+	}
 };

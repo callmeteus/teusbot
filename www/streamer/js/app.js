@@ -1,5 +1,5 @@
-const socket 				= io({
-	transports: 			["websocket"]
+const socket 					= io({
+	transports: 				["websocket"]
 });
 
 (function() {
@@ -9,9 +9,9 @@ const socket 				= io({
 	 * -----------------------------------------------------------------
 	 */
 	
-	const appContainer 		= $("<div/>").appendTo(document.body);
-	let appToken 			= localStorage.getItem("botToken") || null;
-	let appData 			= {};
+	const appContainer 			= $("<div/>").appendTo(document.body);
+	let appToken 				= localStorage.getItem("botToken") || null;
+	let appData 				= {};
 
 	/**
 	 * -----------------------------------------------------------------
@@ -19,9 +19,16 @@ const socket 				= io({
 	 * -----------------------------------------------------------------
 	 */
 
-	window.renderTemplate 	= function(url) {
-		$.get("/inc/" + url + ".ejs", (tpl) => {
+	let currentTpl 				= null;
+	window.renderTemplate 		= function(url) {
+		if (currentTpl === url) {
+			return false;
+		}
+
+		$.get("inc/" + url + ".ejs", (tpl) => {
 			appContainer.html(ejs.render(tpl, { data: appData }));
+
+			currentTpl 			= url;
 		});
 	};
 
@@ -34,7 +41,7 @@ const socket 				= io({
 	$(document).on("click", "a[data-href]", function(e) {
 		e.preventDefault();
 
-		const url 			= $(this).attr("data-href");
+		const url 				= $(this).attr("data-href");
 
 		renderTemplate(url);
 	});
@@ -48,8 +55,14 @@ const socket 				= io({
 	});
 
 	socket.on("data", (data) => {
-		appData 			= data;
-		renderTemplate("main");
+		appData 				= data;
+
+		$.get("https://webapi.streamcraft.com/live/room/anchorinfo?uin=" + data.channel, (botData) => {
+			appData.bot 		= botData.data;
+			appData.commands	= appData.commands || [];
+
+			renderTemplate("main");
+		});
 	});
 
 	socket.on("connect", () => {
@@ -59,4 +72,14 @@ const socket 				= io({
 			renderTemplate("login");
 		}
 	});
+
+	/**
+	 * -----------------------------------------------------------------
+	 * Misc
+	 * -----------------------------------------------------------------
+	 */
+	
+	$(document.body).tooltip({
+		selector: 				"[title]"
+	})
 })();

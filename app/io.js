@@ -6,43 +6,132 @@ module.exports 						= function(io) {
 			// Hash the password
 			data.password 			= md5(data.password);
 
-			// Check if email and password are right
-			if (data.email === this.config.email && data.password === this.config.password) {
+			this.database.Configs.findOne({
+				where: 				{
+					key: 			"email",
+					value: 			data.email
+				},
+				attributes: 		["channel"]
+			})
+			.then((email) => {
+				if (email === null) {
+					return socket.emit("login", {
+						error: 		"Invalid email address"
+					});
+				}
+
+				return this.database.Configs.count({
+					where: 			{
+						channel: 	email.channel,
+						key: 		"password",
+						value: 		data.password
+					}
+				});
+			})
+			.then((count) => {
+				if (count === 0) {
+					return socket.emit("login", {
+						error: 		"The password you've entered is incorrect."
+					});
+				}
+
 				// Generate new token
-				this.config.token 	= md5(+new Date());
+				socket.token 		= md5(+new Date());
 
 				// Update database token
-				this.database.Configs.update({
-					token: 			this.config.token
-				}, {
-					where: 			{
-						id: 		this.config.id
-					}
-				})
-				.spread(() => {
-					socket.emit("login", {
-						success: 	true,
-						token: 		this.config.token
-					});
+				return this.database.Configs.create({
+					key: 			"token",
+					channel: 		email.channel,
+					value: 			socket.token
 				});
-			} else {
+			})
+			.then(() => {
 				socket.emit("login", {
-					success: 		false
+					token: 			socket.token
 				});
-			}
+			})
+			.catch((err) => {
+				socket.emit("login", {
+					error: 			"Internal error"
+				});
+
+				throw err;
+			});
+		});
+
+		socket.on("register", (data) => {
+			// Hash the password
+			data.password 			= md5(data.password);
+
+			// Count users with given email or channels
+			this.database.Configs.count({
+				where: 				[
+					{
+						key: 		"email",
+						value: 		data.email
+					},
+					{
+						channel: 	data.channel
+					}
+				]
+			})
+			.then((count) => {
+				// Check is any user has the
+				// email or channel ID
+				if (count > 0) {
+					return socket.emit("register", {
+						error: 		"Email or channel already exists."	
+					});
+				}
+
+				// Try to authenticate with StreamCraft
+				return this.auth.login(data.email, data.password);
+			})
+			.then(() => {
+				this.database.Configs.bulkCreate([
+					{ key: "email", value: data.email, channel: data.channel },
+					{ key: "password", value: data.password, channel: data.channel },
+					{ key: "active", value: 0, channel: data.channel },
+					{ key: "deviceId", value: Math.random().toString(12).substring(2), channel: data.channel }
+				])
+				.spread(() => {
+					socket.emit("register", {
+						channel: 	data.channel
+					})
+				})
+				.catch((err) => {
+					socket.emit("register", {
+						error: 		"Internal error"
+					});
+
+					throw err;
+				});
+			})
+			.catch((err) => {
+				socket.emit("register", {
+					error: 			err
+				})
+			});
 		});
 
 		socket.on("auth", (token) => {
-			console.info("[bot] authentication", token, this.config.token);
+			this.database.Configs.findOne({
+				where: 				{
+					key: 			"token",
+					value: 			token
+				},
+				attributes: 		["channel"]
+			})
+			.then((channel) => {
+				if (channel !== null) {
+					socket.channel 	= channel.channel;
+					socket.token 	= token;
 
-			if (this.config.token === token) {
-				socket.emit("auth", true);
-				socket.join("bot");
-
-				socket.token 		= token;
-			} else {
-				socket.emit("auth", false);
-			}
+					socket.emit("auth", true);
+				} else {
+					socket.emit("auth", false);
+				}
+			});
 		});
 
 		socket.on("data", () => {
@@ -50,22 +139,65 @@ module.exports 						= function(io) {
 				return false;
 			}
 
-			const data 				= Object.assign({}, this.config);
+			let data 				= {};
 
-			delete data.password;
-			delete data.slId;
-			delete data.slToken;
-			delete data.slAccessToken;
-			delete data.deviceId;
+			this.database.getConfig(socket.channel)
+			.then((config) => {
+				data 				= Object.assign({}, config);
 
-			data.commands 			= this.commands;
-			data.bot 				= this.auth.getData();
-			data.timers 			= this.timers;
+				delete data.password;
+				delete data.deviceId;
 
-			socket.emit("data", data);
+				data.isOnline 		= (this.getClient(socket.channel) !== undefined);
+
+				return this.database.getCommands(socket.channel);
+			})
+			.then((commands) => {
+				data.commands 		= commands;
+				socket.emit("data", data);
+			})
+			.catch((err) => {
+				throw err;
+			});
 		});
 
-		socket.on("test", (type) => {
+		socket.on("command.add", (data) => {
+			if (!socket.token || typeof data !== "object") {
+				return false;
+			}
+
+			data.channel 			= socket.channel;
+			data.name 				= data.name ? data.name.replace("!", "") : null;
+
+			this.database.BotCommands.upsert(data).then((command) => {
+				socket.emit("command.add", command);
+			})
+			.catch((err) => {
+				socket.emit("command.add", {
+					error: 			err.message
+				})
+			});
+		});
+
+		socket.on("bot.enter", () => {
+			let client 				= this.getClient(socket.channel);
+
+			if (client === undefined) {
+				this.createBotClient(socket.channel)
+				.then((client) => {;
+					return this.startBotClient(client)
+				})
+				.then(() => {
+					socket.emit("bot.enter", true);
+				})
+				.catch((err) => {
+					socket.emit("bot.enter", false);
+					throw err;
+				});
+			}
+		});
+
+		socket.on("bot.test", (type) => {
 			if (!socket.token) {
 				return false;
 			}
@@ -76,7 +208,7 @@ module.exports 						= function(io) {
 					image_href: 	"http://placekitten.com/408/287",
 					duration: 		10000,
 					message: 		"This is a test donate alert.",
-					user_message: 	"Sent by teus bot"
+					user_message: 	"Sent by Teus Bot"
 				});
 			} else
 			if (type === "donation") {

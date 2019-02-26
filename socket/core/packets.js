@@ -1,103 +1,108 @@
-const WebSocket						= require("ws");
-const colors 						= require("colors");
-
-class BotPackets extends WebSocket {
-	constructor(url, type, client) {
-		super(url);
-
-		this.config					= this.config || {};
+class BotPackets {
+	constructor(socket) {
+		this.socket  					= socket;
 	}
 
-	handleWatchLiveRewardList(response) {
-		this.debug("rewardList", response);
-		return true;
+	/**
+	 * Request studio configuration
+	 */
+	getStudioConfig() {
+		const seq 						= this.socket.seqno();
+
+		const data 						= {
+			ConfigureType: 				287
+		};
+
+		this.socket.sendPacket(300102, this.socket.jsonstr(data, seq), seq);
 	}
 
-	handleHistoryContribution(response) {
-		this.debug("historyContribution", response);
-		return true;
+	getWatchLiveRewardList(initFlag = 1) {
+		const seq 						= this.socket.seqno();
+
+		const data 						= {
+			RoomId: 					this.socket._sid,
+			InitFlag: 					initFlag
+		};
+
+		this.socket.sendPacket(900083, this.socket.jsonstr(data, seq), seq);
 	}
 
-	handleStudioConfig(response, force) {
-		const giftList 				= {};
+	getHistoryContribution(offset = 0) {
+		const seq 						= this.socket.seqno();
 
-		response.LiveGiftConf.GiftList.forEach(function(gift) {
-			giftList[gift.GiftId] 	= {
-				id: 				gift.GiftId,
-				type: 				gift.GiftType,
-				name: 				gift.GiftName,
-				icon: 				gift.Icon,
-				image: 				gift.Image,
-				animation: 			gift.WebAnimation,
-				coins: 				gift.Coin,
-				crystal: 			gift.Crystal,
-				duration: 			gift.WebAnimationLen
-			};
-		});
+		const data 						= {
+			RoomId: 					this.socket._sid,
+			Offset: 					offset
+		};
 
-		this.config.giftList 		= giftList;
-
-		if (!force) {
-			this.client.database.Configs.upsert({
-				channel: 			this.config.channel,
-				key: 				"studioConfig",
-				value: 				JSON.stringify(response)
-			}, {
-				where: 				{
-					channel: 		this.config.channel,
-					key: 			"studioConfig"
-				}
-			})
-			.catch((err) => {
-				console.error("[db] error upserting channel studio config", err);
-			});
-		}
-
-		return this.emit("giftList", giftList);
+		this.socket.sendPacket(300113, this.socket.jsonstr(data, seq), seq);
 	}
 
-	handleAuth(response) {
-		// Login success
-		if (response.BaseResponse.Ret === 0) {
-			this.ReconSec 			= 1;
+	muteUser(userId, toggle) {
+		const seq 						= this.socket.seqno();
 
-			return this.emit("bot.login", {
-				success: 			true
-			});
-		}
+		const data 						= {
+			StudioId: 					this.socket._sid,
+			GagUin: 					userId,
+			OpType: 					toggle
+		};
 
-		// If it reached here, something wrong happened.
-		setTimeout(() => {
-			this.reauth();
-		}, 1000 * this.ReconSec);
-
-		this.debug(colors.red("login error"), response.BaseResponse.ErrMsg.Buff);
-
-		return this.emit("bot.login", {
-			success:					false
-		});
+		this.socket.sendPacket(300106, this.socket.jsonstr(data, seq), seq);
 	}
 
-	handleEnter(response) {
-		// Login succeed
-		if (response.BaseResponse.Ret === 0) {
-			return this.emit("bot.login", {
-				success: 			true
-			});
-		} else {
-			// -369 = kick maybe?
-			if (response.BaseResponse.Ret === -369) {
-				this.emit("disconnected", response.BaseResponse.ErrMsg.Buff);
-				this.debug("login -369", response.BaseResponse.ErrMsg.Buff);
-			}
+	kickUser(userId) {
+		const seq 						= this.socket.seqno();
 
-			this.debug("enter error", response.BaseResponse.ErrMsg.Buff);
+		const data 						= {
+			StudioId: 					this.socket._sid,
+			OutUin: 					userId
+		};
 
-			return this.emit("bot.login", {
-				success:		false
-			});
-		}
+		this.socket.sendPacket(300107, this.socket.jsonstr(data, seq), seq)
+	}
+
+	setUserAuthority(user, toggle, access) {
+		const seq 						= this.socket.seqno();
+
+		const data 						= {
+			StudioId: 					this.socket._sid,
+			OpType: 					toggle,
+			OpUin: 						user,
+			Access: 					access || 2
+		};
+
+		this.socket.sendPacket(300112, this.socket.jsonstr(data, seq), seq)
+	}
+
+	signIn(token, uin, sid) {
+		this.socket._token 				= token;
+		this.socket._uin 				= uin;
+		this.socket._sid 				= parseInt(sid, 10);
+	}
+
+	reauth() {
+		const seq 						= this.socket.seqno();
+
+		const data 						= {
+			RandomEncryKey: 			this.socket.wrapper(Math.random().toString(12).substring(2))
+		};
+
+		this.socket.attaches(data);
+		this.socket.sendPacket(300003, this.socket.jsonstr(data, seq), seq);
+	}
+
+	enter(videoId) {
+		const seq 						= this.socket.seqno();
+
+		this.socket._vid 				= videoId ? parseInt(videoId, 10) : 0;
+
+		const data 						= {
+			StudioId: 					this.socket._sid,
+			VideoId: 					this.socket._vid
+		};
+
+		this.socket.sendPacket(300100, this.socket.jsonstr(data, seq), seq);
 	}
 }
 
-module.exports 						= BotPackets;
+module.exports 							= BotPackets;

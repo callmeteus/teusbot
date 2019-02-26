@@ -1,5 +1,7 @@
+*.env
 *.txt
 *.bat
+app/modules/custom/
 data/*.json
 data/*.sqlite
 node_modules/

@@ -13,7 +13,7 @@ class BotCommand {
 			arguments: 			this.arguments,
 			sender: 			this.sender,
 			command: 			this.command,
-			channel: 			this._botClient.auth.getData().data.user,
+			channel: 			this._botClient.data.data.user,
 			window: 			undefined,
 			process: 			undefined,
 			Deflate: 			undefined,
@@ -28,6 +28,10 @@ class BotCommand {
 
 	getMember(id) {
 		return this._botClient.getMember(id);
+	}
+
+	noPermission() {
+		return this.sendMessage(this.getMessage(this._botClient.getLangMessage("NO_PERMISSION")));
 	}
 }
 
