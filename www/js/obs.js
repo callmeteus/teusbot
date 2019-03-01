@@ -60,6 +60,8 @@
 
 		// Check if authentication succeeded
 		!success && alert("Authentication failed.");
+
+		socket.emit("obs.listen", app.module);
 	});
 
 	/**
@@ -211,7 +213,7 @@
 		}
 
 		// Add event listener to module
-		socket.on(app.module, (data) => {
+		socket.on("obs.data", (data) => {
 			// Check if is queue
 			if (!app.isQueue) {
 				// Show notification imediately

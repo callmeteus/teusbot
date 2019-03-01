@@ -98,7 +98,7 @@ class BotDatabase {
 		this.Configs 			= this.sequelize.define("config", {
 			channel: 			Sequelize.INTEGER.UNSIGNED,
 			key: 				Sequelize.STRING(325),
-			value: 				Sequelize.STRING(325)
+			value: 				Sequelize.TEXT
 		}, {
 			timestamps: 		false
 		});

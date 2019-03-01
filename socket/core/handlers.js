@@ -32,16 +32,16 @@ class BotHandlers {
 			};
 		});
 
-		this.socket.config.giftList = giftList;
+		this.socket.client.config.giftList = giftList;
 
 		if (!force) {
 			this.socket.client.database.Configs.upsert({
-				channel: 			this.socket.client.auth.getData().data.user.uin,
+				channel: 			this.socket.client.data.data.user.uin,
 				key: 				"studioConfig",
 				value: 				JSON.stringify(response)
 			}, {
 				where: 				{
-					channel: 		this.socket.client.auth.getData().data.user.uin,
+					channel: 		this.socket.client.data.data.user.uin,
 					key: 			"studioConfig"
 				}
 			})

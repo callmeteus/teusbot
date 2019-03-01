@@ -3,8 +3,6 @@ const BotSocket 						= require("./socket");
 class BotActiveSocket extends BotSocket {
 	constructor(url, type, client) {
 		super(url, type, client);
-
-		this.giftList 					= {};
 	}
 
 	/**
@@ -44,7 +42,7 @@ class BotActiveSocket extends BotSocket {
 				this.packets.getWatchLiveRewardList();
 
 				// Check if configuration has studio configuration
-				if (this.client.config.studioConfig) {
+				if (this.client.config.studioConfig !== undefined) {
 					try {
 						const config 	= JSON.parse(this.client.config.studioConfig);
 						this.handlers.handleStudioConfig(config, true);

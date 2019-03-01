@@ -1,0 +1,13 @@
+<div class="list-group-item" data-id="<%=data.cmd.id%>">
+	<div class="d-flex justify-content-between mb-1 bot-command">
+		<h5 class="mt-2">!<%=data.cmd.name%></h5>
+
+		<select class="form-control col-2">
+			<option value="text" <%=(data.cmd.type === "text" ? "selected" : "")%>>Text</option>
+			<option value="alias" <%=(data.cmd.type === "alias" ? "selected" : "")%>>Alias</option>
+			<option value="script" <%=(data.cmd.type === "script" ? "selected" : "")%>>Script</option>
+		</select>
+	</div>
+
+	<input class="form-control" type="text" value="<%-data.cmd.content%>" />
+</div>

@@ -11,7 +11,7 @@ module.exports 						= function(router, bot) {
 			bot.streamlabs.getAccessToken(req.query.code)
 			.then((res) => {
 				return bot.database.Configs.upsert({
-					key: 			"accessToken",
+					key: 			"streamLabsToken",
 					channel: 		req.query.token,
 					value: 			res.access_token
 				});
@@ -19,6 +19,7 @@ module.exports 						= function(router, bot) {
 			.then(() => res.redirect("/"))
 			.catch((err) => {
 				console.error(err);
+				res.send("Error");
 				throw err;
 			});
 		}

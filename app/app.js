@@ -18,8 +18,15 @@ glob(path.join(__dirname, "modules", "**/*.js"), function(err, files) {
 	// Iterate over modules
 	files.forEach(function(file) {
 		try {
+			const currentModule 		= require(file);
+
 			// Load the module
-			BotModules.push(require(file));
+			BotModules.push(currentModule);
+
+			// Check if module has preload
+			if (currentModule.preload instanceof Function) {
+				currentModule.preload.call(currentModule);
+			}
 		} catch(e) {
 			throw new Error("Error enabling module " + path.basename(file) + ": " + e);
 		}
@@ -53,8 +60,41 @@ class BotApp {
 	}
 
 	init() {
-		// Startup the database
-		return this.database.start();
+		return new Promise((resolve, reject) => {
+			// Startup the database
+			this.database.start()
+			.then(() => {
+				// Get all channels that need auto enter
+				return this.database.Configs.findAll({
+					where: 				{
+						key: 			"autoEnter",
+						value: 			"1"
+					},
+					attributes: 		["channel"]
+				});
+			})
+			.then((channels) => {
+				// Iterate over all auto enter channels
+				channels.forEach((channel) => {
+					// Create the client
+					this.createBotClient(channel.channel)
+					.then((client) => {
+						// Start the client
+						return this.startBotClient(client);
+					})
+					.catch((err) => {
+						err.message 	= "Error creating the bot client: " + err.message;
+						reject(err);
+					});
+				});
+
+				resolve();
+			})
+			.catch((err) => {
+				err.message 			= "Error starting the database: " + err.message;
+				reject(err);
+			});
+		});
 	}
 
 	createBotClient(channel) {
@@ -69,7 +109,10 @@ class BotApp {
 				botClient.config  		= config;
 
 				// Put bot client into memory
-				this.clients.push(botClient);
+				const instance 			= this.clients.push(botClient);
+
+				// Set instance
+				botClient.instance 		= instance;
 
 				resolve(botClient);
 			})
@@ -79,7 +122,7 @@ class BotApp {
 
 	startBotClient(client) {
 		return new Promise((resolve, reject) => {
-			// Get all channel active commands
+			// Get all channel custom active commands
 			this.database.BotCommands.findAll({
 				where: 					{
 					channel: 			client.config.channel,
@@ -103,6 +146,7 @@ class BotApp {
 				// Register all modules
 				BotModules.forEach((module) => client.registerCommand(module));
 
+				// Start the client
 				client.start()
 				.then(resolve)
 				.catch(reject);

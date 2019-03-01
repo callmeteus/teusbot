@@ -15,7 +15,7 @@ module.exports 									= {
 						limit: 				10,
 						where: 				{
 							id: 			{
-								$not: 		this.auth.getData().data.user.uin
+								$not: 		this.data.data.user.uin
 							}
 						}
 					})
@@ -40,7 +40,7 @@ module.exports 									= {
 						limit: 				10,
 						where: 				{
 							id: 			{
-								$not: 		this.auth.getData().data.user.uin
+								$not: 		this.data.data.user.uin
 							}
 						}
 					})

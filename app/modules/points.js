@@ -83,7 +83,7 @@ module.exports 								= {
 					}
 
 					// Create a new transaction
-					doTransaction(10, this.streamlabs.addAlert({
+					doTransaction(10, this.streamlabs.addAlert(this.config.streamLabsToken, {
 						type: 			"donation",
 						image_href: 	processor.sender.picture,
 						message: 		processor.sender.nickname + " enviou um alerta",
@@ -93,7 +93,7 @@ module.exports 								= {
 
 				case "play":
 					// Create a new transaction
-					doTransaction(50000);
+					doTransaction(Number.MAX_VALUE);
 				break;
 
 				default:

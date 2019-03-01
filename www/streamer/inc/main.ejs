@@ -38,38 +38,15 @@
 
 	<div class="tab-content mb-3">
 		<div class="tab-pane fade show active" id="nav-commands">
-			<div class="list-group">
-				<% if (data.commands.length === 0) { %>
-					<div class="list-group-item bg-secondary text-muted text-center">
-						<h2 class="mb-0">No commands were added :(</h2>
-					</div>
-				<% } %>
-				<% data.commands.forEach((cmd) => { %>
-					<div class="list-group-item" data-id="<%=cmd.id%>">
-						<div class="d-flex justify-content-between mb-1 bot-command">
-							<h5 class="mt-2">!<%=cmd.name%></h5>
-
-							<select class="form-control col-2">
-								<option value="text" <%=(cmd.type === "text" ? "selected" : "")%>>Text</option>
-								<option value="alias" <%=(cmd.type === "alias" ? "selected" : "")%>>Alias</option>
-								<option value="script" <%=(cmd.type === "script" ? "selected" : "")%>>Script</option>
-							</select>
-						</div>
-
-						<input class="form-control" type="text" value="<%-cmd.content%>" />
-					</div>
-				<% });%>
-			</div>
-
+			<%-renderTemplate("partials/commands")%>
 			<button class="btn btn-lg btn-primary mt-3 float-right" data-toggle="modal" data-target="#add-command">Add a new command</button>
 		</div>
 
-		<div class="tab-pane fade" id="nav-language">...</div>
+		<div class="tab-pane fade" id="nav-language">
+			<%-renderTemplate("partials/language")%>
+		</div>
 		<div class="tab-pane fade" id="nav-settings">
-			<div class="list-group">
-				<div class="list-group-item">
-					<a href="/streamer/streamlabs/<%=data.bot.user.uin%>">Authenticate with Streamlabs</a>
-				</div>
+			<%-renderTemplate("partials/settings")%>
 		</div>
 	</div>
 

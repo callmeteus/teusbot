@@ -1,0 +1,10 @@
+<div class="list-group">
+	<% if (data.commands.length === 0) { %>
+		<div class="list-group-item bg-secondary text-muted text-center">
+			<h2 class="mb-0">No commands were added :(</h2>
+		</div>
+	<% } %>
+	<% data.commands.forEach((cmd) => { %>
+		<%-renderTemplate("partials/command", { cmd: cmd })%>
+	<% });%>
+</div>

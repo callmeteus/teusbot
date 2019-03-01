@@ -11,7 +11,7 @@ class BotClient extends EventEmitter {
 		this.isDebug 						= true;
 
 		// Save socket instance
-		this.socket 		 				= app.socket;
+		this.socket 		 				= app.io;
 
 		// Save database instance
 		this.database 						= app.database;
@@ -46,6 +46,9 @@ class BotClient extends EventEmitter {
 
 		// Data handler
 		this.data 							= {};
+
+		// Client instance id
+		this.instance 						= null;
 	}
 
 	emit(type, ...args) {
@@ -60,7 +63,7 @@ class BotClient extends EventEmitter {
 				delete data.socket;
 			}
 
-			this.socket.to("bot").emit(type, data);
+			this.socket.in(type).emit("obs.data", data);
 		}
 	}
 
@@ -81,52 +84,64 @@ class BotClient extends EventEmitter {
 	start() {
 		return new Promise((resolve, reject) => {
 			// Authenticate the bot with given configuration
-			return this.auth.login(this.config.email, this.config.password).then((result) => {
+			this.auth.login(this.config.email, this.config.password)
+			.then(() => {
 				// Get bot user info
-				this.auth.getInfo(this.config.channel).then((data) => {
-					this.data 				= data;
+				return this.auth.getInfo(this.config.channel);
+			})
+			.then((data) => {
+				this.data 					= data;
 
-					this.createClient("passive");
-					this.createClient("active");
+				this.createClient("passive");
+				this.createClient("active");
 
-					const authData 			= this.data;
+				const authData 				= this.data;
 
-					this.emit("bot.data", authData);
-					this.emit("bot.ready");
+				this.emit("bot.data", authData);
+				this.emit("bot.ready");
 
-					// Get stream basic data
-					this.stream.online 		= (authData.data.streams.LiveStatus === 1);
-					this.stream.title 		= authData.data.streams.LiveTitle;
+				// Get stream basic data
+				this.stream.online 			= (authData.data.streams.LiveStatus === 1);
+				this.stream.title 			= authData.data.streams.LiveTitle;
 
-					// Check if stream is online
-					if (!authData.data.streams.RecvRtmpResolutionList.length) {
-						return resolve();
+				// Check if stream is online
+				if (!authData.data.streams.RecvRtmpResolutionList.length) {
+					return resolve();
+				}
+
+				// Get M3U8 file to parse stream start time
+				this.auth.request({
+					url: 					authData.data.streams.RecvRtmpResolutionList[0].ResolutionHls,
+					method: 				"GET",
+					json: 					false
+				}, function(err, res, body) {
+					if (err) {
+						return reject(new Error("Error retrieving m3u8 stream information file: " + err));
 					}
 
-					// Get M3U8 file to parse stream start time
-					this.auth.request({
-						url: 				authData.data.streams.RecvRtmpResolutionList[0].ResolutionHls,
-						method: 			"GET",
-						json: 				false
-					}, function(err, res, body) {
-						if (err) {
-							return reject(new Error("Error retrieving m3u8 stream information file: " + err));
-						}
+					const parser 			= new m3u8Parser();
+					parser.push(body);
+					parser.end();
 
-						const parser 		= new m3u8Parser();
-						parser.push(body);
-						parser.end();
+					// Calculate stream start date
+					this.stream.started 	= new Date() - (parser.manifest.mediaSequence * parser.manifest.targetDuration);
+					this.stream.online 		= true;
 
-						// Calculate stream start date
-						this.stream.started = new Date() - (parser.manifest.mediaSequence * parser.manifest.targetDuration);
-						this.stream.online 	= true;
-
-						resolve();
-					});
+					resolve();
 				});
 			})
-			.catch(reject);
+			.catch((err) => {
+				console.error("[error] authentication error for", this.config.email, err);
+				reject(err);
+			});
 		});
+	}
+
+	/**
+	 * End the client
+	 */
+	end() {
+		Object.values(this.sockets).forEach((socket) => socket.close());
 	}
 
 	/**
@@ -253,8 +268,7 @@ class BotClient extends EventEmitter {
 				// Create the processor
 				const command 				= this.createCommand(cmd, args, this.sockets.passive, processor.sender);
 
-				// Emit a new command as alias
-				this.emit("chat.command", command);
+				this.processCommand(command);
 			} else
 			// Check if it's a module command
 			if (handler.type === "module") {
@@ -347,7 +361,7 @@ class BotClient extends EventEmitter {
 					id: 					data.GiftId,
 					amount: 				data.Nums,
 					cost: 					data.SendEventCost,
-					emote: 					this.config.giftList && this.config.giftList[data.GiftId]
+					emote: 					this.config.giftList[data.GiftId]
 				};
 
 				// Process emote message
@@ -369,7 +383,7 @@ class BotClient extends EventEmitter {
 				});
 
 				// Create a new donation at StreamLabs
-				this.streamlabs.addDonation({
+				this.streamlabs.addDonation(this.config.streamLabsToken, {
 					name: 					user.nickname,
 					identifier: 			"streamcraft#" + user.id,
 					amount: 				emote.cost / 100,
@@ -410,6 +424,8 @@ class BotClient extends EventEmitter {
 
 		const socket 						= new BotActiveSocket(url, type, this);
 		this.sockets[type] 					= socket;
+
+		socket.debug("connecting...");
 
 		// On socket error, reconnect
 		socket.on("error", () => {

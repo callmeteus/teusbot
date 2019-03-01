@@ -4,11 +4,11 @@ module.exports 								= {
 	name: 									"vote",
 	type: 									"module",
 	content: 								function(processor) {
-		switch(processor.command) {
-			case "vote":
-				if (Object.keys(voting).length > 0) {
-					const index 			= processor.arguments[0].toLowerCase();
+		const index 						= processor.arguments.shift().toLowerCase();
 
+		switch(index) {
+			default:
+				if (Object.keys(voting).length > 0) {
 					// Check if index exists and if
 					// user has voted on it
 					if (voting[index] !== undefined && voting[index].indexOf(processor.sender.id) === -1) {

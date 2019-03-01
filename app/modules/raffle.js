@@ -6,7 +6,7 @@ const raffleClear 				= () => {
 	console.info("[bot] raffle is cleared.");
 };
 
-const raffleStart 				= (processor) => {
+const raffleStart 				= function(processor) {
 	raffleClear();
 
 	console.info("[bot] New raffle started.");
@@ -18,7 +18,7 @@ const raffleStart 				= (processor) => {
 	processor.sendMessage(this.getLangMessage("RAFFLE_START"));
 };
 
-const raffleEnd 				= (processor) => {
+const raffleEnd 				= function(processor) {
 	if (entriesOpen && entries.length > 0) {
 		// Get a winner
 		let winner 				= entries[entries.length * Math.random() | 0];
@@ -49,7 +49,7 @@ const raffleEnd 				= (processor) => {
 			processor.sendMessage(message);
 
 			// Create a StreamLabs alert
-			this.streamlabs.addAlert({
+			this.streamlabs.addAlert(this.config.streamLabsToken,{
 				type: 			"donation",
 				message: 		"Parabéns " + member.nickname + "!",
 				image_href: 	member.picture,
@@ -61,12 +61,12 @@ const raffleEnd 				= (processor) => {
 			console.error("[bot] raffle end error:", e);
 			
 			// Send an internal error message
-			processor.sendMessage(this.getLangMessage("INTERNAL_ERROR"));
+			processor.noPermission();
 		});
 	}
 };
 
-const raffleMessage 			= (processor) => {
+const raffleMessage 			= function(processor) {
 	this.database.Members.findOne({
 		attributes: 			["id", "nickname"],
 		where: 					{
@@ -86,7 +86,7 @@ const raffleMessage 			= (processor) => {
 	})
 	.catch((e) => {
 		console.error("[bot] raffle end error:", e);
-		processor.sendMassege("Internal error");
+		processor.noPermission();
 	});
 };
 
@@ -97,9 +97,13 @@ module.exports 						= {
 		// Check if has arguments
 		if (processor.arguments.length === 0 && entriesOpen && entries.indexOf(processor.sender.id) === -1) {
 			// Add nickname to the entries
-			// TODO: make a list of users that chatted before on BotClient and
-			// then use the user ID instead of the nickname here
 			entries.push(processor.sender.id);
+
+			// Randomize the array every time someone
+			// join the raffle
+			entries 				= entries.sort(function() {
+				return .5 - Math.random();
+			});
 
 			console.info("[bot]", processor.sender.id, processor.sender.nickname, "entered the raffle.");
 		} else
@@ -109,23 +113,23 @@ module.exports 						= {
 			switch(processor.arguments[0]) {
 				// Start a new raffle
 				case "start":
-					raffleStart(processor);
+					raffleStart.call(this, processor);
 				break;
 
 				// Clear the current raffle without restarting it
 				case "clear":
-					raffleClear(processor);
+					raffleClear.call(this, processor);
 				break;
 
 				// End the current raffle
 				case "end":
-					raffleEnd(processor);
+					raffleEnd.call(this, processor);
 				break;
 
 				// Select random winner ordered by number of sent messages
 				case "message":
 				case "messages":
-					raffleMessage(processor);
+					raffleMessage.call(this, processor);
 				break;
 			}
 		} else {

@@ -2,35 +2,42 @@ const socket 					= io({
 	transports: 				["websocket"]
 });
 
-(function() {
+(function appContext() {
 	/**
 	 * -----------------------------------------------------------------
 	 * Initializations
 	 * -----------------------------------------------------------------
 	 */
 	
-	const appContainer 			= $("<div/>").appendTo(document.body);
+	const appContainer 			= $("#app");
 	let appToken 				= localStorage.getItem("botToken") || null;
 	let appData 				= {};
 
-	/**
-	 * -----------------------------------------------------------------
-	 * Functions
-	 * -----------------------------------------------------------------
-	 */
+	let appCache 				= {};
+	window.renderTemplate 		= (tpl, data, onlyReturn) => {
+		let content 			= appCache[tpl] || $.ajax({
+			url: 				"inc/" + tpl + ".ejs",
+			method: 			"GET",
+			async: 				false
+		}).responseText;
 
-	let currentTpl 				= null;
-	window.renderTemplate 		= function(url) {
-		if (currentTpl === url) {
-			return false;
+		if (!appCache[tpl]) {
+			appCache[tpl] 		= content;
 		}
 
-		$.get("inc/" + url + ".ejs", (tpl) => {
-			appContainer.html(ejs.render(tpl, { data: appData }));
+		const renderData 		= {
+			data: 				Object.assign(appData, data),
+			renderTemplate: 	(tpl, data) => renderTemplate(tpl, Object.assign({}, renderData, data), true)
+		};
 
-			currentTpl 			= url;
-		});
-	};
+		content 				= ejs.render(content, renderData);
+
+		if (onlyReturn) {
+			return content;
+		} else {
+			appContainer.html(content);
+		}
+	}
 
 	/**
 	 * -----------------------------------------------------------------
@@ -40,10 +47,7 @@ const socket 					= io({
 
 	$(document).on("click", "a[data-href]", function(e) {
 		e.preventDefault();
-
-		const url 				= $(this).attr("data-href");
-
-		renderTemplate(url);
+		renderTemplate($(this).attr("data-href"));
 	});
 
 	socket.on("auth", (success) => {

@@ -20,9 +20,11 @@ module.exports 						= function(io) {
 					});
 				}
 
+				data.channel 		= email.channel;
+
 				return this.database.Configs.count({
 					where: 			{
-						channel: 	email.channel,
+						channel: 	data.channel,
 						key: 		"password",
 						value: 		data.password
 					}
@@ -41,7 +43,7 @@ module.exports 						= function(io) {
 				// Update database token
 				return this.database.Configs.create({
 					key: 			"token",
-					channel: 		email.channel,
+					channel: 		data.channel,
 					value: 			socket.token
 				});
 			})
@@ -134,6 +136,15 @@ module.exports 						= function(io) {
 			});
 		});
 
+		socket.on("obs.listen", (room) => {
+			if (!socket.token) {
+				return false;
+			}
+
+			socket.join(room);
+			socket.emit("obs.listen", true);
+		});
+
 		socket.on("data", () => {
 			if (!socket.token) {
 				return false;
@@ -149,6 +160,8 @@ module.exports 						= function(io) {
 				delete data.deviceId;
 
 				data.isOnline 		= (this.getClient(socket.channel) !== undefined);
+
+				socket.config 		= data;
 
 				return this.database.getCommands(socket.channel);
 			})
@@ -169,13 +182,35 @@ module.exports 						= function(io) {
 			data.channel 			= socket.channel;
 			data.name 				= data.name ? data.name.replace("!", "") : null;
 
-			this.database.BotCommands.upsert(data).then((command) => {
-				socket.emit("command.add", command);
+			this.database.BotCommands.findOne({
+				where: 				{
+					name: 			data.name,
+					channel: 		data.channel
+				}
 			})
-			.catch((err) => {
-				socket.emit("command.add", {
-					error: 			err.message
+			.then((found) => {
+				let result;
+
+				if (found === null) {
+					result 			= this.database.BotCommands.create(data);
+				} else {
+					data.id 		= found.id;
+
+					result 			= this.database.BotCommands.update(data, {
+						where: 		{
+							id: 	data.id
+						}
+					});
+				}
+
+				result.then((command) => {
+					socket.emit("command.add", command);
 				})
+				.catch((err) => {
+					socket.emit("command.add", {
+						error: 			err.message
+					});
+				});
 			});
 		});
 
@@ -185,7 +220,7 @@ module.exports 						= function(io) {
 			if (client === undefined) {
 				this.createBotClient(socket.channel)
 				.then((client) => {;
-					return this.startBotClient(client)
+					return this.startBotClient(client);
 				})
 				.then(() => {
 					socket.emit("bot.enter", true);
@@ -194,6 +229,11 @@ module.exports 						= function(io) {
 					socket.emit("bot.enter", false);
 					throw err;
 				});
+			} else {
+				client.end();
+				delete this.clients[client.instance];
+
+				socket.emit("bot.enter", true);
 			}
 		});
 
@@ -203,7 +243,7 @@ module.exports 						= function(io) {
 			}
 
 			if (type === "alert") {
-				this.streamlabs.addAlert({
+				this.streamlabs.addAlert(socket.config.streamLabsToken, {
 					type: 			"donation",
 					image_href: 	"http://placekitten.com/408/287",
 					duration: 		10000,
@@ -212,7 +252,7 @@ module.exports 						= function(io) {
 				});
 			} else
 			if (type === "donation") {
-				this.streamlabs.addDonation({
+				this.streamlabs.addDonation(socket.config.streamLabsToken, {
 					name: 			this.auth.getData().user.nickname,
 					identifier: 	"streamcraft#123test",
 					amount: 		0.1,

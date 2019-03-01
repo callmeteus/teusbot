@@ -15,7 +15,9 @@ $(document).on("submit", "#add-command form", function(e) {
 			return alert(data.error);
 		}
 
-		$form.find(":input").val("");
+		$form.find("input").val("");
+
+		$("#nav-commands .list-group").append(renderTemplate("partials/command", { cmd: data }, true));
 	});
 
 	socket.emit("command.add", { id, name, type, content });

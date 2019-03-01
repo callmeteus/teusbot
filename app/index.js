@@ -45,13 +45,17 @@ function doStartup() {
 
 	console.info("[bot] initializating client...");
 
-	bot.init().then(() => {
+	bot.init()
+	.then(() => {
 		const serverPort 			= process.env.PORT || 3200;
 
 		// Start express and socket.io
 		server.listen(serverPort, function() {
 			console.info("[bot] listening on port", serverPort);
 		});
+	})
+	.catch((err) => {
+		console.error("startup error:", err);
 	});
 }
 
