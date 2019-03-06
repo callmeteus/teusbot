@@ -72,62 +72,12 @@
 
 	const $parent 				= $("<div id='" + app.module.replace(/\./g, "-") + "-parent'/>").appendTo(document.body);
 
-	const duration 				= query.has("duration") ? parseInt(query.get("duration")) : (5000);
-	const animateDuration 		= query.has("aduration") ? parseInt(query.get("aduration")) : 1000;
+	const duration 				= query.has("duration") ? parseInt(query.get("duration"), 10) : (5000);
+	const animateDuration 		= query.has("aduration") ? parseInt(query.get("aduration"), 10) : 1000;
 	const animateIn 			= query.has("in") ? query.get("in") : "fadeInLeft";
 	const animateOut 			= query.has("out") ? query.get("out") : "fadeOutLeft";
 
 	let template 				= null;
-
-	function appProcessQueue() {
-		let notification 		= app.queue.shift();
-
-		appNotificate(notification, function() {
-			if (app.queue.length) {
-				appProcessQueue();
-			}
-		});
-	}
-
-	function appPrepareNotification($element, callback) {
-		const $preload 			= $element.find("img, audio");
-		const count 			= $preload.length;
-
-		let actual 				= 0;
-		let cancelled 			= false;
-
-		if ($preload.length === 0) {
-			callback();
-		}
-
-		// Preloader images
-		$preload.each(function() {
-			const src 			= $(this).attr("src");
-			const element 		= $(this).is("audio") ? new Audio() : new Image();
-
-			element.src 		= src;
-
-			$(element).on("load canplaythrough", function() {
-				actual++;
-
-				if (actual === count && !cancelled) {
-					callback();
-				}
-			});
-
-			$(element).on("error stalled", function() {
-				if (!cancelled) {
-					cancelled 	= true;
-					app_preload($element, callback);
-				}
-			});
-		});
-
-		// Replace animated images with gifffer attributes
-		$element.find("img[animated]").each(function() {
-			$(this).attr("data-gifffer", $(this).attr("src")).removeAttr("src");
-		});
-	}
 
 	/**
 	 * Create a module notification in the screen
@@ -151,12 +101,7 @@
 
 			// Check if data contains emote
 			if (data.emote) {
-				fDuration 		= data.emote.emote.duration * 2;
-
-				// Minimum duration is 10s
-				if (fDuration < 10000) {
-					fDuration 	= 10000;
-				}
+				fDuration 		= data.emote.emote.duration < 10000 ? 1000 : data.emote.emote.duration * 2;
 			}
 
 			$element.find("audio").each(function() {
@@ -202,6 +147,56 @@
 		return true;
 	}
 
+	function appProcessQueue() {
+		let notification 		= app.queue.shift();
+
+		appNotificate(notification, function() {
+			if (app.queue.length) {
+				appProcessQueue();
+			}
+		});
+	}
+
+	function appPrepareNotification($element, callback) {
+		const $preload 			= $element.find("img, audio");
+		const count 			= $preload.length;
+
+		let actual 				= 0;
+		let cancelled 			= false;
+
+		if ($preload.length === 0) {
+			callback();
+		}
+
+		// Preloader images
+		$preload.each(function() {
+			const src 			= $(this).attr("src");
+			const element 		= $(this).is("audio") ? new Audio() : new Image();
+
+			element.src 		= src;
+
+			$(element).on("load canplaythrough", function() {
+				actual++;
+
+				if (actual === count && !cancelled) {
+					callback();
+				}
+			});
+
+			$(element).on("error stalled", function() {
+				if (!cancelled) {
+					cancelled 	= true;
+					appPrepareNotification($element, callback);
+				}
+			});
+		});
+
+		// Replace animated images with gifffer attributes
+		$element.find("img[animated]").each(function() {
+			$(this).attr("data-gifffer", $(this).attr("src")).removeAttr("src");
+		});
+	}
+
 	// Get module template
 	$.get("/inc/tpl/" + app.module + ".ejs", (tpl) => {
 		template 				= tpl;
@@ -231,4 +226,4 @@
 		// Open socket connection
 		socket.connect();
 	});
-})();
+}());

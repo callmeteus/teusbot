@@ -57,10 +57,7 @@ module.exports 						= {
 					})
 				);
 			})
-			.catch((e) => {
-				// Send an internal error message
-				c
-			});
+			.catch((e) => processor.internalError(e));
 		} else
 		if (subCommand === "get") {
 			const getAddon 			= processor.sender.addons.filter((addon) => addon.addon === index)[0];

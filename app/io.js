@@ -219,7 +219,7 @@ module.exports 						= function(io) {
 
 			if (client === undefined) {
 				this.createBotClient(socket.channel)
-				.then((client) => {;
+				.then((client) => {
 					return this.startBotClient(client);
 				})
 				.then(() => {

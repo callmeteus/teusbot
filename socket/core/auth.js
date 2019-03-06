@@ -49,7 +49,7 @@ module.exports 						= function() {
 			return new Promise((resolve, reject) => {
 				requestClient("https://webapi.streamcraft.com/tools/common/info?_t=" + +new Date(), (err, response, body) => {
 					if (err || response.statusCode !== 200) {
-						return callback(false);
+						return reject(false);
 					}
 
 					let data;
@@ -81,13 +81,9 @@ module.exports 						= function() {
 						loginpw: 		password
 					}
 				}, function(err, response, data) {
-					if (err || response.statusCode !== 200) {
-						return reject(new Error(err || response.statusCode));
-					}
-
-					// Check if succeeded
-					if (!data.success) {
-						return reject(new Error(data.msg));
+					// Check if any error happened
+					if (err || response.statusCode !== 200 || !data.success) {
+						return reject(new Error(err ? err : (data.msg ? data.msg : response.statusCode)));
 					}
 
 					resolve(data);

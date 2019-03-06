@@ -3,7 +3,7 @@ $(document).on("submit", "#add-command form", function(e) {
 
 	const $form 		= $(this);
 
-	const id 			= parseInt($form.find("[name=id]").val());
+	const id 			= parseInt($form.find("[name=id]").val(), 10);
 	const name 			= $form.find("[name=name]").val();
 	const type 			= $form.find("[name=type]").val();
 	const content 		= $form.find("[name=content]").val();

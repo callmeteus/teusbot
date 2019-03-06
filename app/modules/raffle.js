@@ -3,18 +3,11 @@ let entriesOpen 				= false;
 
 const raffleClear 				= () => {
 	entries 					= [];
-	console.info("[bot] raffle is cleared.");
 };
 
 const raffleStart 				= function(processor) {
 	raffleClear();
-
-	console.info("[bot] New raffle started.");
-
-	this.client.emit("raffle.start");
-
 	entriesOpen 				= true;
-
 	processor.sendMessage(this.client.getLangMessage("RAFFLE_START"));
 };
 
@@ -50,7 +43,7 @@ const raffleEnd 				= function(processor) {
 				image_href: 	member.picture,
 				user_message: 	message,
 				duration: 		10000
-			})
+			});
 		})
 		.catch((e) => {
 			console.error("[bot] raffle end error:", e);
@@ -100,8 +93,6 @@ module.exports 						= {
 				entries 			= entries.sort(function() {
 					return .5 - Math.random();
 				});
-
-				console.info("[bot]", processor.sender.id, processor.sender.nickname, "entered the raffle.");
 			}
 		} else
 		// Check if it's a mod

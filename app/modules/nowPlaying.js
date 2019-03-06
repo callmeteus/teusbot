@@ -23,16 +23,15 @@ function getCurrentPlaying() {
 
 			// Check if has 3 or more lines
 			if (lines.length < 3) {
-				return resolve("No music application is running.");
+				resolve("No music application is running.");
+				return true;
 			}
 
-			// Filter lines that has no content or it's part of the specs
+			// Remove first lines
 			lines.splice(0, 2);
 
 			// Iterate over lines
-			for(let i = 0; i < lines.length; i++) {
-				const line 			= lines[i];
-
+			lines.some((line) => {
 				// Get process name
 				const processName 	= line.substr(0, processSize).trim().toLowerCase();
 
@@ -44,7 +43,7 @@ function getCurrentPlaying() {
 
 				// Check if has title
 				if (title.length === 0) {
-					continue;
+					return false;
 				}
 
 				switch(processName) {
@@ -53,20 +52,22 @@ function getCurrentPlaying() {
 					case "opera":
 						// Check if has YouTube in the title
 						if (min.indexOf("- youtube") > -1) {
-							return resolve(title.split(" - YouTube")[0]);
+							resolve(title.split(" - YouTube")[0]);
+							return true;
 						}
 					break;
 
 					case "spotify":
 						// Bug fix for Spotify drag thing
 						if (min !== "n/a" && min !== "drag" && min !== "anglehiddenwindow") {
-							return resolve(title.indexOf("Spotify") > -1 ? "Paused" : title);
+							resolve(title.indexOf("Spotify") > -1 ? "Paused" : title);
+							return true;
 						}
 					break;
 				}
-			}
+			});
 
-			return resolve("None");
+			resolve("None");
 		});
 	});
 }

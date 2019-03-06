@@ -14,6 +14,7 @@ const socket 					= io({
 	let appData 				= {};
 
 	let appCache 				= {};
+
 	window.renderTemplate 		= (tpl, data, onlyReturn) => {
 		let content 			= appCache[tpl] || $.ajax({
 			url: 				"inc/" + tpl + ".ejs",
@@ -21,7 +22,7 @@ const socket 					= io({
 			async: 				false
 		}).responseText;
 
-		if (!appCache[tpl]) {
+		if (Object.keys(appCache).indexOf(tpl) > -1) {
 			appCache[tpl] 		= content;
 		}
 
@@ -37,7 +38,7 @@ const socket 					= io({
 		} else {
 			appContainer.html(content);
 		}
-	}
+	};
 
 	/**
 	 * -----------------------------------------------------------------
@@ -47,7 +48,7 @@ const socket 					= io({
 
 	$(document).on("click", "a[data-href]", function(e) {
 		e.preventDefault();
-		renderTemplate($(this).attr("data-href"));
+		window.renderTemplate($(this).attr("data-href"));
 	});
 
 	socket.on("auth", (success) => {
@@ -65,7 +66,7 @@ const socket 					= io({
 			appData.bot 		= botData.data;
 			appData.commands	= appData.commands || [];
 
-			renderTemplate("main");
+			window.renderTemplate("main");
 		});
 	});
 
@@ -73,7 +74,7 @@ const socket 					= io({
 		if (appToken !== null) {
 			socket.emit("auth", appToken);
 		} else {
-			renderTemplate("login");
+			window.renderTemplate("login");
 		}
 	});
 
@@ -85,5 +86,5 @@ const socket 					= io({
 	
 	$(document.body).tooltip({
 		selector: 				"[title]"
-	})
-})();
+	});
+}());

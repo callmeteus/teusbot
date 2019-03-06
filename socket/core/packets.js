@@ -58,7 +58,7 @@ class BotPackets {
 			OutUin: 					userId
 		};
 
-		this.socket.sendPacket(300107, this.socket.jsonstr(data, seq), seq)
+		this.socket.sendPacket(300107, this.socket.jsonstr(data, seq), seq);
 	}
 
 	setUserAuthority(user, toggle, access) {
@@ -71,7 +71,7 @@ class BotPackets {
 			Access: 					access || 2
 		};
 
-		this.socket.sendPacket(300112, this.socket.jsonstr(data, seq), seq)
+		this.socket.sendPacket(300112, this.socket.jsonstr(data, seq), seq);
 	}
 
 	signIn(token, uin, sid) {

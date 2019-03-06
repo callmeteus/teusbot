@@ -19,14 +19,7 @@ module.exports 										= {
 			}
 		};
 
-		setInterval(this.module.doInterval, 60 * 1000 * 10);
-
-		this.module.doInterval();
-	},
-	content: 										function(processor) {
-		const command 								= processor.arguments[0];
-
-		const doTransaction 						= (amount, action) => {
+		this.module.doTransaction 					= (amount, action) => {
 			// Check if sender have enough points
 			// to complete the transaction
 			if (processor.sender.points <= amount) {
@@ -76,6 +69,13 @@ module.exports 										= {
 			});
 		}
 
+		setInterval(this.module.doInterval, 60 * 1000 * 10);
+
+		this.module.doInterval();
+	},
+	content: 										function(processor) {
+		const command 								= processor.arguments[0];
+
 		// Check if command is defined
 		if (command === undefined) {
 			// Send member points
@@ -97,7 +97,7 @@ module.exports 										= {
 					message[0] 						= message[0].toUpperCase();
 
 					// Create a new transaction
-					doTransaction(50, () => new Promise((resolve, reject) => {
+					this.module.doTransaction(50, () => new Promise((resolve, reject) => {
 						this.client.streamlabs.addAlert(this.client.config.streamLabsToken, {
 							type: 					"donation",
 							image_href: 			processor.sender.picture,
@@ -111,7 +111,7 @@ module.exports 										= {
 
 				case "play":
 					// Create a new transaction
-					doTransaction(150);
+					this.module.doTransaction(150);
 				break;
 
 				case "raffle":
@@ -142,7 +142,7 @@ module.exports 										= {
 								processor.internalError(e);
 
 								// Reset the argument
-								currentArgument 			= command;
+								this.module.currentArgument = command;
 							});
 						} else {
 							processor.sendMessage(`❗ Whoops @${processor.sender.nickname}, você errou!`);

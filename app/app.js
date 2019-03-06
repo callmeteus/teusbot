@@ -132,7 +132,7 @@ class BotApp {
 			})
 			.then((commands) => {
 				// Register all commands
-				commands.forEach((command) => client.registerCommand(command));
+				commands.forEach((command) => client.registerCommand(command.dataValues));
 
 				// Load and handler custom commands
 				const BotTimers 		= require.main.require("../data/timers.json");

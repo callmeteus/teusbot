@@ -32,7 +32,7 @@ class BotSocket extends WebSocket {
 		 * Random StreamCraft data
 		 */
 
-		this.ClientVer 							= 3e7;
+		this.ClientVer 							= 30000000;
 		this.compressVer 						= 1001;
 		this.MMCPR_ZLIB_COMPRESS 				= 1;
 		this.MMCPR_NO_COMPRESS 					= 2;
@@ -292,12 +292,7 @@ class BotSocket extends WebSocket {
 			this.debug(colors.red("<<"), response.cmd);
 
 			// 81 pong
-			if (response.cmd === 10600100) {
-				this.debug("pong received");
-				return true;
-			} else
-			// Message sent confirmation
-			if (response.cmd === 10300103) {
+			if (response.cmd === 10600100 || response.cmd === 10300103) {
 				return true;
 			} else
 			// ST???

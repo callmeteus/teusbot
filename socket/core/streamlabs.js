@@ -31,7 +31,7 @@ class BotStreamlabs {
 			scope: 					encodeURIComponent(this[configStreamLabs].scope)
         };
 
-		return "https://www.streamlabs.com/api/v1.0/authorize?" + Object.keys(params).map(k => `${k}=${params[k]}`).join("&");
+		return "https://www.streamlabs.com/api/v1.0/authorize?" + Object.keys(params).map((k) => `${k}=${params[k]}`).join("&");
 	}
 
 	getAccessToken(token) {
@@ -107,7 +107,7 @@ class BotStreamlabs {
 				}, data)
 			}, (err, response, body) => {
 				if (err || response.statusCode !== 200) {
-					const error 		= err || body.error + ": " + body.error_description || body.message;
+					const error 		= err || body.error + ": " + (body.error_description || body.message);
 					return reject(new Error(error));
 				}
 

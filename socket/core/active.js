@@ -36,12 +36,18 @@ class BotActiveSocket extends BotSocket {
 				return false;
 			}
 
+			// Start ping
+			this.doCyclePing();
+
 			// Check if it was active client
-			if (this.type === "active") {
+			if (this.type !== "active") {
+				// Start the timers
+				this.client.startTimers();
+			} else {
 				this.packets.getHistoryContribution();
 				this.packets.getWatchLiveRewardList();
 
-				// Check if configuration has studio configuration
+				// Check if configuration has studio data
 				if (this.client.config.studioConfig !== undefined) {
 					try {
 						const config 	= JSON.parse(this.client.config.studioConfig);
@@ -52,12 +58,7 @@ class BotActiveSocket extends BotSocket {
 				} else {
 					this.packets.getStudioConfig();
 				}
-			} else {
-				// Start the timers
-				this.client.startTimers();
 			}
-
-			this.doCyclePing();
 		});
 	}
 }

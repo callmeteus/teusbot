@@ -165,10 +165,6 @@ class BotClient extends EventEmitter {
 	 * @return {Number}
 	 */
 	registerCommand(data) {
-		if (data.dataValues !== undefined) {
-			data 							= data.dataValues;
-		}
-
 		// Copy command data
 		const command 						= Object.assign({}, data);
 
@@ -186,7 +182,7 @@ class BotClient extends EventEmitter {
 		const finalCommand 					= command.type === "text" || command.type === "alias" ? {
 			name: 							command.name ? command.name.toLowerCase() : null,
 			type: 							command.type,
-			content: 						command.content ? command.content : null
+			content: 						command.content
 		} : command;
 
 		return this.commands.push(finalCommand);
@@ -264,9 +260,9 @@ class BotClient extends EventEmitter {
 	 */
 	registerTimer(data) {
 		return this.timers.push({
-			name: 							data.name ? data.name : null,
-			type: 							data.type ? data.type : "invalid",
-			content: 						data.content ? data.content : null,
+			name: 							data.name || null,
+			type: 							data.type || "invalid",
+			content: 						data.content || null,
 			interval: 						data.interval ? data.interval * 1000 : Number.MAX_SAFE_INTEGER,
 			sequential: 					data.sequential || false
 		});
