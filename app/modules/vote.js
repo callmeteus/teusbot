@@ -32,7 +32,7 @@ module.exports 								= {
 					voting[arg.toLowerCase()] 	= [];
 				});
 
-				processor.sendMessage(this.getLangMessage("VOTE_START", { 
+				processor.sendMessage(this.client.getLangMessage("VOTE_START", { 
 					vote: 						{
 						options:  				processor.arguments.join(", ").toLowerCase()
 					}
@@ -56,7 +56,7 @@ module.exports 								= {
 
 				voting 							= {};
 
-				processor.sendMessage(this.getLangMessage("VOTE_END", {
+				processor.sendMessage(this.client.getLangMessage("VOTE_END", {
 					vote: 						{
 						results: 				message
 					}

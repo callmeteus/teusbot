@@ -42,7 +42,7 @@ class BotDatabase {
 				defaultValue: 	0
 			},
 			points: 			{
-				type: 			Sequelize.FLOAT(255, 2),
+				type: 			Sequelize.FLOAT(255, 2).UNSIGNED,
 				defaultValue: 	0
 			},
 			channel: 			{

@@ -12,7 +12,7 @@ const path 								= require("path");
 glob(path.join(__dirname, "modules", "**/*.js"), function(err, files) {
 	// Check if any error ocurred
 	if (err) {
-		return reject(err);
+		throw err;
 	}
 
 	// Iterate over modules
@@ -144,10 +144,14 @@ class BotApp {
 				});
 
 				// Register all modules
-				BotModules.forEach((module) => client.registerCommand(module));
+				BotModules.forEach((mod) => {
+					client.registerCommand(mod);
+					console.info("[module]", mod.name, "loaded");
+				});
 
 				// Start the client
-				client.start()
+				client
+				.start()
 				.then(resolve)
 				.catch(reject);
 			});

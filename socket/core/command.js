@@ -22,8 +22,8 @@ class BotCommand {
 		}, data));
 	}
 
-	sendMessage(message) {
-		return this.socket.sendMessage(message);
+	sendMessage(message, data) {
+		return this.socket.sendMessage(this.getMessage(message, data));
 	}
 
 	getMember(id) {
@@ -32,6 +32,21 @@ class BotCommand {
 
 	noPermission() {
 		return this.sendMessage(this.getMessage(this._botClient.getLangMessage("NO_PERMISSION")));
+	}
+
+	internalError(e) {
+		console.error("[internal error]", e);
+		return this.sendMessage(this.getMessage(this._botClient.getLangMessage("INTERNAL_ERROR")));
+	}
+
+	invalidArguments() {
+		return this.sendMessage(this.getMessage(this._botClient.getLangMessage("INVALID_ARGUMENTS")));
+	}
+
+	triggerCommand(name, args) {
+		const command 			= this._botClient.createCommand(name, args, this.socket, this.sender);
+		console.log(command);
+		return this._botClient.processCommand(command);
 	}
 }
 

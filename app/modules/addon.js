@@ -4,8 +4,8 @@ module.exports 						= {
 	content: 						function(processor) {
 		if (processor.arguments.length < 2) {
 			return processor.sendMessage(
-				processor.getMessage(this.getLangMessage("ADDON_OPTIONS"), {
-					addons: 			this.config.addons.join("ou ")
+				processor.getMessage(this.client.getLangMessage("ADDON_OPTIONS"), {
+					addons: 			this.client.config.addons.join("ou ")
 				})
 			);
 		}
@@ -14,7 +14,7 @@ module.exports 						= {
 		const index 				= processor.arguments.shift();
 
 		// Check if it's a valid addon
-		if (!this.config.addons || this.config.addons.indexOf(index) === -1) {
+		if (!this.client.config.addons || this.client.config.addons.indexOf(index) === -1) {
 			return false;
 		}
 
@@ -26,7 +26,7 @@ module.exports 						= {
 			// how to use "!addon set (something) (anything)" ¯\_(ツ)_/¯
 			if (value.length === 0) {
 				return processor.sendMessage(
-					processor.getMessage(this.getLangMessage("ADDON_VALUE_EMPTY"), {
+					processor.getMessage(this.client.getLangMessage("ADDON_VALUE_EMPTY"), {
 						addon: 		index
 					})
 				);
@@ -40,7 +40,7 @@ module.exports 						= {
 			}
 
 			// Update current member
-			this.database.MemberAddons.upsert({
+			this.client.database.MemberAddons.upsert({
 				id: 				setAddon ? setAddon.id : null,
 				member: 			processor.sender.id,
 				addon: 				index,
@@ -49,7 +49,7 @@ module.exports 						= {
 			.then(() => {
 				// Send confirmation
 				processor.sendMessage(
-					processor.getMessage(this.getLangMessage("ADDON_SET"), {
+					processor.getMessage(this.client.getLangMessage("ADDON_SET"), {
 						addon: 		{
 							value: 	value,
 							index: 	index
@@ -58,12 +58,8 @@ module.exports 						= {
 				);
 			})
 			.catch((e) => {
-				console.error("[db] addon error", e);
-				
 				// Send an internal error message
-				processor.sendMessage(
-					processor.getMessage(this.getLangMessage("INTERNAL_ERROR"))
-				);
+				c
 			});
 		} else
 		if (subCommand === "get") {
@@ -72,7 +68,7 @@ module.exports 						= {
 			// Check if sender has addon
 			if (getAddon !== undefined) {
 				processor.sendMessage(
-					processor.getMessage(this.getLangMessage("ADDON_GET"), {
+					processor.getMessage(this.client.getLangMessage("ADDON_GET"), {
 						addon: 	{
 							index: 	index,
 							value: 	getAddon.value
@@ -81,7 +77,7 @@ module.exports 						= {
 				);
 			} else {
 				processor.sendMessage(
-					processor.getMessage(this.getLangMessage("ADDON_EMPTY"), {
+					processor.getMessage(this.client.getLangMessage("ADDON_EMPTY"), {
 						addon: 	{
 							index: 	index
 						}
@@ -98,7 +94,7 @@ module.exports 						= {
 			const amount 			= processor.arguments[0] || 10;
 
 			// Get members by index and that have sent one message
-			this.database.Members.findAll({
+			this.client.database.Members.findAll({
 				where: 				{
 					messages: 		{
 						$gt: 		1
@@ -106,36 +102,31 @@ module.exports 						= {
 				},
 				include: 			{
 					as: 			"addons",
-					model:  		this.database.MemberAddons,
+					model:  		this.client.database.MemberAddons,
 					where: 			{
 						addon: 		index
 					},
 					required: 		true
 				},
 				limit: 				amount,
-				order: 				this.database.Sequelize.fn("RANDOM")
+				order: 				this.client.database.Sequelize.fn("RANDOM")
 			})
 			.then((members) => {
 				if (members.length) {
-					processor.sendMessage(processor.getMessage(this.getLangMessage("ADDON_LIST"), {
+					processor.sendMessage(processor.getMessage(this.client.getLangMessage("ADDON_LIST"), {
 						addon: 	{
 							index: 	index,
 							value: 	members.map((member) => member.addons[0].dataValues.value).join(", ")
 						}
 					}));
 				} else {
-					processor.sendMessage(processor.getMessage(this.getLangMessage("ADDON_LIST_EMPTY"), {
+					processor.sendMessage(processor.getMessage(this.client.getLangMessage("ADDON_LIST_EMPTY"), {
 						addon: 		{ index }
 					}));
 				}
 			})
 			.catch((e) => {
-				console.error("[db] addon error", e);
-				
-				// Send an internal error message
-				processor.sendMessage(
-					processor.getMessage(this.getLangMessage("INTERNAL_ERROR"))
-				);
+				processor.internalError(e);
 			});
 		}
 	}

@@ -9,13 +9,13 @@ module.exports 									= {
 				// Messaging ranking
 				case "message":
 				case "messages":
-					this.database.Members.findAll({
+					this.client.database.Members.findAll({
 						attributes: 		["nickname", "totalMessages"],
 						order: 				[["totalMessages", "DESC"]],
 						limit: 				10,
 						where: 				{
 							id: 			{
-								$not: 		this.data.data.user.uin
+								$not: 		this.client.data.data.user.uin
 							}
 						}
 					})
@@ -28,19 +28,22 @@ module.exports 									= {
 						});
 
 						processor.sendMessage(finalMsg);
+					})
+					.catch((e) => {
+						processor.internalError(e);
 					});
 				break;
 
 				// Points ranking
 				case "point":
 				case "points":
-					this.database.Members.findAll({
+					this.client.database.Members.findAll({
 						attributes: 		["nickname", "points"],
 						order: 				[["points", "DESC"]],
 						limit: 				10,
 						where: 				{
 							id: 			{
-								$not: 		this.data.data.user.uin
+								$not: 		this.client.data.data.user.uin
 							}
 						}
 					})
@@ -53,11 +56,14 @@ module.exports 									= {
 						});
 
 						processor.sendMessage(finalMsg);
+					})
+					.catch((e) => {
+						processor.internalError(e);
 					});
 				break;
 			}
 		} else {
-			processor.sendMessage(this.getLangMessage("RANKING_OPTIONS"));
+			processor.sendMessage(this.client.getLangMessage("RANKING_OPTIONS"));
 		}
 
 		return true;

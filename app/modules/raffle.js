@@ -11,11 +11,11 @@ const raffleStart 				= function(processor) {
 
 	console.info("[bot] New raffle started.");
 
-	this.emit("raffle.start");
+	this.client.emit("raffle.start");
 
 	entriesOpen 				= true;
 
-	processor.sendMessage(this.getLangMessage("RAFFLE_START"));
+	processor.sendMessage(this.client.getLangMessage("RAFFLE_START"));
 };
 
 const raffleEnd 				= function(processor) {
@@ -24,21 +24,16 @@ const raffleEnd 				= function(processor) {
 		let winner 				= entries[entries.length * Math.random() | 0];
 		let entriesCount 		= entries.length;
 
-		this.database.getMember(winner)
+		this.client.database.getMember(winner)
 		.then((member) => {
 			// Clear entries
 			raffleClear(processor);
 
 			console.info("[bot] raffle winner is", winner, member.nickname);
 
-			this.emit("raffle.winner", {
-				entries: 		entriesCount,
-				winner: 		member
-			});
-
 			entriesOpen 		= false;
 
-			const message 		= this.getLangMessage("RAFFLE_WINNER", {
+			const message 		= this.client.getLangMessage("RAFFLE_WINNER", {
 				raffle: 		{
 					entries: 	entriesCount,
 					winner: 	member.nickname + "#" + winner
@@ -49,7 +44,7 @@ const raffleEnd 				= function(processor) {
 			processor.sendMessage(message);
 
 			// Create a StreamLabs alert
-			this.streamlabs.addAlert(this.config.streamLabsToken,{
+			this.client.streamlabs.addAlert(this.client.config.streamLabsToken,{
 				type: 			"donation",
 				message: 		"Parabéns " + member.nickname + "!",
 				image_href: 	member.picture,
@@ -67,26 +62,25 @@ const raffleEnd 				= function(processor) {
 };
 
 const raffleMessage 			= function(processor) {
-	this.database.Members.findOne({
+	this.client.database.Members.findOne({
 		attributes: 			["id", "nickname"],
 		where: 					{
 			messages: 			{
 				$gt: 			1
 			}
 		},
-		order: 					[["messages", "DESC"], this.database.Sequelize.fn("RANDOM")]
+		order: 					[["messages", "DESC"], this.client.database.Sequelize.fn("RANDOM")]
 	})
 	.then((member) => {
 		// Return the winner message
-		processor.sendMessage(this.getLangMessage("RAFFLE_MSG_WINNER", {
+		processor.sendMessage(this.client.getLangMessage("RAFFLE_MSG_WINNER", {
 			raffle: 			{
 				winner: 		member.nickname + "#" + member.id
 			}
 		}));
 	})
 	.catch((e) => {
-		console.error("[bot] raffle end error:", e);
-		processor.noPermission();
+		processor.internalError(e);
 	});
 };
 
@@ -94,18 +88,21 @@ module.exports 						= {
 	name: 							"raffle",
 	type: 							"module",
 	content: 						function(processor) {
-		// Check if has arguments
-		if (processor.arguments.length === 0 && entriesOpen && entries.indexOf(processor.sender.id) === -1) {
-			// Add nickname to the entries
-			entries.push(processor.sender.id);
+		// Check if has arguments and raffle entries are open
+		if (processor.arguments.length === 0 && entriesOpen) {
+			// Check if user isn't already in the raffle
+			if (entries.indexOf(processor.sender.id) === -1) {
+				// Add nickname to the entries
+				entries.push(processor.sender.id);
 
-			// Randomize the array every time someone
-			// join the raffle
-			entries 				= entries.sort(function() {
-				return .5 - Math.random();
-			});
+				// Randomize the array every time someone
+				// join the raffle
+				entries 			= entries.sort(function() {
+					return .5 - Math.random();
+				});
 
-			console.info("[bot]", processor.sender.id, processor.sender.nickname, "entered the raffle.");
+				console.info("[bot]", processor.sender.id, processor.sender.nickname, "entered the raffle.");
+			}
 		} else
 		// Check if it's a mod
 		if (processor.sender.isMod) {

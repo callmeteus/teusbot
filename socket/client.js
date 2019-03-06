@@ -1,5 +1,5 @@
 const EventEmitter 							= require("events");
-const m3u8Parser 							= require("m3u8-parser");
+const m3u8Parser 							= require("m3u8-parser").Parser;
 
 const BotCommand 							= require("./core/command");
 const BotActiveSocket 						= require("./core/active");
@@ -114,17 +114,20 @@ class BotClient extends EventEmitter {
 					url: 					authData.data.streams.RecvRtmpResolutionList[0].ResolutionHls,
 					method: 				"GET",
 					json: 					false
-				}, function(err, res, body) {
+				}, (err, res, body) => {
 					if (err) {
 						return reject(new Error("Error retrieving m3u8 stream information file: " + err));
 					}
 
 					const parser 			= new m3u8Parser();
+
 					parser.push(body);
 					parser.end();
 
 					// Calculate stream start date
-					this.stream.started 	= new Date() - (parser.manifest.mediaSequence * parser.manifest.targetDuration);
+					this.stream.started 	= new Date();
+					this.stream.started 	= this.stream.started.getTime() + ((parser.manifest.mediaSequence * parser.manifest.targetDuration) * 1000);
+
 					this.stream.online 		= true;
 
 					resolve();
@@ -162,17 +165,96 @@ class BotClient extends EventEmitter {
 	 * @return {Number}
 	 */
 	registerCommand(data) {
-		// Check if is an addon
-		if (data.type === "addon") {
-			// Instantiate it
-			return data.content.call(this);;
+		if (data.dataValues !== undefined) {
+			data 							= data.dataValues;
 		}
 
-		return this.commands.push({
-			name: 							data.name ? data.name.toLowerCase() : null,
-			type: 							data.type ? data.type : "unknown",
-			content: 						data.content ? data.content : null
+		// Copy command data
+		const command 						= Object.assign({}, data);
+
+		// Check if is an addon
+		if (command.type === "addon") {
+			// Instantiate it
+			return command.content.call(this.getCommandContext(command));
+		}
+
+		// Check if contains onEnter
+		if (command.onEnter !== undefined) {
+			command.onEnter.call(this.getCommandContext(command));
+		}
+
+		const finalCommand 					= command.type === "text" || command.type === "alias" ? {
+			name: 							command.name ? command.name.toLowerCase() : null,
+			type: 							command.type,
+			content: 						command.content ? command.content : null
+		} : command;
+
+		return this.commands.push(finalCommand);
+	}
+
+	/**
+	 * Get the command function context
+	 * @param  {Object} module [description]
+	 * @return {Object}        [description]
+	 */
+	getCommandContext(module) {
+		return {
+			client: 						this,
+			module: 						module,
+			socket: 						this.sockets.passive
+		};
+	}
+
+	/**
+	 * Process a command
+	 * @param  {BotCommand} processor Command processor
+	 * @return {Boolean}
+	 */
+	processCommand(processor) {
+		if (processor.command === "commands" || processor.command === "comandos") {
+			return processor.sendMessage(this.commands.filter((cmd) => cmd !== null).map((cmd) => "!" + cmd.name).join(", "));
+		}
+
+		// Get all available command handlers
+		const handlers 						= this.commands.filter((cmd) => cmd.name === processor.command);
+
+		// Check if command exists
+		if (handlers.length === 0) {
+			return false;
+		}
+
+		// Iterate over all handlers
+		handlers.forEach((handler) => {
+			// Check if it's a text command
+			if (handler.type === "text") {
+				// Send the message
+				processor.sendMessage(
+					processor.getMessage(handler.content)
+				);
+			} else 
+			// Check if it's an alias command
+			if (handler.type === "alias") {
+				// Separate command from arguments
+				const args 					= handler.content.split(" ");
+				const cmd 					= args.shift().replace("!", "");
+
+				// Add current command arguments
+				processor.arguments.forEach((arg) => args.push(arg));
+
+				// Create the processor
+				const command 				= this.createCommand(cmd, args, this.sockets.passive, processor.sender);
+
+				this.processCommand(command);
+			} else
+			// Check if it's a module command
+			if (handler.type === "module") {
+				handler.content.call(this.getCommandContext(handler), processor);
+			} else {
+				console.error("[bot] unknown command type", handler.type, "for command", processor.command);
+			}
 		});
+
+		return false;
 	}
 
 	/**
@@ -227,58 +309,6 @@ class BotClient extends EventEmitter {
 				clearInterval(timer.instance);
 			}
 		});
-	}
-
-	/**
-	 * Process a command
-	 * @param  {BotCommand} processor Command processor
-	 * @return {Boolean}
-	 */
-	processCommand(processor) {
-		if (processor.command === "commands" || processor.command === "comandos") {
-			return processor.sendMessage(this.commands.filter((cmd) => cmd !== null).map((cmd) => "!" + cmd.name).join(", "));
-		}
-
-		// Get all available command handlers
-		const handlers 						= this.commands.filter((cmd) => cmd.name === processor.command);
-
-		// Check if command exists
-		if (handlers.length === 0) {
-			return false;
-		}
-
-		// Iterate over all handlers
-		handlers.forEach((handler) => {
-			// Check if it's a text command
-			if (handler.type === "text") {
-				// Send the message
-				processor.sendMessage(
-					processor.getMessage(handler.content)
-				);
-			} else 
-			// Check if it's an alias command
-			if (handler.type === "alias") {
-				// Separate command from arguments
-				const args 					= handler.content.split(" ");
-				const cmd 					= args.shift().replace("!", "");
-
-				// Add current command arguments
-				processor.arguments.forEach((arg) => args.push(arg));
-
-				// Create the processor
-				const command 				= this.createCommand(cmd, args, this.sockets.passive, processor.sender);
-
-				this.processCommand(command);
-			} else
-			// Check if it's a module command
-			if (handler.type === "module") {
-				handler.content.call(this, processor);
-			} else {
-				console.error("[bot] unknown command type", handler.type, "for command", processor.command);
-			}
-		});
-
-		return false;
 	}
 
 	/**

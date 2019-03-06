@@ -529,13 +529,6 @@ class BotSocket extends WebSocket {
 	}
 
 	sendMessage(message, emoji, emojiAmount) {
-		// Check if bot can reply or
-		// if the stream is online
-		// and it's not a debug
-		if ((!this.client.config.canReply || !this.client.stream.online) && !this.client.isDebug) {
-			return false;
-		}
-
 		const seq					= this.seqno(),
 			amount					= emojiAmount ? parseInt(emojiAmount) : 0,
 			date					= Math.ceil((new Date).getTime() / 1000),
@@ -552,6 +545,15 @@ class BotSocket extends WebSocket {
 					CreateTime: 	date
 				}]
 		};
+
+		this.debug(">", message);
+
+		// Check if bot can reply or
+		// if the stream is online
+		// and it's not a debug
+		if ((!this.client.config.canReply || !this.client.stream.online) && !this.client.isDebug) {
+			return false;
+		}
 
 		// Send the message to server
 		this.sendPacket(300103, this.jsonstr(data, seq), seq);

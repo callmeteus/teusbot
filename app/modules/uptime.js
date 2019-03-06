@@ -2,14 +2,14 @@ module.exports 						= {
 	name: 							"uptime",
 	type: 							"module",
 	content: 						function(processor) {
-		if (!this.stream.online) {
+		if (!this.client.stream.online) {
 			return processor.sendMessage(
-				processor.getMessage(this.getLangMessage("UPTIME_OFFLINE"))
+				processor.getMessage(this.client.getLangMessage("UPTIME_OFFLINE"))
 			);
 		}
 
 		const end 				= new Date();
-		const start 			= this.stream.started;
+		const start 			= this.client.stream.started;
 
 		let uptime 				= (end - start) / 1000;
 
@@ -22,7 +22,7 @@ module.exports 						= {
 		const upSeconds 		= Math.floor(uptime / 60);
 
 		return processor.sendMessage(
-			processor.getMessage(this.getLangMessage("UPTIME"), {
+			processor.getMessage(this.client.getLangMessage("UPTIME"), {
 				uptime: 		{
 					hours: 		("" + upHours).padStart(2, "0"),
 					minutes: 	("" + upMinutes).padStart(2, "0"),
