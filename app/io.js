@@ -99,7 +99,7 @@ module.exports 						= function(io) {
 				.spread(() => {
 					socket.emit("register", {
 						channel: 	data.channel
-					})
+					});
 				})
 				.catch((err) => {
 					socket.emit("register", {

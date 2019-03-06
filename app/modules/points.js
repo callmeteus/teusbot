@@ -56,7 +56,7 @@ module.exports 										= {
 				.then(() => {
 					this.client.emit("module.points", {
 						sender: 					processor.sender,
-						command: 					command,
+						command: 					processor.arguments[0],
 						amount: 					amount
 					});
 
@@ -67,7 +67,7 @@ module.exports 										= {
 				})
 				.catch((e) => processor.internalError(e));
 			});
-		}
+		};
 
 		setInterval(this.module.doInterval, 60 * 1000 * 10);
 
