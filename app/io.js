@@ -112,7 +112,7 @@ module.exports 						= function(io) {
 			.catch((err) => {
 				socket.emit("register", {
 					error: 			err
-				})
+				});
 			});
 		});
 

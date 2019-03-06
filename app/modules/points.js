@@ -19,7 +19,7 @@ module.exports 										= {
 			}
 		};
 
-		this.module.doTransaction 					= (amount, action) => {
+		this.module.doTransaction 					= (processor, amount, action) => {
 			// Check if sender have enough points
 			// to complete the transaction
 			if (processor.sender.points <= amount) {
@@ -97,7 +97,7 @@ module.exports 										= {
 					message[0] 						= message[0].toUpperCase();
 
 					// Create a new transaction
-					this.module.doTransaction(50, () => new Promise((resolve, reject) => {
+					this.module.doTransaction(processor, 50, () => new Promise((resolve, reject) => {
 						this.client.streamlabs.addAlert(this.client.config.streamLabsToken, {
 							type: 					"donation",
 							image_href: 			processor.sender.picture,
@@ -111,7 +111,7 @@ module.exports 										= {
 
 				case "play":
 					// Create a new transaction
-					this.module.doTransaction(150);
+					this.module.doTransaction(processor, 150);
 				break;
 
 				case "raffle":

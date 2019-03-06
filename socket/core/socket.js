@@ -525,11 +525,11 @@ class BotSocket extends WebSocket {
 
 	sendMessage(message, emoji, emojiAmount) {
 		const seq					= this.seqno(),
-			amount					= emojiAmount ? parseInt(emojiAmount) : 0,
+			amount					= emojiAmount ? parseInt(emojiAmount, 10) : 0,
 			date					= Math.ceil((new Date).getTime() / 1000),
 			id						= `IGG_TEXT#${this._sid}#${this._uin}#${amount}#${date}`,
 			data					= {
-			Count: 					1,
+				Count: 				1,
 				List: 				[{
 					MsgType: 		1,
 					StudioId: 		this._sid,

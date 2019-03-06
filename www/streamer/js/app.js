@@ -53,7 +53,7 @@ const socket 					= io({
 
 	socket.on("auth", (success) => {
 		if (!success) {
-			renderTemplate("login");
+			window.renderTemplate("login");
 		} else {
 			socket.emit("data");
 		}

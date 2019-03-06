@@ -91,7 +91,7 @@ module.exports 						= {
 				// Randomize the array every time someone
 				// join the raffle
 				entries 			= entries.sort(function() {
-					return .5 - Math.random();
+					return 0.5 - Math.random();
 				});
 			}
 		} else

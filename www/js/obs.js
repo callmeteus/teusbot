@@ -79,6 +79,46 @@
 
 	let template 				= null;
 
+	function appPrepareNotification($element, callback) {
+		const $preload 			= $element.find("img, audio");
+		const count 			= $preload.length;
+
+		let actual 				= 0;
+		let cancelled 			= false;
+
+		if ($preload.length === 0) {
+			callback();
+		}
+
+		// Preloader images
+		$preload.each(function() {
+			const src 			= $(this).attr("src");
+			const element 		= $(this).is("audio") ? new Audio() : new Image();
+
+			element.src 		= src;
+
+			$(element).on("load canplaythrough", function() {
+				actual++;
+
+				if (actual === count && !cancelled) {
+					callback();
+				}
+			});
+
+			$(element).on("error stalled", function() {
+				if (!cancelled) {
+					cancelled 	= true;
+					appPrepareNotification($element, callback);
+				}
+			});
+		});
+
+		// Replace animated images with gifffer attributes
+		$element.find("img[animated]").each(function() {
+			$(this).attr("data-gifffer", $(this).attr("src")).removeAttr("src");
+		});
+	}
+
 	/**
 	 * Create a module notification in the screen
 	 * @param  {Object} data Notification data
@@ -154,46 +194,6 @@
 			if (app.queue.length) {
 				appProcessQueue();
 			}
-		});
-	}
-
-	function appPrepareNotification($element, callback) {
-		const $preload 			= $element.find("img, audio");
-		const count 			= $preload.length;
-
-		let actual 				= 0;
-		let cancelled 			= false;
-
-		if ($preload.length === 0) {
-			callback();
-		}
-
-		// Preloader images
-		$preload.each(function() {
-			const src 			= $(this).attr("src");
-			const element 		= $(this).is("audio") ? new Audio() : new Image();
-
-			element.src 		= src;
-
-			$(element).on("load canplaythrough", function() {
-				actual++;
-
-				if (actual === count && !cancelled) {
-					callback();
-				}
-			});
-
-			$(element).on("error stalled", function() {
-				if (!cancelled) {
-					cancelled 	= true;
-					appPrepareNotification($element, callback);
-				}
-			});
-		});
-
-		// Replace animated images with gifffer attributes
-		$element.find("img[animated]").each(function() {
-			$(this).attr("data-gifffer", $(this).attr("src")).removeAttr("src");
 		});
 	}
 
