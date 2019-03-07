@@ -10,7 +10,7 @@ class BotDatabase {
 		this.Sequelize 			= Sequelize;
 
 		// Create the sequelize instance
-		this.sequelize 			= new Sequelize(process.env.JAWSDB_URL, {
+		this.sequelize 			= new Sequelize(process.env.JAWSDB_URL || process.env.JAWSDB_MARIA_URL, {
 			dialect: 			"mysql",
 			dialecOptions: 		{
 				charset: 		"utf8mb4"
