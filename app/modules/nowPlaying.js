@@ -52,7 +52,7 @@ function getCurrentPlaying() {
 					case "opera":
 						// Check if has YouTube in the title
 						if (min.indexOf("- youtube") > -1) {
-							resolve(title.split(" - YouTube")[0]);
+							resolve({ song: title.split(" - YouTube")[0], from: "YouTube" });
 							return true;
 						}
 					break;
@@ -60,7 +60,7 @@ function getCurrentPlaying() {
 					case "spotify":
 						// Bug fix for Spotify drag thing
 						if (min !== "n/a" && min !== "drag" && min !== "anglehiddenwindow") {
-							resolve(title.indexOf("Spotify") > -1 ? "Paused" : title);
+							resolve({ song: title.indexOf("Spotify") > -1 ? "Paused" : title, from: "Spotify" });
 							return true;
 						}
 					break;
@@ -76,27 +76,36 @@ module.exports 								= {
 	name: 									"nowplaying",
 	type: 									"module",
 	onEnter: 								function() {
+		this.module.current 				= {};
+
 		setInterval(() => {
 			const songRequest 				= this.client.getModule("songrequest");
 
 			new Promise((resolve, reject) => {
-				if (songRequest.isOpen) {
-					this.module.song 		= songRequest.song || "None";
-					resolve();
+				// Check if song request is open
+				if (songRequest.isOpen && songRequest.song) {
+					// Get the song from SongRequest
+					resolve(songRequest.song, "Song Request");
 				} else {
-					getCurrentPlaying()
-					.then((song) => {
-						this.module.song 	= song;
-						resolve();
-					});
-				}	
+					// Get the song from current playing
+					getCurrentPlaying().then(resolve);
+				}
 			})
-			.then(() => {
-				fs.writeFileSync(__dirname + "/../../data/nowplaying.txt", this.module.song, "utf8");
-			});		
+			.then((current) => {
+				// Check if is playing a different song
+				if (current.song !== this.module.current.song) {
+					this.module.current 	= {
+						song: 				current.song,
+						from: 				current.from
+					};
+
+					// Send the update to client
+					this.client.emit("nowplaying.update", this.module.current);
+				}
+			});
 		}, 1000);
 	},
 	content: 						function(processor) {
-		return processor.sendMessage(this.module.song);
+		return processor.sendMessage(this.module.current.song);
 	}
 };

@@ -1,19 +1,33 @@
-<div class="list-group" id="bot-settings">
-	<a href="/streamer/streamlabs" target="_blank" class="list-group-item">
-		Authenticate with StreamLabs
-	</a>
-
-	<div class="list-group-item">
-		<div class="custom-control custom-checkbox mr-sm-2">
-			<input type="checkbox" class="custom-control-input" id="settingsAutoEnter" name="autoEnter" />
-			<label class="custom-control-label" for="settingsAutoEnter">Auto enter my channel</label>
-		</div>
+<div id="bot-settings">
+	<div class="list-group mb-3">
+		<a href="/streamer/streamlabs" target="_blank" class="list-group-item">
+			Authenticate with StreamLabs
+		</a>
 	</div>
 
-	<div class="list-group-item">
-		<div class="custom-control custom-checkbox mr-sm-2">
-			<input type="checkbox" class="custom-control-input" id="settingsCanReply" name="canReply" />
-			<label class="custom-control-label" for="settingsCanReply">Bot can respond to commands and send messages</label>
+	<div class="list-group">
+		<div class="list-group-item">
+			<div class="mr-sm-2">
+				<label for="settingsLanguage">Language</label>
+				<select class="form-control custom-select" id="settingsLanguage" name="language">
+					<option value="en"<%=(data.language === "en" ? " selected" : "")%>>English</option>
+					<option value="pt"<%=(data.language === "pt" ? " selected" : "")%>>Português do Brasil</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="list-group-item">
+			<div class="custom-control custom-checkbox mr-sm-2">
+				<input type="checkbox" class="custom-control-input" id="settingsAutoEnter" name="autoEnter"<%=data.autoEnter ? " checked" : ""%> />
+				<label class="custom-control-label" for="settingsAutoEnter">Auto enter my channel</label>
+			</div>
+		</div>
+
+		<div class="list-group-item">
+			<div class="custom-control custom-checkbox mr-sm-2">
+				<input type="checkbox" class="custom-control-input" id="settingsCanReply" name="canReply"<%=data.canReply ? " checked" : ""%> />
+				<label class="custom-control-label" for="settingsCanReply">Bot can respond to commands and send messages</label>
+			</div>
 		</div>
 	</div>
 </div>

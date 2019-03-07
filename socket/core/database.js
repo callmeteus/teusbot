@@ -88,11 +88,38 @@ class BotDatabase {
 			content: 			{
 				type: 			Sequelize.STRING,
 				allowNull: 		false
-			},
-			active: 			{
-				type: 			Sequelize.BOOLEAN,
-				defaultValue: 	true
 			}
+		});
+
+		// Define bot timers
+		this.BotTimers 			= this.sequelize.define("botTimer", {
+			channel: 			{
+				type: 			Sequelize.INTEGER.UNSIGNED,
+				allowNull: 		false
+			},
+			name: 				{
+				type: 			Sequelize.STRING,
+				allowNull: 		false
+			},
+			type: 				{
+				type: 			Sequelize.ENUM("text", "command"),
+				allowNull: 		false
+			},
+			content: 			{
+				type: 			Sequelize.STRING,
+				allowNull: 		false
+			},
+			interval: 			{
+				type: 			Sequelize.INTEGER,
+				defaultValue: 	1
+			}
+		});
+
+		// Define bot language
+		this.BotLanguages 		= this.sequelize.define("botLanguage", {
+			language: 			Sequelize.ENUM("pt", "en"),
+			key: 				Sequelize.STRING,
+			value: 				Sequelize.STRING(500)
 		});
 
 		// Define bot configuration
@@ -147,6 +174,23 @@ class BotDatabase {
 	}
 
 	/**
+	 * Get current bot timers
+	 * @return {Promise}
+	 */
+	getTimers(channel) {
+		return new Promise((resolve, reject) => {
+			this.BotTimers.findAll({
+				where: 				{
+					channel: 		channel
+				},
+				attributes: 		["id", "name", "type", "content", "createdAt", "updatedAt"]
+			})
+			.then(resolve)
+			.catch(reject);
+		});
+	}
+
+	/**
 	 * Get current bot configuration
 	 * @return {Promise}
 	 */
@@ -169,6 +213,7 @@ class BotDatabase {
 				config.canReply 	= config.canReply === "1";
 				config.autoEnter 	= config.autoEnter === "1";
 				config.active 		= config.active === "1";
+				config.language 	= config.language || "en";
 
 				resolve(config);
 			})

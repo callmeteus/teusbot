@@ -10,11 +10,7 @@ module.exports 						= function(io) {
 			})
 			.then((channel) => {
 				if (channel !== null) {
-					socket.channel 	= channel.channel;
-					socket.token 	= token;
-
 					socket.join(socket.channel);
-
 					socket.emit("auth", true);
 				} else {
 					socket.emit("auth", false);
@@ -64,6 +60,11 @@ module.exports 						= function(io) {
 			})
 			.then((commands) => {
 				data.commands 		= commands;
+
+				return this.database.getTimers(socket.channel);
+			})
+			.then((timers) => {
+				data.timers 		= timers;
 				socket.emit("data", data);
 			})
 			.catch((err) => {
@@ -83,6 +84,10 @@ module.exports 						= function(io) {
 
 			if (client.getModule("songrequest") !== undefined) {
 				socket.emit("obs.data", "songrequest.update", client.getModule("songrequest").playlist);
+			}
+
+			if (client.getModule("nowplaying") !== undefined) {
+				socket.emit("obs.data", "nowplaying.update", client.getModule("nowplaying").current);
 			}
 		});
 

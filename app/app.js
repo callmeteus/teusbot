@@ -47,6 +47,9 @@ class BotApp {
 		// Bot clients handler
 		this.clients 					= [];
 
+		// Bot languages
+		this.languages 					= [];
+
 		// Streamlabs config
 		const slConfig 					= {
 			id: 						process.env.STREAMLABS_ID,
@@ -64,6 +67,14 @@ class BotApp {
 			// Startup the database
 			this.database.start()
 			.then(() => {
+				// Get all available language strings
+				return this.database.BotLanguages.findAll({
+					order: 				[["language", "DESC"]]
+				});
+			})
+			.then((languages) => {
+				this.languages 			= languages.map((item) => item.toJSON());
+
 				// Get all channels that need auto enter
 				return this.database.Configs.findAll({
 					where: 				{
@@ -99,7 +110,7 @@ class BotApp {
 
 	createBotClient(channel) {
 		// Create a new bot client
-		const botClient 				= new BotClient(null, this);			
+		const botClient 				= new BotClient(this);			
 
 		return new Promise((resolve, reject) => {
 			// Get bot config
@@ -125,8 +136,7 @@ class BotApp {
 			// Get all channel custom active commands
 			this.database.BotCommands.findAll({
 				where: 					{
-					channel: 			client.config.channel,
-					active: 			true
+					channel: 			client.config.channel
 				},
 				attributes: 			["name", "type", "content"]
 			})
@@ -134,14 +144,17 @@ class BotApp {
 				// Register all commands
 				commands.forEach((command) => client.registerCommand(command.dataValues));
 
-				// Load and handler custom commands
-				const BotTimers 		= require.main.require("../data/timers.json");
-
-				// Iterate over timers
-				BotTimers.forEach((timer) => {
-					// Register timer
-					client.registerTimer(timer);
+				// Get all channel timers
+				return this.database.BotTimers.findAll({
+					where: 				{
+						channel: 		client.config.channel,
+					},
+					attributes: 		["name", "type", "content", "interval"]
 				});
+			})
+			.then((timers) => {
+				// Register all timers
+				timers.forEach((timer) => client.registerTimer(timer));
 
 				// Register all modules
 				BotModules.forEach((mod) => {
@@ -149,11 +162,13 @@ class BotApp {
 					console.info("[module]", mod.name, "loaded");
 				});
 
-				// Start the client
-				client
-				.start()
-				.then(resolve)
-				.catch(reject);
+				// Start the client async
+				process.nextTick(() => {
+					client
+					.start()
+					.then(resolve)
+					.catch(reject);
+				});
 			});
 		});
 	}

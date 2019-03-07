@@ -1,0 +1,18 @@
+<div class="list-group-item bot-timer" data-id="<%=data.timer.id%>" data-timer="<%=data.timer.name%>">
+	<div class="d-flex justify-content-between mb-1">
+		<h5 class="mt-2"><%=data.timer.name%></h5>
+		<span><%=(data.timer.type[0].toUpperCase() + data.timer.type.substr(1))%></span>
+	</div>
+
+	<div class="btn-group float-right">
+		<button class="btn btn-danger" data-type="remove" title="Remove !<%=data.timer.name%>">
+			<i class="fa fa-fw fa-times"></i>
+		</button>
+
+		<button class="btn btn-light" data-type="edit" title="Edit !<%=data.timer.name%>">
+			<i class="fa fa-fw fa-edit"></i>
+		</button>
+	</div>
+
+	<%-data.timer.content%>
+</div>

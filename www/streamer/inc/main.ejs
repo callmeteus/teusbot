@@ -35,7 +35,7 @@
 		</li>
 
 		<li class="nav-item">
-			<a class="nav-link" href="#nav-language" data-toggle="tab">Language</a>
+			<a class="nav-link" href="#nav-timers" data-toggle="tab">Timers</a>
 		</li>
 
 		<li class="nav-item">
@@ -63,16 +63,11 @@
 		</div>
 
 		<div class="tab-pane fade" id="nav-commands">
-			<button class="btn btn-lg btn-primary btn-block mb-3" data-toggle="modal" data-target="#add-command">
-				<i class="fa fa-fw fa-plus"></i>
-				Add a new command
-			</button>
-
 			<%-renderTemplate("partials/commands")%>
 		</div>
 
-		<div class="tab-pane fade" id="nav-language">
-			<%-renderTemplate("partials/language")%>
+		<div class="tab-pane fade" id="nav-timers">
+			<%-renderTemplate("partials/timers")%>
 		</div>
 
 		<div class="tab-pane fade" id="nav-settings">
