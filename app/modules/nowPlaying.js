@@ -88,7 +88,8 @@ module.exports 								= {
 					resolve(songRequest.song, "Song Request");
 				} else {
 					// Get the song from current playing
-					getCurrentPlaying().then(resolve);
+					//getCurrentPlaying().then(resolve);
+					resolve({ song: "None", from: "None" });
 				}
 			})
 			.then((current) => {
