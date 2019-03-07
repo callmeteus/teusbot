@@ -47,7 +47,7 @@ module.exports 					= function(router, bot) {
 			res.json({ success: true });
 		})
 		.catch((err) => {
-			res.json({ success: false, error: "Internal error." });
+			res.json({ error: "Internal error." });
 			throw err;
 		});
 	});
@@ -55,26 +55,29 @@ module.exports 					= function(router, bot) {
 	router.post("/api/register", (req, res) => {
 		const data 				= {
 			email: 				req.body.email,
-			password: 			md5(req.body.password)
+			password: 			md5(req.body.password),
+			channel: 			req.body.channel
 		};
 
 		// Count users with given email or channels
 		bot.database.Configs.count({
-			where: 				[
-				{
-					key: 		"email",
-					value: 		data.email
-				},
-				{
-					channel: 	data.channel
-				}
-			]
+			where: 				{
+				$or: 			[
+					{
+						key: 	"email",
+						value: 	data.email
+					},
+					{
+						channel:data.channel
+					}
+				]
+			}
 		})
 		.then((count) => {
 			// Check is any user has the
 			// email or channel ID
 			if (count > 0) {
-				return res.json({ success: false, error: "Email or channel already exists." });
+				throw new Error("Email or channel already exists");
 			}
 
 			// Try to authenticate with StreamCraft
@@ -88,18 +91,16 @@ module.exports 					= function(router, bot) {
 				{ key: "deviceId", value: Math.random().toString(12).substring(2), channel: data.channel }
 			])
 			.spread(() => {
-				res.json({ success: true, channel: data.channel });
+				res.json({ channel: data.channel });
 			})
 			.catch((err) => {
-				res.json({ success: false, error: "Internal error." });
+				res.json({ error: "Internal error." });
 
 				throw err;
 			});
 		})
 		.catch((err) => {
-			socket.emit("register", {
-				error: 			err
-			});
+			res.json({ error: err.message });
 		});
 	});
 

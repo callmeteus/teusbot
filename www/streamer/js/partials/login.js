@@ -21,7 +21,7 @@ $(function() {
 			email, password
 		}, function(data) {
 			if (data.error) {
-				alert(data.error);
+				bootbox.alert(data.error);
 				$form.find("input").prop("disabled", false);
 			} else {
 				socket.connect();
@@ -36,7 +36,7 @@ $(function() {
 
 		const email 		= $form.find("input[name=email]").val().toLowerCase();
 		const password 		= $form.find("input[name=password]").val().toLowerCase();
-		let channel 		= $form.find("input[name=channel]").val().split("/");
+		const channel 		= $form.find("input[name=channel]").val().split("/");
 
 		// Check if has 4 slashes
 		if (channel.length < 4) {
@@ -45,19 +45,15 @@ $(function() {
 
 		$form.find("input").prop("disabled", true);
 
-		socket.once("register", (data) => {
+		$.post("/api/register", {
+			email, password, channel: channel[4]
+		}, function(data) {
 			if (data.error) {
-				alert(data.error);
+				bootbox.alert(data.error);
 				$form.find("input").prop("disabled", false);
 			} else {
-				localStorage.setItem("botToken", data.token);
+				bootbox.alert("Successfully registered! Now wait for anyone to aprove your register.");
 			}
-		});
-
-		socket.emit("register", {
-			email: 			email,
-			password: 		password,
-			channel: 		channel[4]
 		});
 	});
 });
