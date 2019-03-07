@@ -20,7 +20,7 @@ module.exports 					= function(router, bot) {
 		})
 		.then((email) => {
 			if (email === null) {
-				return socket.emit("login", {
+				return res.json({
 					error: 		"Invalid email address"
 				});
 			}
@@ -37,7 +37,7 @@ module.exports 					= function(router, bot) {
 		})
 		.then((count) => {
 			if (count === 0) {
-				return socket.emit("login", {
+				return res.json({
 					error: 		"The password you've entered is incorrect."
 				});
 			}
@@ -74,7 +74,7 @@ module.exports 					= function(router, bot) {
 			// Check is any user has the
 			// email or channel ID
 			if (count > 0) {
-				return req.json({ success: false, error: "Email or channel already exists." });
+				return res.json({ success: false, error: "Email or channel already exists." });
 			}
 
 			// Try to authenticate with StreamCraft
@@ -88,10 +88,10 @@ module.exports 					= function(router, bot) {
 				{ key: "deviceId", value: Math.random().toString(12).substring(2), channel: data.channel }
 			])
 			.spread(() => {
-				req.json({ success: true, channel: data.channel });
+				res.json({ success: true, channel: data.channel });
 			})
 			.catch((err) => {
-				req.json({ success: false, error: "Internal error." });
+				res.json({ success: false, error: "Internal error." });
 
 				throw err;
 			});
