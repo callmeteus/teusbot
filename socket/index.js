@@ -4,6 +4,9 @@ const m3u8Parser 							= require("m3u8-parser").Parser;
 const BotCommand 							= require("./core/command");
 const BotActiveSocket 						= require("./core/active");
 
+const botApp 								= Symbol("botApp");
+const botLanguage 							= Symbol("botLanguage");
+
 class BotClient extends EventEmitter {
 	constructor(app) {
 		super();
@@ -11,7 +14,7 @@ class BotClient extends EventEmitter {
 		this.isDebug 						= true;
 
 		// Save app instance
-		this.app 							= app;
+		this[botApp] 						= app;
 
 		// Save database instance
 		this.database 						= app.database;
@@ -52,7 +55,7 @@ class BotClient extends EventEmitter {
 		this.botMember 						= {};
 
 		// Language handler
-		this.language 						= [];
+		this[botLanguage] 					= [];
 
 		// Client instance id
 		this.instance 						= null;
@@ -78,11 +81,11 @@ class BotClient extends EventEmitter {
 			return false;
 		}
 
-		endpoint.forEach((end) => this.app.io.of("/" + end).in(this.data.data.user.uin).emit("obs.data", type, data));
+		endpoint.forEach((end) => this[botApp].io.of("/" + end).in(this.data.data.user.uin).emit("obs.data", type, data));
 	}
 
 	getLangMessage(index, data) {
-		const language 						= this.language.find((item) => item.key === index);
+		const language 						= this[botLanguage].find((item) => item.key === index);
 
 		if (language === undefined) {
 			return "Missing translation for '" + index + "'";
@@ -106,17 +109,17 @@ class BotClient extends EventEmitter {
 	start() {
 		return new Promise((resolve, reject) => {
 			// Authenticate the bot with given configuration
-			this.app.auth.login(this.config.email, this.config.password)
+			this[botApp].auth.login(this.config.email, this.config.password)
 			.then(() => {
 				// Get bot user info
-				return this.app.auth.getInfo(this.config.channel);
+				return this[botApp].auth.getInfo(this.config.channel);
 			})
 			.then((data) => {
 				// Set channel data
 				this.data 					= data;
 
 				// Get language items filtering by language
-				this.language 				= this.app.languages.filter((item) => item.language === this.config.language);
+				this[botLanguage] 			= this[botApp].languages.filter((item) => item.language === this.config.language);
 
 				this.createClient("passive");
 				this.createClient("active");
@@ -136,7 +139,7 @@ class BotClient extends EventEmitter {
 				}
 
 				// Get M3U8 file to parse stream start time
-				this.app.auth.request({
+				this[botApp].auth.request({
 					url: 					authData.data.streams.RecvRtmpResolutionList[0].ResolutionHls,
 					method: 				"GET",
 					json: 					false

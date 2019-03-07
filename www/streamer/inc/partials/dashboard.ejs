@@ -2,17 +2,17 @@
 	<div id="bot-data" class="col-8 pl-0">
 		<div class="card">
 			<div class="card-header">
-				<h4 class="stream-title card-title mb-0"><%=data.stream.title%></h4>
+				<h4 class="stream-title card-title mb-0"><%=data.stream.title || "No title"%></h4>
 			</div>
 		
 			<div class="card-body border-bottom d-flex">
 				<div class="col-6 text-center p-3 border-right">
-					<h1 class="stream-viewers"><%=data.stream.viewers%></h1>
+					<h1 class="stream-viewers"><%=data.stream.viewers || 0%></h1>
 					<span>VIEWERS</span>
 				</div>
 
 				<div class="col-6 text-center p-3">
-					<h1 class="stream-views"><%=data.stream.views%></h1>
+					<h1 class="stream-views"><%=data.stream.views || 0%></h1>
 					<span>VIEWS</span>
 				</div>
 			</div>

@@ -43,7 +43,6 @@ module.exports 						= function(io) {
 				delete data.deviceId;
 				delete data.studioConfig;
 				delete data.token;
-				delete data.streamLabsToken;
 
 				const client 		= this.getClient(socket.channel);
 				data.isOnline 		= (client !== undefined);
