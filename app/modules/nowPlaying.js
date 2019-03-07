@@ -72,16 +72,28 @@ function getCurrentPlaying() {
 	});
 }
 
-module.exports 						= {
-	name: 							"nowplaying",
-	type: 							"module",
-	onEnter: 						function() {
+module.exports 								= {
+	name: 									"nowplaying",
+	type: 									"module",
+	onEnter: 								function() {
 		setInterval(() => {
-			getCurrentPlaying().then((playing) => {
-				this.module.song	= playing;
+			const songRequest 				= this.client.getModule("songrequest");
 
-				fs.writeFileSync(__dirname + "/../../data/nowplaying.txt", playing, "utf8");
-			});
+			new Promise((resolve, reject) => {
+				if (songRequest.isOpen) {
+					this.module.song 		= songRequest.song || "None";
+					resolve();
+				} else {
+					getCurrentPlaying()
+					.then((song) => {
+						this.module.song 	= song;
+						resolve();
+					});
+				}	
+			})
+			.then(() => {
+				fs.writeFileSync(__dirname + "/../../data/nowplaying.txt", this.module.song, "utf8");
+			});		
 		}, 1000);
 	},
 	content: 						function(processor) {

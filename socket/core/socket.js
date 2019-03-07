@@ -32,7 +32,7 @@ class BotSocket extends WebSocket {
 		 * Random StreamCraft data
 		 */
 
-		this.ClientVer 							= 30000000;
+		this.ClientVer 							= 30000002;
 		this.compressVer 						= 1001;
 		this.MMCPR_ZLIB_COMPRESS 				= 1;
 		this.MMCPR_NO_COMPRESS 					= 2;
@@ -523,9 +523,9 @@ class BotSocket extends WebSocket {
 		this.debug(colors.green(">>"), packetId);
 	}
 
-	sendMessage(message, emoji, emojiAmount) {
+	sendMessage(message, isSpecial) {
 		const seq					= this.seqno(),
-			amount					= emojiAmount ? parseInt(emojiAmount, 10) : 0,
+			amount					= 0,
 			date					= Math.ceil((new Date).getTime() / 1000),
 			id						= `IGG_TEXT#${this._sid}#${this._uin}#${amount}#${date}`,
 			data					= {
@@ -536,12 +536,12 @@ class BotSocket extends WebSocket {
 					ToUin: 			amount,
 					ClientMsgId: 	this.wrapper(id),
 					MsgContent: 	this.wrapper(message),
-					EmojiFlag: 		emoji,
+					EmojiFlag: 		0,
 					CreateTime: 	date
 				}]
 		};
 
-		this.debug(">", message);
+		this.debug(colors.blue(">>"), message);
 
 		// Check if bot can reply or
 		// if the stream is online
@@ -555,8 +555,9 @@ class BotSocket extends WebSocket {
 
 		// Send message to client listener
 		this.client.emit("chat.message", {
-			sender:					this.client.getBotMember(),
-			message: 				message
+			sender:					this.client.botMember,
+			message: 				message,
+			special: 				isSpecial
 		});
 	}
 }

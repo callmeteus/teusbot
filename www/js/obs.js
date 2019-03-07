@@ -208,7 +208,7 @@
 		}
 
 		// Add event listener to module
-		socket.on("obs.data", (data) => {
+		socket.on("obs.data", (type, data) => {
 			// Check if is queue
 			if (!app.isQueue) {
 				// Show notification imediately

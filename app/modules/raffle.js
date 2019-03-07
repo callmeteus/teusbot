@@ -17,7 +17,7 @@ const raffleEnd 				= function(processor) {
 		let winner 				= entries[entries.length * Math.random() | 0];
 		let entriesCount 		= entries.length;
 
-		this.client.database.getMember(winner)
+		processor.getMember(winner)
 		.then((member) => {
 			// Clear entries
 			raffleClear(processor);
@@ -34,7 +34,7 @@ const raffleEnd 				= function(processor) {
 			});
 
 			// Return the winner message
-			processor.sendMessage(message);
+			processor.sendMessage(message, true);
 
 			// Create a StreamLabs alert
 			this.client.streamlabs.addAlert(this.client.config.streamLabsToken,{

@@ -5,8 +5,18 @@ $(document).on("click", "a[href='#nav-enter']", function(e) {
 
 	socket.emit("bot.enter");
 
-	socket.once("bot.enter", () => {
+	socket.once("bot.enter", (data) => {
+		if (data.error) {
+			return bootbox.alert(data.error);
+		}
+
 		$(this).removeClass("disabled");
+
+		if (data.isIn) {
+			$(this).addClass("btn-success").text("Leave channel");
+		} else {
+			$(this).removeClass("btn-success").text("Enter channel");
+		}
 	});
 });
 

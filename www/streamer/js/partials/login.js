@@ -1,5 +1,13 @@
 $(function() {
-	$("#login").off("submit").on("submit", function(e) {
+	$.get("/api/session", (data) => {
+		if (data.success === false) {
+			window.renderTemplate("login");
+		} else {
+			socket.connect();
+		}
+	});
+
+	$(document).on("submit", "#bot-login", function(e) {
 		e.preventDefault();
 
 		const $form 		= $(this);
@@ -9,22 +17,19 @@ $(function() {
 
 		$form.find("input").prop("disabled", true);
 
-		socket.once("login", (data) => {
+		$.post("/api/auth", {
+			email, password
+		}, function(data) {
 			if (data.error) {
 				alert(data.error);
 				$form.find("input").prop("disabled", false);
 			} else {
-				localStorage.setItem("botToken", data.token);
+				socket.connect();
 			}
-		});
-
-		socket.emit("login", {
-			email: 			email,
-			password: 		password
 		});
 	});
 
-	$("#register").off("submit").on("submit", function(e) {
+	$(document).on("submit", "#bot-register", function(e) {
 		e.preventDefault();
 
 		const $form 		= $(this);

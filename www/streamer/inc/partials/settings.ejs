@@ -1,5 +1,19 @@
-<div class="list-group">
+<div class="list-group" id="bot-settings">
+	<a href="/streamer/streamlabs" target="_blank" class="list-group-item">
+		Authenticate with StreamLabs
+	</a>
+
 	<div class="list-group-item">
-		<a class="btn btn-primary" href="/streamer/streamlabs/<%=data.bot.user.uin%>">Authenticate with Streamlabs</a>
+		<div class="custom-control custom-checkbox mr-sm-2">
+			<input type="checkbox" class="custom-control-input" id="settingsAutoEnter" name="autoEnter" />
+			<label class="custom-control-label" for="settingsAutoEnter">Auto enter my channel</label>
+		</div>
+	</div>
+
+	<div class="list-group-item">
+		<div class="custom-control custom-checkbox mr-sm-2">
+			<input type="checkbox" class="custom-control-input" id="settingsCanReply" name="canReply" />
+			<label class="custom-control-label" for="settingsCanReply">Bot can respond to commands and send messages</label>
+		</div>
 	</div>
 </div>

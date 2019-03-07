@@ -14,6 +14,7 @@ class BotCommand {
 			sender: 			this.sender,
 			command: 			this.command,
 			channel: 			this._botClient.data.data.user,
+			stream: 			this._botClient.stream,
 			window: 			undefined,
 			process: 			undefined,
 			Deflate: 			undefined,
@@ -22,12 +23,18 @@ class BotCommand {
 		}, data));
 	}
 
+	sendLangMessage(message, data) {
+		return this.socket.sendMessage(
+			this.getMessage(this._botClient.getLangMessage(message), data)
+		);
+	}
+
 	sendMessage(message, data) {
 		return this.socket.sendMessage(this.getMessage(message, data));
 	}
 
 	getMember(id) {
-		return this._botClient.getMember(id);
+		return this._botClient.database.getMember(id, this._botClient.data.data.user.uin);
 	}
 
 	noPermission() {

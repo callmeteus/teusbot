@@ -1,121 +1,5 @@
-const md5 							= require("md5");
-
 module.exports 						= function(io) {
-	io.on("connect", (socket) => {
-		socket.on("login", (data) => {
-			// Hash the password
-			data.password 			= md5(data.password);
-
-			this.database.Configs.findOne({
-				where: 				{
-					key: 			"email",
-					value: 			data.email
-				},
-				attributes: 		["channel"]
-			})
-			.then((email) => {
-				if (email === null) {
-					return socket.emit("login", {
-						error: 		"Invalid email address"
-					});
-				}
-
-				data.channel 		= email.channel;
-
-				return this.database.Configs.count({
-					where: 			{
-						channel: 	data.channel,
-						key: 		"password",
-						value: 		data.password
-					}
-				});
-			})
-			.then((count) => {
-				if (count === 0) {
-					return socket.emit("login", {
-						error: 		"The password you've entered is incorrect."
-					});
-				}
-
-				// Generate new token
-				socket.token 		= md5(+new Date());
-
-				// Update database token
-				return this.database.Configs.create({
-					key: 			"token",
-					channel: 		data.channel,
-					value: 			socket.token
-				});
-			})
-			.then(() => {
-				socket.emit("login", {
-					token: 			socket.token
-				});
-			})
-			.catch((err) => {
-				socket.emit("login", {
-					error: 			"Internal error"
-				});
-
-				throw err;
-			});
-		});
-
-		socket.on("register", (data) => {
-			// Hash the password
-			data.password 			= md5(data.password);
-
-			// Count users with given email or channels
-			this.database.Configs.count({
-				where: 				[
-					{
-						key: 		"email",
-						value: 		data.email
-					},
-					{
-						channel: 	data.channel
-					}
-				]
-			})
-			.then((count) => {
-				// Check is any user has the
-				// email or channel ID
-				if (count > 0) {
-					return socket.emit("register", {
-						error: 		"Email or channel already exists."	
-					});
-				}
-
-				// Try to authenticate with StreamCraft
-				return this.auth.login(data.email, data.password);
-			})
-			.then(() => {
-				this.database.Configs.bulkCreate([
-					{ key: "email", value: data.email, channel: data.channel },
-					{ key: "password", value: data.password, channel: data.channel },
-					{ key: "active", value: 0, channel: data.channel },
-					{ key: "deviceId", value: Math.random().toString(12).substring(2), channel: data.channel }
-				])
-				.spread(() => {
-					socket.emit("register", {
-						channel: 	data.channel
-					});
-				})
-				.catch((err) => {
-					socket.emit("register", {
-						error: 		"Internal error"
-					});
-
-					throw err;
-				});
-			})
-			.catch((err) => {
-				socket.emit("register", {
-					error: 			err
-				});
-			});
-		});
-
+	io.of("/obs").on("connect", (socket) => {
 		socket.on("auth", (token) => {
 			this.database.Configs.findOne({
 				where: 				{
@@ -129,27 +13,30 @@ module.exports 						= function(io) {
 					socket.channel 	= channel.channel;
 					socket.token 	= token;
 
+					socket.join(socket.channel);
+
 					socket.emit("auth", true);
 				} else {
 					socket.emit("auth", false);
 				}
 			});
 		});
+	});
 
-		socket.on("obs.listen", (room) => {
-			if (!socket.token) {
-				return false;
-			}
+	io.of("/streamer").on("connect", (socket) => {
+		if (socket.handshake.session.channel === undefined) {
+			return socket.disconnect();
+		}
 
-			socket.join(room);
-			socket.emit("obs.listen", true);
-		});
+		socket.channel 				= socket.handshake.session.channel;
 
+		// Join channel room
+		socket.join(socket.channel);
+
+		/**
+		 * Data packet
+		 */
 		socket.on("data", () => {
-			if (!socket.token) {
-				return false;
-			}
-
 			let data 				= {};
 
 			this.database.getConfig(socket.channel)
@@ -158,8 +45,18 @@ module.exports 						= function(io) {
 
 				delete data.password;
 				delete data.deviceId;
+				delete data.studioConfig;
+				delete data.token;
+				delete data.streamLabsToken;
 
-				data.isOnline 		= (this.getClient(socket.channel) !== undefined);
+				const client 		= this.getClient(socket.channel);
+				data.isOnline 		= (client !== undefined);
+
+				if (data.isOnline) {
+					data.stream 	= client.stream;
+				} else {
+					data.stream 	= {};
+				}
 
 				socket.config 		= data;
 
@@ -174,8 +71,26 @@ module.exports 						= function(io) {
 			});
 		});
 
+		/**
+		 * Modules information packet
+		 */
+		socket.on("modules", () => {
+			const client 		= this.getClient(socket.channel);
+
+			if (client === undefined) {
+				return false;
+			}
+
+			if (client.getModule("songrequest") !== undefined) {
+				socket.emit("obs.data", "songrequest.update", client.getModule("songrequest").playlist);
+			}
+		});
+
+		/**
+		 * Command add packet
+		 */
 		socket.on("command.add", (data) => {
-			if (!socket.token || typeof data !== "object") {
+			if (typeof data !== "object") {
 				return false;
 			}
 
@@ -208,12 +123,39 @@ module.exports 						= function(io) {
 				})
 				.catch((err) => {
 					socket.emit("command.add", {
-						error: 			err.message
+						command: 	data.name,
+						error: 		err.message
 					});
 				});
 			});
 		});
 
+		/**
+		 * Command remove packet
+		 */
+		socket.on("command.remove", (id) => {
+			this.database.BotCommands.destroy({
+				where: 				{
+					id: 			id,
+					channel: 		socket.channel
+				}
+			})
+			.then(() => {
+				socket.emit("command.remove", {
+					command: 		id
+				})
+			})
+			.catch((err) => {
+				socket.emit("command.remove", {
+					command: 		id,
+					error: 			err.message
+				})
+			})
+		});
+
+		/**
+		 * Bot enter / leave channel packet
+		 */
 		socket.on("bot.enter", () => {
 			let client 				= this.getClient(socket.channel);
 
@@ -223,25 +165,32 @@ module.exports 						= function(io) {
 					return this.startBotClient(client);
 				})
 				.then(() => {
-					socket.emit("bot.enter", true);
+					socket.emit("bot.enter", {
+						isIn: 		true
+					});
 				})
 				.catch((err) => {
-					socket.emit("bot.enter", false);
+					socket.emit("bot.enter", {
+						error: 		err.message
+					});
+
 					throw err;
 				});
 			} else {
 				client.end();
-				delete this.clients[client.instance];
 
-				socket.emit("bot.enter", true);
+				this.clients.splice(client.instance - 1, 1);
+
+				socket.emit("bot.enter", {
+					isIn: 			false
+				});
 			}
 		});
 
+		/**
+		 * StreamLabs test packet
+		 */
 		socket.on("bot.test", (type) => {
-			if (!socket.token) {
-				return false;
-			}
-
 			if (type === "alert") {
 				this.streamlabs.addAlert(socket.config.streamLabsToken, {
 					type: 			"donation",
@@ -260,6 +209,57 @@ module.exports 						= function(io) {
 					message: 		"This is a test donation"
 				});
 			}
+		});
+
+		/**
+		 * Bot command packet
+		 */
+		socket.on("bot.command", (command, args) => {
+			if (!socket.token) {
+				return false;
+			}
+
+			const client 			= this.getClient(socket.channel);
+
+			if (client === undefined) {
+				return socket.emit("bot.command", {
+					command: 		command,
+					success: 		false
+				});
+			} else {
+				client.processCommand(client.createCommand(command, args, client.sockets.passive, client.botMember));
+
+				return socket.emit("bot.command", {
+					command: 		command,
+					success: 		true
+				});
+			}
+		});
+
+		/**
+		 * SongRequest listen packet
+		 */
+		socket.on("songrequest.listen", (url) => {
+			if (!socket.token) {
+				return false;
+			}
+
+			const mod 				= this.getClient(socket.channel).getModule("songrequest");
+			const song 				= mod.playlist.find((song) => song.url === url);
+
+			mod.song 				= song.title;
+		});
+
+		/**
+		 * SongRequest end listening packet
+		 */
+		socket.on("songrequest.end", () => {
+			const mod 				= this.getClient(socket.channel).getModule("songrequest");
+			const song 				= mod.playlist.findIndex((song) => song.title === mod.song);
+
+			mod.playlist.splice(song, 1);
+
+			mod.song 				= null;
 		});
 	});
 };

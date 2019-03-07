@@ -1,13 +1,18 @@
-<div class="list-group-item" data-id="<%=data.cmd.id%>">
-	<div class="d-flex justify-content-between mb-1 bot-command">
+<div class="list-group-item bot-command" data-id="<%=data.cmd.id%>" data-command="<%=data.cmd.name%>">
+	<div class="d-flex justify-content-between mb-1">
 		<h5 class="mt-2">!<%=data.cmd.name%></h5>
-
-		<select class="form-control col-2">
-			<option value="text" <%=(data.cmd.type === "text" ? "selected" : "")%>>Text</option>
-			<option value="alias" <%=(data.cmd.type === "alias" ? "selected" : "")%>>Alias</option>
-			<option value="script" <%=(data.cmd.type === "script" ? "selected" : "")%>>Script</option>
-		</select>
+		<span><%=(data.cmd.type[0].toUpperCase() + data.cmd.type.substr(1))%></span>
 	</div>
 
-	<input class="form-control" type="text" value="<%-data.cmd.content%>" />
+	<div class="btn-group float-right">
+		<button class="btn btn-danger" data-type="remove" title="Remove !<%=data.cmd.name%>">
+			<i class="fa fa-fw fa-times"></i>
+		</button>
+
+		<button class="btn btn-light" data-type="edit" title="Edit !<%=data.cmd.name%>">
+			<i class="fa fa-fw fa-edit"></i>
+		</button>
+	</div>
+
+	<%-data.cmd.content%>
 </div>

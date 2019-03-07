@@ -14,7 +14,8 @@ class BotDatabase {
 			dialect: 			"mysql",
 			dialecOptions: 		{
 				charset: 		"utf8mb4"
-			}
+			},
+			logging: 			false
 		});
 
 		// Define members
@@ -166,6 +167,8 @@ class BotDatabase {
 				config.addons 		= config.addons ? config.addons.split(",") : [];
 				config.channel 		= channel;
 				config.canReply 	= config.canReply === "1";
+				config.autoEnter 	= config.autoEnter === "1";
+				config.active 		= config.active === "1";
 
 				resolve(config);
 			})
@@ -194,9 +197,10 @@ class BotDatabase {
 	/**
 	 * Find and update or create a bot member
 	 * @param  {Object} message StreamCraft message object
+	 * @param  {Number} channel StreamCraft channel ID
 	 * @return {Promise}
 	 */
-	getMember(message) {
+	getMember(message, channel) {
 		return new Promise((resolve, reject) => {
 			// Check if message is set
 			if (message === undefined) {
@@ -212,7 +216,8 @@ class BotDatabase {
 					nickname: 	message.FromNickName.trim(),
 					picture: 	message.FromHeadImg,
 					isMod: 		message.FromAccess ? message.FromAccess > 1 : false,
-					level: 		message.FromUserLv
+					level: 		message.FromUserLv,
+					channel: 	message.Channel
 				};
 			} else {
 				data.id 		= message;
@@ -221,7 +226,8 @@ class BotDatabase {
 			// Find or create member
 			this.Members.findOrCreate({
 				where: 			{
-					id: 		data.id
+					id: 		data.id,
+					channel: 	channel ? channel : data.channel
 				},
 				include: 		{
 					model: 		this.MemberAddons,
@@ -232,7 +238,7 @@ class BotDatabase {
 				defaults: 		data
 			})
 			.spread((member, created) => {
-				member 			= member.dataValues;
+				member 			= member.get();
 
 				// Return member
 				resolve(member);

@@ -244,7 +244,7 @@ module.exports 										= {
 				break;
 
 				default:
-					this.client.database.getMember(processor.arguments.join(" "))
+					processor.getMember(processor.arguments.join(" "))
 					.then((member) => {
 						processor.sendMessage(this.client.getLangMessage("POINTS_GET"), {
 							sender: 				member

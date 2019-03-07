@@ -29,7 +29,11 @@ class BotClient extends EventEmitter {
 			// Stream start date
 			started: 						new Date(),
 			// Stream title
-			title: 							null
+			title: 							null,
+			// Stream viewers
+			viewers: 						0,
+			// Stream views
+			views: 							0
 		};
 
 		// Socket handler
@@ -47,38 +51,33 @@ class BotClient extends EventEmitter {
 		// Data handler
 		this.data 							= {};
 
+		// Bot member
+		this.botMember 						= {};
+
 		// Client instance id
 		this.instance 						= null;
 	}
 
-	emit(type, ...args) {
-		super.emit(type, ...args);
+	emit(type, data, endpoint = "/obs") {
+		super.emit(type, data);
 
 		// Check if client has socket
 		if (this.socket) {
-			const data 						= Object.assign({}, arguments[1]);
+			if (!Array.isArray(data)) {
+				data 							= Object.assign({}, data);
 
-			if (type === "chat.command") {
-				delete data._botClient;
-				delete data.socket;
+				if (type === "chat.command") {
+					delete data._botClient;
+					delete data.socket;
+				}
 			}
 
-			this.socket.in(type).emit("obs.data", data);
+			this.socket.of(endpoint).in(this.data.data.user.uin).emit("obs.data", type, data);
 		}
 	}
 
 	getMessage(message, data) {
 		return new Function(...Object.keys(data), "return `" + message + "`;")(...Object.values(data));
-	}
-
-	getBotMember() {
-		return {
-			id: 							this.data.user.id,
-			nickname:						this.data.user.nickname,
-			level: 							1,
-			messages: 						0,
-			isMod: 							true
-		};
 	}
 
 	start() {
@@ -208,7 +207,16 @@ class BotClient extends EventEmitter {
 	 */
 	processCommand(processor) {
 		if (processor.command === "commands" || processor.command === "comandos") {
-			return processor.sendMessage(this.commands.filter((cmd) => cmd !== null).map((cmd) => "!" + cmd.name).join(", "));
+			return processor.sendMessage(
+				this.commands
+				.filter((cmd) => {
+					return cmd !== null && cmd.type !== "addon";
+				})
+				.map((cmd) => {
+					return "!" + cmd.name;
+				})
+				.join(", ")
+			);
 		}
 
 		// Get all available command handlers
@@ -224,9 +232,7 @@ class BotClient extends EventEmitter {
 			// Check if it's a text command
 			if (handler.type === "text") {
 				// Send the message
-				processor.sendMessage(
-					processor.getMessage(handler.content)
-				);
+				processor.sendMessage(processor.getMessage(handler.content));
 			} else 
 			// Check if it's an alias command
 			if (handler.type === "alias") {
@@ -251,6 +257,15 @@ class BotClient extends EventEmitter {
 		});
 
 		return false;
+	}
+
+	/**
+	 * Get a module by it's name
+	 * @param  {String} name Module name
+	 * @return {Object}      Module data
+	 */
+	getModule(name) {
+		return this.commands.find((m) => m.name === name);
 	}
 
 	/**
@@ -285,7 +300,7 @@ class BotClient extends EventEmitter {
 				let command 				= timer.content.split(" ");
 
 				// Create the command handler
-				command 					= this.createCommand(command.shift().replace("!", ""), command, this.sockets.passive, this.getBotMember());
+				command 					= this.createCommand(command.shift().replace("!", ""), command, this.sockets.passive, this.botMember);
 
 				// Create a new instance to run 'command' every 'timer.interval'
 				timer.instance 				= setInterval(() => this.processCommand(command), timer.interval);
@@ -315,9 +330,6 @@ class BotClient extends EventEmitter {
 	 * @return {Boolean}
 	 */
 	processDataMessage(message, user, data) {
-		// Instantiate channel data
-		const channel 						= this.data.data.user;
-
 		switch(message.MsgType) {
 			// Unhandled action
 			default:
@@ -345,21 +357,21 @@ class BotClient extends EventEmitter {
 				this.stream.online 			= (data.Status === 1);
 				this.stream.title 			= data.Title;
 				this.stream.started 		= new Date();
+
+				this.emit("stream.update", this.stream);
 			break;
 
 			// Member quit
 			case 20003:
+			case 20002:
 				// Update current viewers and views
-				channel.viewers 			= data.RealCount;
-				channel.views 				= data.TotalViewCount;
-			break;
+				this.stream.viewers 		= data.RealCount;
+				this.stream.views 			= data.TotalViewCount;
+
+				this.emit("stream.update", this.stream);
 
 			// Member join
 			case 20002:
-				// Update current viewers and views
-				channel.viewers 			= data.RealCount;
-				channel.views 				= data.TotalViewCount;
-
 				// Emit chat message
 				this.emit("chat.message", {
 					sender: 				user,
@@ -399,7 +411,8 @@ class BotClient extends EventEmitter {
 				// Emit chat message
 				this.emit("chat.message", {
 					sender: 				user,
-					message: 				emoteMessage
+					message: 				emoteMessage,
+					special: 				true
 				});
 
 				// Emit emote sent
@@ -425,7 +438,8 @@ class BotClient extends EventEmitter {
 					sender: 				user,
 					message: 				this.getMessage(this.getLangMessage("CHAT_FOLLOW"), {
 						sender: 			user
-					})
+					}),
+					special: 				true
 				});
 
 				// Emit emote sent
@@ -491,20 +505,27 @@ class BotClient extends EventEmitter {
 			// Get text from message content
 			const text 						= message.MsgContent.Buff;
 
+			// Bot has been connected in another place
+			if (message.MsgType === 20008) {
+				socket.debug("bot has been connected in another place.");
+				return this.emit("bot.disconnect", "another_device");
+			}
+
+			// Assign message channel
+			message.Channel 					= this.data.data.user.uin;
+
 			// Get member from database
 			this.database.getMember(message)
 			.then((user) => {
-				// Bot has been connected in another place
-				if (message.MsgType === 20008) {
-					socket.debug("bot has been connected in another place.");
-					return this.emit("bot.disconnect", "another_device");
+				// Check if it's the bot user
+				if (user.id === this.data.user.uin) {
+					this.botMember 				= user;
 				}
 
 				// Check if text message is JSON
 				if (text.indexOf("{\n") > -1) {
 					// Parse JSON
 					const data 					= JSON.parse(text);
-					socket.debug("type", message.MsgType, "json", data);
 					return this.processDataMessage(message, user, data);
 				}
 
@@ -517,19 +538,18 @@ class BotClient extends EventEmitter {
 				// Check if stream is online
 				// or is debug
 				if (this.stream.online || this.isDebug) {
+					const firstLetter 			= text.split(" ")[0][0];
+
 					// Check if it's a command
-					if (text.split(" ")[0][0] === "!") {
+					if (firstLetter === "!" || firstLetter === "+" || firstLetter === "/") {
 						let args 				= text.split(" ");
 						let command 			= args.shift();
 						let realCommand 		= command.substr(1, command.length - 1);
 
 						const processor 		= this.createCommand(realCommand, args, socket, user);
 
-						// Check if command can be processed
-						if (!this.processCommand(processor)) {
-							// If not, emit the command
-							this.emit("chat.command", processor);
-						}
+						// Call the processor
+						this.processCommand(processor);
 					}
 
 					// Increment user messages, total messages and points
