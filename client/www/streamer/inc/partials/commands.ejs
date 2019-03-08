@@ -1,0 +1,15 @@
+<button class="btn btn-lg btn-primary btn-block mb-3" data-toggle="modal" data-target="#add-command">
+	<i class="fa fa-fw fa-plus"></i>
+	Add a new command
+</button>
+			
+<div class="list-group">
+	<% if (data.commands.length === 0) { %>
+		<div class="list-group-item bg-secondary text-center">
+			<h2 class="mb-0">No commands were added :(</h2>
+		</div>
+	<% } %>
+	<% data.commands.forEach((cmd) => { %>
+		<%-renderTemplate("partials/command", { cmd: cmd })%>
+	<% });%>
+</div>

@@ -1,0 +1,55 @@
+<div id="app-login" class="container" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+	<header class="mb-5 text-center">
+		<h1>
+			Teus Bot 🤖
+			<small>First StreamCraft chatbot</small>
+		</h1>
+	</header>
+
+	<div class="row">
+		<div class="col-6">
+			<h2>Sign In</h2>
+			Sign in into the bot streamer panel
+
+			<hr/>
+
+			<form id="bot-login">
+				Bot account email address:
+				<input class="form-control mb-1" type="email" name="email" placeholder="Email address" />
+
+				Bot account password:
+				<input class="form-control mb-1" type="password" name="password" placeholder="Password" />
+
+				<button class="btn btn-primary btn-lg btn-block mt-3" type="submit">
+					<i class="fa fa-fw fa-chevron-right"></i> Sign In
+				</button>
+			</form>
+		</div>
+
+		<div class="col-6">
+			<h2>Sign Up</h2>
+			Sign up a new StreamCraft channel with a new StreamCraft bot account.
+
+			<hr/>
+
+			<form id="bot-register">
+				Channel URL:
+				<input class="form-control mb-1" type="url" name="channel" placeholder="Your StreamCraft channel URL" />
+
+				Bot account email address:
+				<input class="form-control mb-1" type="email" name="email" placeholder="StreamCraft chatbot account email address" />
+
+				Bot account password:
+				<input class="form-control mb-1" type="password" name="password" placeholder="StreamCraft chatbot account password" />
+
+				<div class="text-muted mt-3">
+					<strong>Attention:</strong> bot account needs to be different from your StreamCraft streaming account due to StreamCraft limitation.</div>
+				</form>
+
+				<button class="btn btn-primary btn-lg btn-block mt-3" type="submit">
+					<i class="fa fa-fw fa-chevron-right"></i> Sign Up
+				</button>
+			</form>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,67 @@
+<div class="row mx-0">
+	<div id="bot-data" class="col-8 pl-0">
+		<div class="card">
+			<div class="card-header">
+				<h4 class="stream-title card-title mb-0"><%=data.stream.title%></h4>
+			</div>
+		
+			<div class="card-body border-bottom d-flex">
+				<div class="col-6 text-center p-3 border-right">
+					<h1 class="stream-viewers"><%=data.stream.viewers || 0%></h1>
+					<span>VIEWERS</span>
+				</div>
+
+				<div class="col-6 text-center p-3">
+					<h1 class="stream-views"><%=data.stream.views%></h1>
+					<span>VIEWS</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-6">
+				<div class="card mt-3">
+					<div class="card-header">
+						<h4 class="card-title mb-0">Events</h4>
+					</div>
+				
+					<div id="bot-events" class="card-body list-group p-0">
+						<div class="list-group-item border-left-0 border-right-0">Event list started</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-6">
+				<div class="card mt-3">
+					<div class="card-header">
+						<h4 class="card-title mb-0">
+							Song Request
+
+							<div class="btn-group float-right">
+								<button class="btn btn-secondary float-right bot-songrequest-play">
+									<i class="fa fa-fw fa-play"></i>
+								</button>
+
+								<button class="btn btn-secondary float-right bot-songrequest-skip">
+									<i class="fa fa-fw fa-angle-double-right"></i>
+								</button>
+							</div>
+						</h4>
+					</div>
+
+					<div class="card-body p-0">
+						<div id="bot-songrequest-player"></div>
+
+						<div class="list-group p-0" id="bot-songrequest">
+							<div class="list-group-item border-left-0 border-right-0 text-muted">No songs in queue.</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="bot-chat" class="list-group col-4 pr-0">
+		<div class="list-group-item text-muted">Chat log started</div>
+	</div>
+</div>
