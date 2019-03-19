@@ -3,6 +3,7 @@ const utf8 							= require("utf8");
 
 const generalRegex 					= /\<title\>(.*)\<\/title\>/gi;
 const youtubeRegex 					= /document\.title \= \"(.*)\"/gi;
+const mobileRegex 					= /m\.(.*)\.com/i;
 
 module.exports 						= {
 	name: 							"songrequest",
@@ -13,7 +14,7 @@ module.exports 						= {
 		this.module.song 			= null;
 	},
 	content: 						function(processor) {
-		const index 				= processor.arguments[0];
+		let index 					= processor.arguments[0];
 
 		if (index === "open") {
 			if (!processor.sender.isMod) {
@@ -40,11 +41,15 @@ module.exports 						= {
 		let url;
 		let hostname;
 
+		if (mobileRegex.test(index)) {
+			index 					= index.replace(mobileRegex, "$1.com");
+		}
+
 		try {
 			url 					= new URL(index);
 			hostname 				= url.hostname.indexOf("www.") > -1 ? url.hostname.split("www.")[1] : url.hostname;
 
-			if (hostname !== "youtube.com" && hostname !== "vimeo.com" && hostname !== "soundcloud.com") {
+			if (hostname !== "youtu.be" && hostname !== "youtube.com" && hostname !== "vimeo.com" && hostname !== "soundcloud.com") {
 				throw new Error("Invalid streaming website.");
 			}
 		} catch(e) {

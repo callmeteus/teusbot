@@ -1,9 +1,7 @@
 *.env
 *.txt
 *.bat
-app/modules/custom/
-data/*.json
-data/*.sqlite
+server/app/modules/custom/
 node_modules/
 original sc files/
 cloc_found.txt

@@ -57,7 +57,7 @@ class BotCommand {
 	}
 
 	triggerCommand(name, args) {
-		const command 			= this[botClient].createCommand(name, args, this.socket, this.sender);
+		const command 			= this[botClient].createCommand(name, args, this[botSocket], this.sender);
 		return this[botClient].processCommand(command);
 	}
 }

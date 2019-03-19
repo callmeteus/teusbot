@@ -1,0 +1,6 @@
+<div id="container-emote-list" class="bot-container">
+	<% if (sender.tag.length > 0) { %>
+		<strong class="badge badge-primary"><%=sender.tag%></strong>
+	<% } %>
+	<strong style="color: <%=(sender.isMod) ? "orange": "inherit"%>;"><%-sender.nickname%></strong> enviou <em><%=emote.amount%> <%-emote.emote.name%></em><br/>
+</div>

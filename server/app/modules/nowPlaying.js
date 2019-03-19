@@ -85,7 +85,7 @@ module.exports 								= {
 				// Check if song request is open
 				if (songRequest.isOpen && songRequest.song) {
 					// Get the song from SongRequest
-					resolve(songRequest.song, "Song Request");
+					resolve({ song: songRequest.song, from: "Song Request" });
 				} else {
 					// Get the song from current playing
 					//getCurrentPlaying().then(resolve);

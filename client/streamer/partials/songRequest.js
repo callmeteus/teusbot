@@ -31,6 +31,11 @@ module.exports 				= function(context) {
 		context.socket.emit("songrequest.listen", song.url);
 	}
 
+	playListPlayer.on("play", () => {
+		$(".bot-songrequest-play").addClass("btn-success").removeClass("btn-secondary");
+		$(".bot-songrequest-play").find(".fa").addClass("fa-pause").removeClass("fa-play");
+	});
+
 	playListPlayer.on("end", () => {
 		context.socket.emit("songrequest.end");
 
@@ -65,7 +70,7 @@ module.exports 				= function(context) {
 	});
 
 	$(document).on("click", ".bot-songrequest-play", function() {
-		if (!playListPlayer.status === TeusPlayer.Status.PAUSED) {
+		if (playListPlayer.status === TeusPlayer.Status.PAUSED) {
 			playListPlayer.play();
 		} else
 		if (playListPlayer.status === TeusPlayer.Status.PLAYING) {

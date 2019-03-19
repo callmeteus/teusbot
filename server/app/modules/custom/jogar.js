@@ -133,7 +133,7 @@ module.exports 										= {
 					}
 
 					// Anuncia os jogadores selecionados
-					processor.sendMessage(`✔ A colheita de nicks foi finalizada 👉 Jogadores: ${players.join(", ")}`, true);
+					processor.sendMessage(`✔️ A colheita de nicks foi finalizada 👉 Jogadores: ${players.join(", ")}`, true);
 				break;
 
 				// Comando para limpar a colheita de nicks
@@ -158,7 +158,7 @@ module.exports 										= {
 						this.module.playListAll 	= [];
 					}
 
-					processor.sendMessage(`✔ A lista da colheita foi limpa.`);
+					processor.sendMessage(`✔️ A lista da colheita foi limpa.`);
 				break;
 
 				// Exibe todos os jogadores presentes nas listas para jogar
@@ -195,7 +195,7 @@ module.exports 										= {
 							this.module.playListAll.splice(index, 1);
 
 							// Anuncia que o nick foi removido
-							processor.sendMessage(`✔ O nickname ${nickToRemove} foi removido da lista de jogadores que já participaram.`);
+							processor.sendMessage(`✔️ O nickname ${nickToRemove} foi removido da lista de jogadores que já participaram.`);
 						}
 					}
 				break;

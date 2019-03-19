@@ -1,4 +1,4 @@
-window.$ 					= require("jquery");
+const $ 					= require("jquery");
 
 require("popper.js");
 require("bootstrap");
@@ -12,6 +12,7 @@ const query 				= new URLSearchParams(window.location.search);
 const app 					= {
 	token: 					query.get("token"),
 	module: 				query.get("module"),
+	event: 					query.has("event") ? query.get("event") : query.get("module"),
 	test: 					(query.get("test") === "true" || query.get("test") === "1"),
 	isQueue: 				(query.get("queue") === "true" || query.get("queue") === "1"),
 	queue: 					[],
@@ -19,8 +20,8 @@ const app 					= {
 		sender: 			{
 			id: 			1,
 			nickname: 		"Test",
-			picture: 		"https://via.placeholder.com/150"
-
+			picture: 		"https://via.placeholder.com/150",
+			tag: 			"Test"
 		},
 		message: 			"test message",
 		emote: 				{
@@ -69,7 +70,7 @@ socket.on("auth", (success) => {
 	// Check if authentication succeeded
 	!success && alert("Authentication failed.");
 
-	socket.emit("obs.listen", app.module);
+	socket.emit("obs.listen", app.event);
 });
 
 /**

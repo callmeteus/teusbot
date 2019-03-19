@@ -18,7 +18,7 @@ module.exports 						= function() {
 					url 			+= "_t=" + (+new Date());
 					url 			+= "&uin=" + studio;
 
-				// Request studio inco
+				// Request studio info
 				return requestClient(url, (err, response, body) => {
 					// Check if request succeeded
 					if (err || response.statusCode !== 200) {

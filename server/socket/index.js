@@ -419,6 +419,16 @@ class BotClient extends EventEmitter {
 
 			// Stream status update
 			case 20000:
+				this.stream.online 			= (data.LiveStatus === 1);
+				this.stream.title 			= data.Title;
+				this.stream.started 		= new Date();
+
+				this.emit("stream.update", this.stream);
+			break;
+
+			case 20001:
+				// Stream status update
+			case 20000:
 				this.stream.online 			= (data.Status === 1);
 				this.stream.title 			= data.Title;
 				this.stream.started 		= new Date();
@@ -490,7 +500,7 @@ class BotClient extends EventEmitter {
 				// not using the addDonation function
 
 				// Check if emote has a cost
-				if (emote.coins > 0) {
+				if (emote.cost > 0) {
 					// Create a new donation at StreamLabs
 					this.streamlabs.addDonation(this.config.streamLabsToken, {
 						name: 				user.nickname,
@@ -508,7 +518,7 @@ class BotClient extends EventEmitter {
 						name: 				user.nickname,
 						type: 				"subscribe",
 						message: 			this.getMessage(this.getLangMessage("CHAT_FAN"), { sender: user.nickname }),
-						user_messaeg: 		user.nickname + " " + emoteMessage
+						user_message: 		user.nickname + " " + emoteMessage.replace(/<(?:.|\n)*?>/gm, "")
 					});
 				}
 			break;

@@ -281,10 +281,7 @@ class BotDatabase {
 					model: 			this.MemberAddons,
 					as: 			"addons",
 					attributes: 	["id", "addon", "value"],
-					required: 		false,
-					where: 			{
-						channel: 	channel ? channel : data.channel
-					}
+					required: 		false
 				},
 				defaults: 			data
 			})

@@ -53,6 +53,14 @@ sections.push(
 		{
 			name: 			"points alert <em><abbr title='Message to send to the stream screen'>message</abbr></em>",
 			description: 	"Send a message to the stream screen. <strong>Attention:</strong> this will consume an amount of your points</strong>"
+		},
+		{
+			name: 			"points gif <em><abbr title='Giphy GIF URL'>giphy url</abbr> <abbr title='Message to send along the GIF'>message</abbr></em>",
+			description: 	"Send a GIF to the stream screen. <strong>Attention:</strong> this will consume an amount of your points</strong>"
+		},
+		{
+			name: 			"points instant <em><abbr title='MyInstants URL'>instant url</abbr> <abbr title='Message to send along the instant'>message</abbr></em>",
+			description: 	"Send an instant to the stream. <strong>Attention:</strong> this will consume an amount of your points</strong>"
 		}
 	]
 },
