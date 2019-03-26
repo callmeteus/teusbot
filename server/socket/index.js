@@ -395,10 +395,25 @@ class BotClient extends EventEmitter {
 	 * @return {Boolean}
 	 */
 	processDataMessage(message, user, data) {
+		// Member enter and member quit
+		if (message.MsgType === 20002 || message.MsgType === 20003) {
+			// Update current viewers and views
+			this.stream.viewers 		= data.RealCount;
+			this.stream.views 			= data.TotalViewCount;
+
+			this.emit("stream.update", this.stream);
+		}
+
 		switch(message.MsgType) {
 			// Unhandled action
 			default:
 				console.log("[bot] unhandled data message", message.MsgType, data);
+			break;
+
+			// Ignore this packets
+			case 20003: // Member join
+			case 4: 	// Member charm (like)
+
 			break;
 
 			// Mute
@@ -418,16 +433,7 @@ class BotClient extends EventEmitter {
 			break;
 
 			// Stream status update
-			case 20000:
-				this.stream.online 			= (data.LiveStatus === 1);
-				this.stream.title 			= data.Title;
-				this.stream.started 		= new Date();
-
-				this.emit("stream.update", this.stream);
-			break;
-
 			case 20001:
-				// Stream status update
 			case 20000:
 				this.stream.online 			= (data.Status === 1);
 				this.stream.title 			= data.Title;
@@ -435,15 +441,6 @@ class BotClient extends EventEmitter {
 
 				this.emit("stream.update", this.stream);
 			break;
-
-			// Member quit
-			case 20003:
-			case 20002:
-				// Update current viewers and views
-				this.stream.viewers 		= data.RealCount;
-				this.stream.views 			= data.TotalViewCount;
-
-				this.emit("stream.update", this.stream);
 
 			// Member join
 			case 20002:
@@ -461,20 +458,17 @@ class BotClient extends EventEmitter {
 				});
 			break;
 
-			// Like (charm) sent
-			// Just ignore it
-			case 4:
-
-			break;
-
 			// Gift (emote) 
 			case 20015:
+				// Get emote data
+				const emoteData 			= this.config.giftList.find((emote) => emote.id === data.GiftId);
+
 				// Prepare emote data
 				const emote 				= {
 					id: 					data.GiftId,
 					amount: 				data.Nums,
-					cost: 					data.SendEventCost,
-					emote: 					this.config.giftList.find((emote) => emote.id === data.GiftId)
+					cost: 					emoteData.coins,
+					emote: 					emoteData
 				};
 
 				// Process emote message
@@ -500,7 +494,7 @@ class BotClient extends EventEmitter {
 				// not using the addDonation function
 
 				// Check if emote has a cost
-				if (emote.cost > 0) {
+				if (emoteData.coins > 0) {
 					// Create a new donation at StreamLabs
 					this.streamlabs.addDonation(this.config.streamLabsToken, {
 						name: 				user.nickname,
@@ -511,14 +505,13 @@ class BotClient extends EventEmitter {
 					});
 				}
 
-				// Check if is a fan club first subscribe
-				if (emote.name === "Fan Club Ticket" && user.tag.length === 0) {
+				// Check if is a fan club first subscription
+				if (emoteData.name === "Fan Club Ticket" && user.tag.length === 0) {
 					// Create a new alert at StreamLabs
 					this.streamlabs.addAlert(this.config.streamLabsToken, {
 						name: 				user.nickname,
-						type: 				"subscribe",
-						message: 			this.getMessage(this.getLangMessage("CHAT_FAN"), { sender: user.nickname }),
-						user_message: 		user.nickname + " " + emoteMessage.replace(/<(?:.|\n)*?>/gm, "")
+						type: 				"subscription",
+						message: 			user.nickname + " " + this.getMessage(this.getLangMessage("CHAT_FAN"), { sender: user.nickname })
 					});
 				}
 			break;

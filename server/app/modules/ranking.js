@@ -1,6 +1,17 @@
 module.exports 									= {
 	name: 										"ranking",
 	type: 										"module",
+	onEnter: 									function() {
+		this.module.sendTop 					= function(processor, list, arg) {
+			let finalMsg 						= "";
+
+			list.forEach((u, index) => {
+				finalMsg 						+= (index + 1) + "º: " + u.nickname + " 👉 " + ((u[arg] || 0).toFixed(2)) + "  ";
+			});
+
+			processor.sendMessage(finalMsg);
+		};
+	},
 	content: 									function(processor) {
 		// Check if has arguments
 		if (processor.arguments.length > 0) {
@@ -19,19 +30,8 @@ module.exports 									= {
 							}
 						}
 					})
-					.then((members) => {
-						let finalMsg 		= "";
-						let messagePos 		= 1;
-
-						members.forEach((u) => {
-							finalMsg 		+= messagePos++ + "º: " + u.nickname + " 👉 " + (u.totalMessages || 0) + " ";
-						});
-
-						processor.sendMessage(finalMsg);
-					})
-					.catch((e) => {
-						processor.internalError(e);
-					});
+					.then((items) => this.module.sendTop(processor, items, "totalMessages"))
+					.catch(processor.internalError);
 				break;
 
 				// Points ranking
@@ -47,19 +47,15 @@ module.exports 									= {
 							}
 						}
 					})
-					.then((members) => {
-						let finalMsg 		= "";
-						let messagePos 		= 1;
+					.then((items) => this.module.sendTop(processor, items, "points"))
+					.catch(processor.internalError);
+				break;
 
-						members.forEach((u) => {
-							finalMsg 		+= messagePos++ + "º: " + u.nickname + " 👉 " + ((u.points || 0).toFixed(2)) + "  ";
-						});
-
-						processor.sendMessage(finalMsg);
-					})
-					.catch((e) => {
-						processor.internalError(e);
-					});
+				case "fans":
+				case "fan":
+				case "intimacy":
+					this.client.once("bot.fans", (items) => this.module.sendTop(processor, items, "intimacy"));
+					this.client.sockets.passive.packets.getLiveFansList();
 				break;
 			}
 		} else {

@@ -35,8 +35,8 @@ class BotCommand {
 		);
 	}
 
-	sendMessage(message, data) {
-		return this[botSocket].sendMessage(this.getMessage(message, data));
+	sendMessage(message) {
+		return this[botSocket].sendMessage(message);
 	}
 
 	getMember(id) {

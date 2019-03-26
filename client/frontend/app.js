@@ -61,7 +61,16 @@ sections.push(
 		{
 			name: 			"points instant <em><abbr title='MyInstants URL'>instant url</abbr> <abbr title='Message to send along the instant'>message</abbr></em>",
 			description: 	"Send an instant to the stream. <strong>Attention:</strong> this will consume an amount of your points</strong>"
-		}
+		},
+		{
+			name: 			"points tts <em><abbr title='Text message that the bot will convert to audio'>message</abbr></em>",
+			description: 	"Send a text message that will be heard in the stream. <strong>Attention:</strong> this will consume an amount of your points</strong>"
+		},
+		{
+			name: 			"points forceraffle",
+			description: 	"Force the bot to execute a point raffle",
+			mod: 			true
+		},
 	]
 },
 {
@@ -100,6 +109,10 @@ sections.push(
 		{
 			name: 			"ranking points",
 			description: 	"Show the top users that has more points"
+		},
+		{
+			name: 			"ranking fans",
+			description: 	"Show the top users that has more influency points"
 		}
 	]
 },
@@ -161,9 +174,9 @@ sections
 					<%=data.description%>
 
 					<div class="list-group mt-3">
-						<% 
+						<%
 							data.commands.sort(function(a, b) { return a.name.localeCompare(b.name) }).forEach(function(command) { %>
-							<div class="list-group-item">
+							<div class="list-group-item command" data-command="<%=command.name%>">
 								<strong>!<%-command.name%></strong>
 								<% if (command.mod === true) { %>
 									<i class="fa fa-fw fa-user-shield text-danger ml-2" title="Moderation exclusive command"></i>
@@ -180,3 +193,23 @@ sections
 });
 
 $("#accordion .collapse:first").addClass("show");
+
+$(document).on("keyup", "#commandSearch", function() {
+	if (this.value.length === 0) {
+		$(".show").removeClass("show");
+	}
+
+	$(".command.active").removeClass("active");
+	$(".collapse.show").removeClass("show");
+
+	$("[data-command*='" + this.value + "']").each(function() {
+		$(this)
+			.addClass("active")
+			.parents(".collapse:first")
+			.addClass("show");
+	});
+});
+
+$(document).tooltip({
+	selector:		"[title]"
+});

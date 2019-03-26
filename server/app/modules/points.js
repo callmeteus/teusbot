@@ -17,7 +17,7 @@ function getGifUrl(gif) {
 			}
 		}, function(err, response, body) {
 			if (err) {
-				return processor.internalError(err);
+				return reject(err);
 			}
 
 			const url 				= /\<meta property\=\"og\:image\" content\=\"(.*)\"(\/)?\>/gi.exec(body);
@@ -27,6 +27,32 @@ function getGifUrl(gif) {
 			}
 
 			resolve(url[1]);
+		});
+	});
+}
+
+function getTTSUrl(text) {
+	return new Promise((resolve, reject) => {
+		request({
+			url: 					"https://ttsmp3.com/makemp3.php",
+			method: 				"POST",
+			insecure: 				true,
+			rejectUnauthorized: 	false,
+			followAllRedirects: 	true,
+			form: 					{
+				msg: 				text,
+				lang: 				"Vitoria",
+				source: 			"ttsmp3"
+			},
+			headers: 				{
+				"User-Agent": 		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36"
+			}
+		}, function(err, response, body) {
+			if (err) {
+				return reject(err);
+			}
+
+			resolve(JSON.parse(body).URL);
 		});
 	});
 }
@@ -48,7 +74,7 @@ function getInstantUrl(instant) {
 			}
 		}, function(err, response, body) {
 			if (err) {
-				return processor.internalError(err);
+				return reject(err);
 			}
 
 			const url 				= /onmousedown\=\"play\(\'(.*)\'\)\"/gi.exec(body);
@@ -70,16 +96,14 @@ module.exports 										= {
 		this.module.currentArgument 				= null;
 
 		this.module.doInterval 						= (isForce) => {
-			/*if (!isForce && !this.client.stream.isOnline) {
-				console.error("[points] channel is not online.");
-				return false;
-			}*/
-
 			this.module.currentPoints 				= Math.floor(Math.random() * 50) + 1;
-			this.module.currentArgument 			= Math.random().toString(36).replace(/[^a-z]+/g, "").substr(0, 7);
+			this.module.currentArgument 			= Math.random().toString(36).replace(/[^a-z]+/g, "").substr(2, 7);
 
 			if (this.client.sockets.passive) {
-				this.client.sockets.passive.sendMessage(`❗ SORTEIO DE PONTOS! O primeiro a enviar o comando "!points raffle ${this.module.currentArgument}" receberá ${this.module.currentPoints} pontos!`);
+				this.client.sockets.passive.sendMessage(this.client.getMessage(this.client.getLangMessage("POINTS_RAFFLE_START"), {
+					points: 						this.module.currentPoints,
+					argument: 						this.module.currentArgument
+				}));
 			}
 		};
 
@@ -87,7 +111,7 @@ module.exports 										= {
 			// Check if sender have enough points
 			// to complete the transaction
 			if (processor.sender.points <= amount) {
-				return processor.sendMessage(this.client.getLangMessage("POINTS_NOT_ENOUGH"), {
+				return processor.sendLangMessage("POINTS_NOT_ENOUGH", {
 					cost: 							amount
 				});
 			}
@@ -125,7 +149,7 @@ module.exports 										= {
 					});
 
 					// Send the confirmation
-					processor.sendMessage(this.client.getLangMessage("POINTS_DONE"), {
+					processor.sendLangMessage("POINTS_DONE", {
 						cost: 						amount
 					});
 				})
@@ -162,6 +186,7 @@ module.exports 										= {
 					this.module.doTransaction(processor, 50, () => new Promise((resolve, reject) => {
 						this.client.streamlabs.addAlert(this.client.config.streamLabsToken, {
 							type: 					"donation",
+							sound_href: 			"about:blank",
 							image_href: 			processor.sender.picture,
 							message: 				processor.sender.nickname + " enviou um alerta",
 							user_message: 			alertMessage
@@ -251,8 +276,37 @@ module.exports 										= {
 								})
 								.catch(reject);
 							}));
-						});
+						})
+						.catch(reject);
 					}
+				break;
+				
+				case "tts":
+					const ttsMessage 				= processor.arguments.slice(1).join(" ");
+
+					getTTSUrl(ttsMessage)
+					.then((url) => {
+						this.module.doTransaction(processor, 60, () => new Promise((resolve, reject) => {
+							this.client.streamlabs.addAlert(this.client.config.streamLabsToken, {
+								type: 			"donation",
+								image_href: 	processor.sender.picture,
+								sound_href: 	url,
+								message: 		processor.sender.nickname + " enviou um TTS",
+								user_message: 	ttsMessage
+							})
+							.then(() => {
+								this.client.emit("chat.message", {
+									sender: 	processor.sender,
+									message: 	"sent an TTS: " + ttsMessage,
+									special: 	true
+								});
+
+								resolve();
+							})
+							.catch(reject);
+						}));
+					})
+					.catch((e) => processor.internalError(e));
 				break;
 
 				case "play":
@@ -279,7 +333,9 @@ module.exports 										= {
 							})
 							.spread(() => {
 								// Notify the winner
-								processor.sendMessage(`✔️ Parabéns @${processor.sender.nickname}! Você ganhou ${this.module.currentPoints} pontos!`);
+								processor.sendLangMessage("POINTS_RAFFLE_CORRECT", {
+									points: 				this.module.currentPoints
+								});
 
 								// Reset the points
 								this.module.currentPoints	= 0;
@@ -291,10 +347,10 @@ module.exports 										= {
 								this.module.currentArgument = command;
 							});
 						} else {
-							processor.sendMessage(`❗ Whoops @${processor.sender.nickname}, você errou!`);
+							processor.sendLangMessage("POINTS_RAFFLE_WRONG");
 						}
 					} else {
-						processor.sendMessage(`❗ Ei @${processor.sender.nickname}, não tem nenhum sorteio rolando agora!`);
+						processor.sendLangMessage("POINTS_RAFFLE_NONE");
 					}
 				break;
 
@@ -383,10 +439,6 @@ module.exports 										= {
 						})
 						.catch((e) => processor.internalError(e));
 					});
-				break;
-
-				case "help":
-					processor.sendMessage(this.client.getLangMessage("POINTS_OPTIONS"));
 				break;
 
 				default:

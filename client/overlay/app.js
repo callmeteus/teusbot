@@ -15,6 +15,7 @@ const app 					= {
 	event: 					query.has("event") ? query.get("event") : query.get("module"),
 	test: 					(query.get("test") === "true" || query.get("test") === "1"),
 	isQueue: 				(query.get("queue") === "true" || query.get("queue") === "1"),
+	append: 				query.has("append") ? (query.get("append") === "true" || query.get("append") === "1") : true,
 	queue: 					[],
 	testData: 				{
 		sender: 			{
@@ -144,6 +145,10 @@ function appNotificate(data, callback) {
 
 	// Prepare element
 	appPrepareNotification($element, () => {
+		if (!app.append) {
+			$parent.html("");
+		}
+
 		$element.prependTo($parent);
 
 		let fDuration 		= duration;

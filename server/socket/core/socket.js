@@ -424,6 +424,11 @@ class BotSocket extends WebSocket {
 					this.handlers.handleWatchLiveRewardList(response.Response, response);
 				break;
 
+				// Fan list
+				case 10300151:
+					this.handlers.handleLiveFansList(response.Response, response);
+				break;
+
 				// History contribution
 				case 10300113:
 					this.handlers.handleHistoryContribution(response.Response, response);

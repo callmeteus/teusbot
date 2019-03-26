@@ -38,6 +38,17 @@ class BotPackets {
 		this.socket.sendPacket(300113, this.socket.jsonstr(data, seq), seq);
 	}
 
+	getLiveFansList(skip = 0) {
+		const seq 						= this.socket.seqno();
+
+		const data 						= {
+			StudioId: 					this.socket._sid,
+			Skip: 						skip
+		};
+
+		this.socket.sendPacket(300151, this.socket.jsonstr(data, seq), seq);
+	}
+
 	muteUser(userId, toggle) {
 		const seq 						= this.socket.seqno();
 

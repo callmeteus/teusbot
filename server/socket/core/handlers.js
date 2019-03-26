@@ -15,6 +15,24 @@ class BotHandlers {
 		return true;
 	}
 
+	handleLiveFansList(response, data) {
+		const members 						= [];
+
+		response.List.forEach((member) => {
+			members.push({
+				id: 						member.Uin,
+				nickname: 					member.NickName,
+				picture: 					member.HeadImg,
+				intimacy: 					member.Intimacy,
+				level: 						member.LV
+			});
+		});
+
+		this.socket.client.emit("bot.fans", members);
+
+		return members;
+	}
+
 	handleGiftList(list) {
 		const giftList 						= [];
 

@@ -95,33 +95,37 @@ module.exports 						= {
 				});
 			}
 		} else
-		// Check if it's a mod
-		if (processor.sender.isMod) {
-			// Process command
-			switch(processor.arguments[0]) {
-				// Start a new raffle
-				case "start":
-					raffleStart.call(this, processor);
-				break;
+		if (processor.arguments.length) {
+			// Check if it's a mod
+			if (processor.sender.isMod) {
+				// Process command
+				switch(processor.arguments[0]) {
+					// Start a new raffle
+					case "start":
+						raffleStart.call(this, processor);
+					break;
 
-				// Clear the current raffle without restarting it
-				case "clear":
-					raffleClear.call(this, processor);
-				break;
+					// Clear the current raffle without restarting it
+					case "clear":
+						raffleClear.call(this, processor);
+					break;
 
-				// End the current raffle
-				case "end":
-					raffleEnd.call(this, processor);
-				break;
+					// End the current raffle
+					case "end":
+						raffleEnd.call(this, processor);
+					break;
 
-				// Select random winner ordered by number of sent messages
-				case "message":
-				case "messages":
-					raffleMessage.call(this, processor);
-				break;
+					// Select random winner ordered by number of sent messages
+					case "message":
+					case "messages":
+						raffleMessage.call(this, processor);
+					break;
+				}
+			} else {
+				return processor.noPermission();
 			}
 		} else {
-			return processor.noPermission();
+			return processor.sendLangMessage("RAFFLE_NOT_STARTED");
 		}
 
 		return true;

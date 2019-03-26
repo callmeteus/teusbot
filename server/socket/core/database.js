@@ -28,7 +28,11 @@ class BotDatabase {
 				type: 				Sequelize.STRING,
 				allowNull: 			false
 			},
-			picture: 				Sequelize.STRING,
+			picture: 				{
+				type: 				Sequelize.STRING,
+				allowNull: 			false,
+				default: 			"http://d1m6wfg60yssal.cloudfront.net/upfile/game/6247/g9fVEnGY_sm.jpg"
+			},
 			isMod: 					{
 				type: 				Sequelize.BOOLEAN,
 				defaultValue: 		false
@@ -49,6 +53,10 @@ class BotDatabase {
 			channel: 				{
 				type: 				Sequelize.INTEGER.UNSIGNED,
 				defaultValue: 		null
+			},
+			access: 				{
+				type: 				Sequelize.INTEGER.UNSIGNED,
+				defaultValue: 		1
 			}
 		}, {
 			charset: 				"utf8mb4"
@@ -250,10 +258,11 @@ class BotDatabase {
 		return new Promise((resolve, reject) => {
 			// Check if message is set
 			if (message === undefined) {
-				return reject(new Error("Message or ID is not defined."));
+				return reject(new Error("Message or user ID is not defined."));
 			}
 
 			let data 				= {};
+			let messageData;
 
 			if (typeof message === "object") {
 				// Prepare member data from message
@@ -263,7 +272,8 @@ class BotDatabase {
 					picture: 		message.FromHeadImg,
 					isMod: 			message.FromAccess ? message.FromAccess > 1 : false,
 					level: 			message.FromUserLv,
-					channel: 		message.Channel
+					channel: 		message.Channel,
+					access: 		message.FromAccess
 				};
 			} else {
 				data.id 			= message;
@@ -286,21 +296,21 @@ class BotDatabase {
 				defaults: 			data
 			})
 			.spread((member, created) => {
-				member 				= member.get();
-				member.tag 			= message.MeddlShowName;
+				const final 		= Object.assign({}, member.get(), data);
 
-				// Return member
-				resolve(member);
+				final.tag 			= message.MeddlShowName;
+				final.picture 		= final.picture || "http://d1m6wfg60yssal.cloudfront.net/upfile/game/6247/g9fVEnGY_sm.jpg";
+				final.isMod 		= final.isMod || (typeof message === "object" ? message.FromAccess > 1 : false);
+				final.isSuspicious 	= final.picture.indexOf("wegamers") > -1;
+
+				resolve(final);
 
 				// Check if it was created now
-				// and it's a full member
+				// and if it is a full member
 				if (!created && data.nickname !== undefined) {
 					// Try to update member with new data
 					this.Members.update(data, {
 						where: 		memberWhere
-					})
-					.catch((err) => {
-						console.error("[db] error updating member", err);
 					});
 				}
 			})

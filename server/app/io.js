@@ -1,6 +1,8 @@
 module.exports 												= function(io) {
 	io.of("/obs").on("connect", (socket) => {
+		// On authenticate
 		socket.on("auth", (token) => {
+			// Find a channel with the given token
 			this.database.Configs.findOne({
 				where: 										{
 					key: 									"token",
@@ -9,11 +11,28 @@ module.exports 												= function(io) {
 				attributes: 								["channel"]
 			})
 			.then((channel) => {
+				// Check if channel exists
 				if (channel !== null) {
-					socket.join(channel.channel);
+					socket.channel 							= channel.channel;
+					socket.join(socket.channel);
 					socket.emit("auth", true);
 				} else {
 					socket.emit("auth", false);
+				}
+			});
+		});
+
+		// On update now playing
+		socket.on("nowplaying.update", (data) => {
+			this.getClient(socket.channel)
+			.then((client) => {
+				const mod 									= client.getModule("nowplaying");
+
+				if (mod !== undefined) {
+					mod.pending 							= {
+						song: 								data.song || null,
+						from: 								data.from || null
+					};
 				}
 			});
 		});

@@ -1,6 +1,9 @@
 *.env
 *.txt
 *.bat
+*.json
+*.exe
+**/node_modules/
 server/app/modules/custom/
 node_modules/
 original sc files/
