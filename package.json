@@ -4,7 +4,7 @@
   "description": "First StreamCraft chat bot. Also integrates with Streamlabs.",
   "main": "./server/app/index.js",
   "scripts": {
-    "test": "SET DEBUG=bot:* && nodemon ./server/app/index.js --ignore data/* --ignore www/* --ignore client/*",
+    "test": "SET DEBUG=bot:* && nodemon ./server/app/index.js --ignore data/* --ignore www/* --ignore client/* --ignore now-playing/*",
     "start": "node ."
   },
   "author": "Matheus Giovani <https://github.com/theprometeus>",
@@ -40,8 +40,6 @@
     "gifffer": "^1.5.3",
     "jquery": "^3.3.1",
     "popper.js": "^1.14.7",
-    "vueify": "^9.4.1",
-    "watchify": "^3.11.1",
-    "webpack": "^4.29.6"
+    "watchify": "^3.11.1"
   }
 }

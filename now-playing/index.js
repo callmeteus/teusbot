@@ -49,8 +49,6 @@ function doListener() {
 
 				socket.emit("nowplaying.update", current);
 			}
-
-			setTimeout(() => doListener(), 1000);
 		});
 	} else {
 		return false;
@@ -63,7 +61,7 @@ socket.on("auth", function(success) {
 		console.error(colors.red("If you have changed your API key, remove the config.json file and run the program again."));
 	} else {
 		console.log(colors.green("Authentication succeeded. Listening to new music changes."));
-		doListener();
+		setInterval(() => doListener(), 1000);
 	}
 });
 

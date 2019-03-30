@@ -123,39 +123,6 @@ class BotClient extends EventEmitter {
 
 				this.createClient("passive");
 				this.createClient("active");
-
-				// Get stream basic data
-				this.stream.online 			= (data.data.streams.LiveStatus === 1);
-				this.stream.title 			= data.data.streams.LiveTitle;
-
-				// Check if stream is online
-				if (!data.data.streams.RecvRtmpResolutionList.length) {
-					return resolve();
-				}
-
-				// Get M3U8 file to parse stream start time
-				this[botApp].auth.request({
-					url: 					data.data.streams.RecvRtmpResolutionList[0].ResolutionHls,
-					method: 				"GET",
-					json: 					false
-				}, (err, res, body) => {
-					if (err) {
-						return reject(new Error("Error retrieving m3u8 stream information file: " + err));
-					}
-
-					const parser 			= new m3u8Parser();
-
-					parser.push(body);
-					parser.end();
-
-					// Calculate stream start date
-					this.stream.started 	= new Date();
-					this.stream.started 	= this.stream.started.getTime() + ((parser.manifest.mediaSequence * parser.manifest.targetDuration) * 1000);
-
-					this.stream.online 		= true;
-
-					resolve();
-				});
 			})
 			.catch((err) => {
 				console.error("[error] authentication error for", this.config.email, err);
@@ -496,7 +463,7 @@ class BotClient extends EventEmitter {
 				// Check if emote has a cost
 				if (emoteData.coins > 0) {
 					// Create a new donation at StreamLabs
-					this.streamlabs.addDonation(this.config.streamLabsToken, {
+					this.config.canReply && this.streamlabs.addDonation(this.config.streamLabsToken, {
 						name: 				user.nickname,
 						identifier: 		"streamcraft#" + user.id,
 						amount: 			emote.cost / 100,
@@ -508,7 +475,7 @@ class BotClient extends EventEmitter {
 				// Check if is a fan club first subscription
 				if (emoteData.name === "Fan Club Ticket" && user.tag.length === 0) {
 					// Create a new alert at StreamLabs
-					this.streamlabs.addAlert(this.config.streamLabsToken, {
+					this.config.canReply && this.streamlabs.addAlert(this.config.streamLabsToken, {
 						name: 				user.nickname,
 						type: 				"subscription",
 						message: 			user.nickname + " " + this.getMessage(this.getLangMessage("CHAT_FAN"), { sender: user.nickname })
@@ -648,6 +615,9 @@ class BotClient extends EventEmitter {
 						}
 					});
 				}
+			})
+			.catch((e) => {
+				this.sockets.passive.debug("Error getting member data: " + e.message);
 			});
 		});
 

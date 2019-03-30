@@ -34,6 +34,30 @@ module.exports 						= {
 
 			return processor.sendLangMessage("SONGREQUEST_CLOSE");
 		} else
+		if (index === "remove") {
+			if (!processor.sender.isMod) {
+				return processor.noPermission();
+			}
+
+			// Find song by index
+			const songIndex 		= this.module.playlist.findIndex((song) => song.url === processor.arguments[1]);
+
+			// Check if song exists
+			if (songIndex > -1) {
+				// Get song data
+				const song 			= this.module.playlist[songIndex];
+
+				// Remove from playlist
+				this.module.playlist.splice(songIndex, 1);
+
+				// Emit remove packet
+				this.client.emit("songrequest.remove", song, "streamer");
+
+				return processor.sendLangMessage("SONGREQUEST_REMOVE_SUCCESS", { song });
+			} else {
+				return processor.sendLangMessage("SONGREQUEST_REMOVE_NOT_FOUND");
+			}
+		}
 		if (!this.module.isOpen) {
 			return processor.sendLangMessage("SONGREQUEST_CLOSED");
 		}

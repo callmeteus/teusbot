@@ -442,7 +442,7 @@ module.exports 												= function(io) {
 				// Get bot client and update config if it's connected
 				this.getClient(socket.channel)
 				.then((client) => {
-					client.config[index] 					= value;
+					client.config[key] 						= value;
 				});
 
 				socket.emit("settings.update", {

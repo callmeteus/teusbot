@@ -1,10 +1,10 @@
 *.env
 *.txt
 *.bat
-*.json
+**/config.json
 *.exe
 **/node_modules/
-server/app/modules/custom/
+server/app/modules/**/*.*
 node_modules/
 original sc files/
 cloc_found.txt

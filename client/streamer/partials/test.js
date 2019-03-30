@@ -35,4 +35,17 @@ module.exports 				= function(context) {
 		e.preventDefault();
 		context.socket.emit("bot.reload.modules");
 	});
+
+	$(document).on("click", "a[href='#nav-command-send']", function(e) {
+		e.preventDefault();
+		
+		context.bootbox.prompt("Enter the command", function(string) {
+			string 			= string.split(" ");
+
+			const command 	= string.shift().replace("!", "");
+			const args 		= string;
+
+			context.socket.emit("bot.command", command, args);
+		});
+	});
 };

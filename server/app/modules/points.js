@@ -100,10 +100,10 @@ module.exports 										= {
 			this.module.currentArgument 			= Math.random().toString(36).replace(/[^a-z]+/g, "").substr(2, 7);
 
 			if (this.client.sockets.passive) {
-				this.client.sockets.passive.sendMessage(this.client.getMessage(this.client.getLangMessage("POINTS_RAFFLE_START"), {
+				this.client.sockets.passive.sendLangMessage("POINTS_RAFFLE_START", {
 					points: 						this.module.currentPoints,
 					argument: 						this.module.currentArgument
-				}));
+				});
 			}
 		};
 
@@ -385,7 +385,7 @@ module.exports 										= {
 						}
 					})
 					.spread(() => {
-						processor.sendMessage(this.client.getLangMessage("POINTS_SET_SUCCESS"), {
+						processor.sendLangMessage("POINTS_SET_SUCCESS", {
 							id: 					setUser,
 							amount: 				setAmount
 						});
@@ -407,7 +407,7 @@ module.exports 										= {
 					// Check if sender has the amount to send for
 					// the desired ID
 					if (giveAmount > processor.sender.points) {
-						return processor.sendMessage(this.client.getLangMessage("POINTS_NOT_ENOUGH"), {
+						return processor.sendLangMessage("POINTS_NOT_ENOUGH", {
 							cost: 					giveAmount
 						});
 					}
@@ -432,7 +432,7 @@ module.exports 										= {
 							});
 						})
 						.then(() => {
-							processor.sendMessage(this.client.getLangMessage("POINTS_GIVE_SUCCESS"), {
+							processor.sendLangMessage("POINTS_GIVE_SUCCESS", {
 								id: 				giveUser,
 								amount: 			giveAmount
 							});
@@ -444,9 +444,13 @@ module.exports 										= {
 				default:
 					processor.getMember(processor.arguments.join(" "))
 					.then((member) => {
-						processor.sendMessage(this.client.getLangMessage("POINTS_GET"), {
-							sender: 				member
-						});
+						if (sender === null) {
+							processor.sendLangMessage("POINTS_USER_NOT_FOUND");
+						} else {
+							processor.sendLangMessage("POINTS_GET", {
+								sender: 				member
+							});
+						}
 					})
 					.catch((e) => processor.internalError(e));
 				break;

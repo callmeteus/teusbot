@@ -1,8 +1,5 @@
 const Sequelize 					= require("sequelize");
-
-const fs 							= require("fs");
-const path 							= require("path");
-const appRoot 						= path.dirname(require.main.filename);
+const BotMember 					= require("./member");
 
 class BotDatabase {
 	constructor() {
@@ -24,18 +21,28 @@ class BotDatabase {
 				type: 				Sequelize.INTEGER.UNSIGNED,
 				primaryKey: 		true
 			},
+			username: 				{
+				type: 				Sequelize.STRING,
+				allowNull: 			true,
+				defaultValue: 		null,
+				validate: 			{
+					min: 			1
+				}
+			},
 			nickname: 				{
 				type: 				Sequelize.STRING,
-				allowNull: 			false
+				allowNull: 			false,
+				validate: 			{
+					min: 			1
+				}
 			},
 			picture: 				{
 				type: 				Sequelize.STRING,
-				allowNull: 			false,
-				default: 			"http://d1m6wfg60yssal.cloudfront.net/upfile/game/6247/g9fVEnGY_sm.jpg"
-			},
-			isMod: 					{
-				type: 				Sequelize.BOOLEAN,
-				defaultValue: 		false
+				allowNull: 			null,
+				defaultValue: 		null,
+				validate: 			{
+					isUrl: 			true
+				}
 			},
 			level: 					Sequelize.INTEGER.UNSIGNED,
 			messages: 				{
@@ -265,16 +272,29 @@ class BotDatabase {
 			let messageData;
 
 			if (typeof message === "object") {
-				// Prepare member data from message
-				data 				= {
-					id: 			message.FromUin,
-					nickname: 		message.FromNickName.trim(),
-					picture: 		message.FromHeadImg,
-					isMod: 			message.FromAccess ? message.FromAccess > 1 : false,
-					level: 			message.FromUserLv,
-					channel: 		message.Channel,
-					access: 		message.FromAccess
-				};
+				if (message.FromUin !== undefined) {
+					// Prepare member data from message
+					data 			= {
+						id: 		message.FromUin,
+						nickname: 	message.FromNickName.trim(),
+						picture: 	message.FromHeadImg,
+						level: 		message.FromUserLv,
+						channel: 	message.Channel,
+						access: 	message.FromAccess,
+						tag: 		message.MeddlShowName
+					};
+				} else {
+					data 			= {
+						id: 		message.Uin,
+						nickname: 	message.NickName,
+						username: 	message.UserName,
+						picture: 	message.HeadImg,
+						level: 		message.LV,
+						access: 	message.Access,
+					};
+				}
+
+				data.username 		= data.username || null;
 			} else {
 				data.id 			= message;
 			}
@@ -296,25 +316,27 @@ class BotDatabase {
 				defaults: 			data
 			})
 			.spread((member, created) => {
-				const final 		= Object.assign({}, member.get(), data);
-
-				final.tag 			= message.MeddlShowName;
-				final.picture 		= final.picture || "http://d1m6wfg60yssal.cloudfront.net/upfile/game/6247/g9fVEnGY_sm.jpg";
-				final.isMod 		= final.isMod || (typeof message === "object" ? message.FromAccess > 1 : false);
-				final.isSuspicious 	= final.picture.indexOf("wegamers") > -1;
+				const final 		= new BotMember(Object.assign({}, member.get(), data));
 
 				resolve(final);
 
 				// Check if it was created now
 				// and if it is a full member
 				if (!created && data.nickname !== undefined) {
+					if (data.username === null && final.username !== null) {
+						delete data.username;
+					}
+
 					// Try to update member with new data
 					this.Members.update(data, {
 						where: 		memberWhere
 					});
 				}
 			})
-			.catch(reject);
+			.catch((e) => {
+				console.error(e);
+				reject(e);
+			});
 		});
 	}
 

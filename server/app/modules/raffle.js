@@ -1,6 +1,12 @@
 let entries 					= [];
 let entriesOpen 				= false;
 
+const arrRandomize 				= (arr) => {
+	return arr.sort(function() {
+		return 0.5 - Math.random();
+	});
+};
+
 const raffleClear 				= () => {
 	entries 					= [];
 };
@@ -77,12 +83,58 @@ const raffleMessage 			= function(processor) {
 	});
 };
 
+const raffleViewers 				= function(processor) {
+	this.client.once("bot.members", (viewers) => {
+		viewers 					= arrRandomize(viewers);
+
+		let winner 					= {};
+
+		// Get random winner that is not the bot itselt
+		do {
+			winner 					= viewers[viewers.length * Math.random() | 0];
+		} while(winner.Uin === this.socket.client.data.user.uin);
+
+		console.info("[bot] raffle winner is", winner.Uin, winner.NickName);
+
+		entriesOpen 				= false;
+
+		const message 				= this.client.getLangMessage("RAFFLE_WINNER", {
+			raffle: 				{
+				entries: 			viewers.length,
+				winner: 			winner.NickName + "#" + winner.Uin
+			}
+		});
+
+		// Return the winner message
+		processor.sendMessage(message, true);
+
+		// Create a StreamLabs alert
+		this.client.streamlabs.addAlert(this.client.config.streamLabsToken,{
+			type: 					"donation",
+			message: 				"Parabéns " + winner.NickName + "!",
+			image_href: 			winner.Picture,
+			user_message: 			message,
+			duration: 				10000
+		});
+	});
+
+	// Emit get members packet
+	this.client.sockets.active.packets.getMembers();
+};
+
 module.exports 						= {
 	name: 							"raffle",
 	type: 							"module",
 	content: 						function(processor) {
 		// Check if has arguments and raffle entries are open
 		if (processor.arguments.length === 0 && entriesOpen) {
+			const medium 			= processor.sender.getMediumMessages(this.client.stream.started, 30);
+
+			// Check if medium is below 0.5 and raffle needs active users
+			if (medium < 0.5 && this.client.config.raffleNeedActive) {
+				return processor.sendLangMessage("RAFFLE_NOT_SUITABLE");
+			}
+
 			// Check if user isn't already in the raffle
 			if (entries.indexOf(processor.sender.id) === -1) {
 				// Add nickname to the entries
@@ -90,9 +142,7 @@ module.exports 						= {
 
 				// Randomize the array every time someone
 				// join the raffle
-				entries 			= entries.sort(function() {
-					return 0.5 - Math.random();
-				});
+				entries 			= arrRandomize(entries);
 			}
 		} else
 		if (processor.arguments.length) {
@@ -113,6 +163,11 @@ module.exports 						= {
 					// End the current raffle
 					case "end":
 						raffleEnd.call(this, processor);
+					break;
+
+					// Raffle over viewers
+					case "viewers":
+						raffleViewers.call(this, processor);
 					break;
 
 					// Select random winner ordered by number of sent messages

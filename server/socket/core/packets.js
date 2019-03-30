@@ -49,6 +49,19 @@ class BotPackets {
 		this.socket.sendPacket(300151, this.socket.jsonstr(data, seq), seq);
 	}
 
+	getMembers(last = 0, sort = 1, uin = 0) {
+		const seq 						= this.socket.seqno();
+
+		let data 						= {
+			StudioId: 					this.socket._sid,
+			MemberUin: 					parseInt(uin, 10),
+			LastUin: 					parseInt(last, 10),
+			SortType: 					parseInt(sort, 10)
+		};
+
+		this.socket.sendPacket(300101, this.socket.jsonstr(data, seq), seq)
+	}
+
 	muteUser(userId, toggle) {
 		const seq 						= this.socket.seqno();
 

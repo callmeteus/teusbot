@@ -95,41 +95,50 @@ class TeusPlayer extends EventTarget {
 	}
 
 	playVimeo() {
-		this.elements.vimeo.src 			= "https://player.vimeo.com/video/" + this.currentItem.id;
-		
+		// Check if is paused
+		if (this.status === TeusPlayer.Status.PAUSED) {
+			this.players.soundcloud.play();
+		} else {
+			this.elements.vimeo.src 		= "https://player.vimeo.com/video/" + this.currentItem.id;
 
-		if (!this.players.vimeo) {
-			this.players.vimeo 				= new Vimeo.Player(this.elements.vimeo);
+			if (!this.players.vimeo) {
+				this.players.vimeo 			= new Vimeo.Player(this.elements.vimeo);
 
-			this.players.vimeo.on("loaded", () => this.players.vimeo.play());
+				this.players.vimeo.on("loaded", () => this.players.vimeo.play());
 
-			this.players.vimeo.on("play", () => this.emit("play"));
-			this.players.vimeo.on("pause", () => this.emit("pause"));
-			this.players.vimeo.on("error", () => this.emit("error"));
-			this.players.vimeo.on("ended", () => this.emit("end"));
-			this.players.vimeo.on("progress", (e) => this.emit("progress", {
-				position: 					e.seconds,
-				duration: 					e.duration
-			}));
+				this.players.vimeo.on("play", () => this.emit("play"));
+				this.players.vimeo.on("pause", () => this.emit("pause"));
+				this.players.vimeo.on("error", () => this.emit("error"));
+				this.players.vimeo.on("ended", () => this.emit("end"));
+				this.players.vimeo.on("progress", (e) => this.emit("progress", {
+					position: 				e.seconds,
+					duration: 				e.duration
+				}));
+			}
 		}
 
 		return this.players.vimeo;
 	}
 
 	playSoundCloud() {
-		this.elements.soundcloud.src 	= "https://w.soundcloud.com/player?url=" + this.currentItem.url + "&auto_play=1&sharing=0";
+		// Check if is paused
+		if (this.status === TeusPlayer.Status.PAUSED) {
+			this.players.soundcloud.play();
+		} else {
+			this.elements.soundcloud.src 	= "https://w.soundcloud.com/player?url=" + this.currentItem.url + "&auto_play=1&sharing=0";
 
-		if (!this.players.soundcloud) {
-			this.players.soundcloud 	= new SC.Widget(this.elements.soundcloud);
+			if (!this.players.soundcloud) {
+				this.players.soundcloud 	= new SC.Widget(this.elements.soundcloud);
 
-			this.players.soundcloud.bind(SC.Widget.Events.ERROR, () => this.emit("error"));
-			this.players.soundcloud.bind(SC.Widget.Events.PLAY, () => this.emit("play"));
-			this.players.soundcloud.bind(SC.Widget.Events.PAUSE, () => this.emit("pause"));
-			this.players.soundcloud.bind(SC.Widget.Events.FINISH, () => this.emit("end"));
-			this.players.soundcloud.bind(SC.Widget.Events.PLAY_PROGRESS, (e) => this.emit("progress", {
-				position: 					e.currentPosition,
-				duration: 					this.players.soundcloud.getDuration()
-			}));
+				this.players.soundcloud.bind(SC.Widget.Events.ERROR, () => this.emit("error"));
+				this.players.soundcloud.bind(SC.Widget.Events.PLAY, () => this.emit("play"));
+				this.players.soundcloud.bind(SC.Widget.Events.PAUSE, () => this.emit("pause"));
+				this.players.soundcloud.bind(SC.Widget.Events.FINISH, () => this.emit("end"));
+				this.players.soundcloud.bind(SC.Widget.Events.PLAY_PROGRESS, (e) => this.emit("progress", {
+					position: 				e.currentPosition,
+					duration: 				this.players.soundcloud.getDuration()
+				}));
+			}
 		}
 
 		return this.players.soundcloud;
@@ -137,7 +146,12 @@ class TeusPlayer extends EventTarget {
 
 	playYouTube() {
 		if (this.players.youtube) {
-			this.players.youtube.loadVideoById(this.currentItem.id);
+			// Check if is paused
+			if (this.status === TeusPlayer.Status.PAUSED) {
+				this.players.youtube.playVideo();
+			} else {
+				this.players.youtube.loadVideoById(this.currentItem.id);
+			}
 		} else {
 			this.players.youtube 			= new YT.Player(this.elements.youtube.id, {
 				height: 					360,
@@ -211,6 +225,18 @@ class TeusPlayer extends EventTarget {
 		}
 
 		this.emit("stop");
+
+		return true;
+	}
+
+	setVolume(volume) {
+		this.volume 					= volume;
+
+		if (this.currentItem.url === undefined) {
+			return false;
+		}
+
+		this.currentItem.player.setVolume(this.currentItem.type === "vimeo" ? volume / 100 : volume);
 
 		return true;
 	}

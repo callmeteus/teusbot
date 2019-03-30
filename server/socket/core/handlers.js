@@ -1,8 +1,23 @@
-const colors 								= require("colors");
+const colors 									= require("colors");
 
 class BotHandlers {
 	constructor(socket) {
-		this.socket 						= socket;
+		this.socket 							= socket;
+	}
+
+	handleMembers(response) {
+		let lastId;
+
+		this.socket.client.emit("bot.members", response.List);
+
+		response.List.forEach((data) => {
+			this.socket.client.database.getMember(data, this.socket.client.data.data.user.uin)
+			.catch(() => {});
+
+			lastId 								= data.Uin;
+		});
+
+		return lastId;
 	}
 
 	handleWatchLiveRewardList(response) {
@@ -16,15 +31,15 @@ class BotHandlers {
 	}
 
 	handleLiveFansList(response, data) {
-		const members 						= [];
+		const members 							= [];
 
 		response.List.forEach((member) => {
 			members.push({
-				id: 						member.Uin,
-				nickname: 					member.NickName,
-				picture: 					member.HeadImg,
-				intimacy: 					member.Intimacy,
-				level: 						member.LV
+				id: 							member.Uin,
+				nickname: 						member.NickName,
+				picture: 						member.HeadImg,
+				intimacy: 						member.Intimacy,
+				level: 							member.LV
 			});
 		});
 
@@ -34,20 +49,20 @@ class BotHandlers {
 	}
 
 	handleGiftList(list) {
-		const giftList 						= [];
+		const giftList 							= [];
 
 		list.forEach(function(gift) {
 			giftList.push({
-				id: 						gift.GiftId,
-				type: 						gift.GiftType,
-				name: 						gift.GiftName,
-				icon: 						gift.Icon,
-				image: 						gift.Image,
-				animation: 					gift.WebAnimation,
-				coins: 						gift.Coin,
-				crystal: 					gift.Crystal,
-				duration: 					gift.WebAnimationLen,
-				silver: 					gift.Silver
+				id: 							gift.GiftId,
+				type: 							gift.GiftType,
+				name: 							gift.GiftName,
+				icon: 							gift.Icon,
+				image: 							gift.Image,
+				animation: 						gift.WebAnimation,
+				coins: 							gift.Coin,
+				crystal: 						gift.Crystal,
+				duration: 						gift.WebAnimationLen,
+				silver: 						gift.Silver
 			});
 		});
 
@@ -55,15 +70,15 @@ class BotHandlers {
 	}
 
 	handleStudioConfig(response) {
-		const giftList 						= this.handleGiftList(response.LiveGiftConf.GiftList);
+		const giftList 							= this.handleGiftList(response.LiveGiftConf.GiftList);
 
 		if (this.socket.client.config.giftList === null) {
 			this.socket.debug("saving studio config");
 
 			this.socket.client.database.Configs.create({
-				channel: 					this.socket.client.data.data.user.uin,
-				key: 						"giftList",
-				value: 						JSON.stringify(giftList)
+				channel: 						this.socket.client.data.data.user.uin,
+				key: 							"giftList",
+				value: 							JSON.stringify(giftList)
 			})
 			.catch((err) => {
 				console.error("[db] error inserting gift list", err);
@@ -73,13 +88,13 @@ class BotHandlers {
 			this.socket.debug("updating studio config");
 
 			this.socket.client.database.Configs.update({
-				channel: 					this.socket.client.data.data.user.uin,
-				key: 						"giftList",
-				value: 						JSON.stringify(giftList)
+				channel: 						this.socket.client.data.data.user.uin,
+				key: 							"giftList",
+				value: 							JSON.stringify(giftList)
 			}, {
-				where: 						{
-					channel: 				this.socket.client.data.data.user.uin,
-					key: 					"giftList"
+				where: 							{
+					channel: 					this.socket.client.data.data.user.uin,
+					key: 						"giftList"
 				}
 			})
 			.catch((err) => {
@@ -95,12 +110,12 @@ class BotHandlers {
 	handleAuth(response) {
 		// Login success
 		if (response.BaseResponse.Ret === 0) {
-			this.socket.ReconSec 			= 1;
+			this.socket.ReconSec 				= 1;
 
 			this.socket.debug("login succes");
 
 			return this.socket.emit("bot.login", {
-				success: 					true
+				success: 						true
 			});
 		}
 
@@ -110,13 +125,19 @@ class BotHandlers {
 		this.socket.debug(colors.red("login error"), response.BaseResponse.ErrMsg.Buff);
 
 		return this.socket.emit("bot.login", {
-			success:						false
+			success:							false
 		});
 	}
 
 	handleEnter(response) {
 		// Login succeed
 		if (response.BaseResponse.Ret === 0) {
+			// Handle channel info
+			this.socket.client.stream.title 	= response.Title;
+			this.socket.client.stream.viewers 	= response.ViewCount;
+			this.socket.client.stream.views 	= response.TotalViewCount;
+
+
 			return this.socket.emit("bot.login", {
 				success: 					true
 			});
@@ -130,7 +151,7 @@ class BotHandlers {
 			this.socket.debug("enter error", response.BaseResponse.ErrMsg.Buff);
 
 			return this.socket.emit("bot.login", {
-				success:					false
+				success:						false
 			});
 		}
 	}

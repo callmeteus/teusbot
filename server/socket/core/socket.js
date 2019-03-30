@@ -419,6 +419,11 @@ class BotSocket extends WebSocket {
 					this.emit("packet.response", response);
 				break;
 
+				// Members list
+				case 10300101:
+					this.handlers.handleMembers(response.Response, response);
+				break;
+
 				// Watch live reward list
 				case 10900083:
 					this.handlers.handleWatchLiveRewardList(response.Response, response);

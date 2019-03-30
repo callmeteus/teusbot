@@ -133,6 +133,11 @@ sections.push(
 			name: 			"songrequest close",
 			description: 	"Close the song request playlist to accept new songs",
 			mod: 			true
+		},
+		{
+			name: 			"songrequest remove <em><abbr title='Video / song link'>url</abbr></em>",
+			description: 	"Remove a song from the playlist",
+			mod: 			true
 		}
 	]
 },
