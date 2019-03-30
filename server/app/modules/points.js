@@ -100,10 +100,10 @@ module.exports 										= {
 			this.module.currentArgument 			= Math.random().toString(36).replace(/[^a-z]+/g, "").substr(2, 7);
 
 			if (this.client.sockets.passive) {
-				this.client.sockets.passive.sendLangMessage("POINTS_RAFFLE_START", {
+				this.client.sockets.passive.sendMessage(this.client.getMessage(this.client.getLangMessage("POINTS_RAFFLE_START"), {
 					points: 						this.module.currentPoints,
 					argument: 						this.module.currentArgument
-				});
+				}));
 			}
 		};
 
