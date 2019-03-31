@@ -130,7 +130,13 @@ module.exports 												= function(io) {
 			})
 			.then((found) => {
 				if (found === null) {
-					return this.database.BotCommands.create(data);
+					return this.database.BotCommands.create(data)
+					.then((cmd) => {
+						cmd 								= cmd.toJSON();
+						cmd.isEdit 							= false;
+
+						return cmd;
+					});
 				} else {
 					data.id 								= found.id;
 
@@ -138,11 +144,17 @@ module.exports 												= function(io) {
 						where: 								{
 							id: 							data.id
 						}
+					})
+					.then(() => {
+						found 								= Object.assign({}, found.get(), data);
+						found.isEdit 						= true;
+
+						return found;
 					});
 				}
 			})
 			.then((command) => {
-				socket.emit("command.add", command.toJSON());
+				socket.emit("command.add", command);
 
 				// Get bot active client
 				this.getClient(socket.channel)
@@ -153,7 +165,7 @@ module.exports 												= function(io) {
 					// Check if command exists
 					if (id === -1) {
 						// Register the new command
-						client.registerCommand(command.toJSON());
+						client.registerCommand(command);
 					} else {
 						// Update command values
 						Object.keys(command).forEach((key) => {
@@ -224,7 +236,13 @@ module.exports 												= function(io) {
 			})
 			.then((found) => {
 				if (found === null) {
-					return this.database.BotTimers.create(data);
+					return this.database.BotTimers.create(data)
+					.then((timer) => {
+						timer 								= timer.toJSON();
+						timer.isEdit 						= false;
+
+						return cmd;
+					});
 				} else {
 					data.id 								= found.id;
 
@@ -232,11 +250,17 @@ module.exports 												= function(io) {
 						where: 								{
 							id: 							data.id
 						}
+					})
+					.then(() => {
+						found 								= Object.assign({}, found.get(), data);
+						found.isEdit 						= true;
+
+						return found;
 					});
 				}
 			})
 			.then((timer) => {
-				socket.emit("timer.add", timer.toJSON());
+				socket.emit("timer.add", timer);
 
 				// Get bot active client
 				this.getClient(socket.channel)
@@ -247,7 +271,7 @@ module.exports 												= function(io) {
 					// Check if timer exists
 					if (id === -1) {
 						// Register the new timer
-						const id 							= client.registerTimer(timer.toJSON()) - 1;
+						const id 							= client.registerTimer(timer) - 1;
 
 						// Start the timer
 						client.startTimer(id);

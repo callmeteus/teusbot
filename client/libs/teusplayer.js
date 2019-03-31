@@ -27,6 +27,8 @@ class TeusPlayer extends EventTarget {
 
 		this.players 					= {};
 		this.elements 					= {};
+
+		this.volume 					= 100;
 	}
 
 	createElementFor(type, tag = "iframe") {
@@ -40,9 +42,18 @@ class TeusPlayer extends EventTarget {
 		this.element.appendChild(element);
 		this.element.style.display 		= "none";
 
-		this.on("play", () => this.status = TeusPlayer.Status.PLAYING);
-		this.on("pause", () => this.status = TeusPlayer.Status.PAUSED);
-		this.on("stop", () => this.status = TeusPlayer.Status.STOPPED);
+		this.on("play", () => {
+			this.status 				= TeusPlayer.Status.PLAYING;
+			this.setVolume(this.volume);
+		});
+
+		this.on("pause", () => {
+			this.status 				= TeusPlayer.Status.PAUSED;
+		});
+
+		this.on("stop", () => {
+			this.status 				= TeusPlayer.Status.STOPPED;
+		});
 
 		this.on("error", (e) => {
 			this.status 				= TeusPlayer.Status.STOPPED;
@@ -232,7 +243,7 @@ class TeusPlayer extends EventTarget {
 	setVolume(volume) {
 		this.volume 					= volume;
 
-		if (this.currentItem.url === undefined) {
+		if (this.currentItem.player === undefined || this.currentItem.url === undefined) {
 			return false;
 		}
 

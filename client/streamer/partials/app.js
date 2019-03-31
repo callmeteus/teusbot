@@ -6,37 +6,6 @@ module.exports 							= function(context) {
 		autoConnect: 					false
 	});
 
-	context.socket.on("data", (data) => {
-		appData 						= data;
-
-		$.get("https://webapi.streamcraft.com/live/room/anchorinfo?uin=" + data.channel, (streamerData) => {
-			appData.streamer 			= streamerData.data.user;
-
-			appData.stream 				= appData.stream.title ? appData.stream : {
-				title: 					streamerData.data.streams.LiveTitle,
-				views: 					streamerData.data.streams.TotalViewCount,
-				viewers: 				0
-			};
-
-			$.get("https://webapi.streamcraft.com/live/room/anchorinfo?uin=" + data.channel, (botData) => {
-				appData.bot 			= botData.data.user;
-				appData.commands		= appData.commands || [];
-
-				if (!appData.isRendered) {
-					context.renderTemplate("main");
-					appData.isRendered 	= true;
-
-					context.socket.emit("modules");
-				}
-			});
-		});
-	});
-
-	context.socket.on("connect", () => {
-		$(window).trigger("bot.connected");
-		context.socket.emit("data");
-	});
-
 	/**
 	 * -----------------------------------------------------------------
 	 * Initializations
@@ -49,8 +18,10 @@ module.exports 							= function(context) {
 	context.appContainer 		= appContainer;
 	context.appPreloader 		= appPreloader;
 
-	let appData 				= {
-		isRendered: 			false
+	context.appData 			= {
+		isRendered: 			false,
+		commands: 				[],
+		timers: 				[]
 	};
 
 	let appCache 				= {};
@@ -67,7 +38,7 @@ module.exports 							= function(context) {
 		}
 
 		const renderData 		= {
-			data: 				Object.assign(appData, data),
+			data: 				Object.assign(context.appData, data),
 			renderTemplate: 	(tpl, data) => context.renderTemplate(tpl, Object.assign({}, renderData, data), true)
 		};
 
@@ -80,6 +51,42 @@ module.exports 							= function(context) {
 			appContainer.show().html(content);
 		}
 	};
+
+	/**
+	 * -----------------------------------------------------------------
+	 * Socket Events
+	 * -----------------------------------------------------------------
+	 */
+
+	context.socket.on("data", (data) => {
+		context.appData 				= Object.assign({}, context.appData, data);
+
+		$.get("https://webapi.streamcraft.com/live/room/anchorinfo?uin=" + data.channel, (streamerData) => {
+			context.appData.streamer 	= streamerData.data.user;
+
+			context.appData.stream 		= context.appData.stream.title ? context.appData.stream : {
+				title: 					streamerData.data.streams.LiveTitle,
+				views: 					streamerData.data.streams.TotalViewCount,
+				viewers: 				0
+			};
+
+			$.get("https://webapi.streamcraft.com/live/room/anchorinfo?uin=" + data.channel, (botData) => {
+				context.appData.bot 	= botData.data.user;
+
+				if (!context.appData.isRendered) {
+					context.renderTemplate("main");
+					context.appData.isRendered 	= true;
+
+					context.socket.emit("modules");
+				}
+			});
+		});
+	});
+
+	context.socket.on("connect", () => {
+		$(window).trigger("bot.connected");
+		context.socket.emit("data");
+	});
 };
 
 /**

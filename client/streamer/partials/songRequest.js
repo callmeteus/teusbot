@@ -63,12 +63,14 @@ module.exports 				= function(context) {
 		playList.forEach((song) => {
 			if (!$("#bot-songrequest [data-url='" + song.url + "']").length) {
 				$("#bot-songrequest").append(`
-					<div data-url="${song.url}" class="list-group-item list-group-item-action">
-						${song.title}
+					<div data-url="${song.url}" class="list-group-item list-group-item-action d-flex justify-items-between">
+						<span class="col-9">${song.title}</span>
 
-						<button class="btn btn-danger" title="Remove song from playlist">
-							<i class="fa fa-fw fa-times"></i>
-						</button>
+						<div class="col-3">
+							<button class="btn btn-danger" title="Remove song from playlist">
+								<i class="fa fa-fw fa-times"></i>
+							</button>
+						</div>
 					</div>
 				`);
 			}

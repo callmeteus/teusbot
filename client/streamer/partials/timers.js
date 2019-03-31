@@ -19,12 +19,36 @@ module.exports 				= function(context) {
 
 			$form.find("input").val("");
 
-			$("#nav-timers .list-group").append(context.renderTemplate("partials/timer", { timer: data }, true));
+			const content 	= context.renderTemplate("partials/timer", { timer: data }, true);
 
-			context.bootbox.alert("Timer successfully added!");
+			if (!data.isEdit) {
+				$("#nav-timers .list-group").append(content);
+			} else {
+				$(".bot-timer[data-id=" + id + "]").replaceWith(content);
+			}
+
+			context.bootbox.alert("Timer successfully " + (data.isEdit ? "saved" : "added") + "!");
 		});
 
 		context.socket.emit("timer.add", { id, name, type, content, interval });
+	});
+
+	$(document).on("click", ".bot-timer [data-type=edit]", function(e) {
+		e.preventDefault();
+
+		const $timer 		= $(this).parents(".bot-timer");
+		const $modal 		= $("#add-timer");
+
+		const timer 		= $timer.attr("data-timer");
+		const id 			= parseInt($timer.attr("data-id"), 10);
+
+		$modal.modal("show");
+
+		const data 			= context.appData.timers.find((cmd) => cmd.id === id);
+
+		Object.keys(data).forEach((key) => {
+			$modal.find("[name=" + key + "]").val(data[key]);
+		});
 	});
 
 	$(document).on("click", ".bot-timer [data-type=remove]", function(e) {

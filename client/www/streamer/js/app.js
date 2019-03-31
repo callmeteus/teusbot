@@ -28,6 +28,8 @@ class TeusPlayer extends EventTarget {
 
 		this.players 					= {};
 		this.elements 					= {};
+
+		this.volume 					= 100;
 	}
 
 	createElementFor(type, tag = "iframe") {
@@ -41,9 +43,18 @@ class TeusPlayer extends EventTarget {
 		this.element.appendChild(element);
 		this.element.style.display 		= "none";
 
-		this.on("play", () => this.status = TeusPlayer.Status.PLAYING);
-		this.on("pause", () => this.status = TeusPlayer.Status.PAUSED);
-		this.on("stop", () => this.status = TeusPlayer.Status.STOPPED);
+		this.on("play", () => {
+			this.status 				= TeusPlayer.Status.PLAYING;
+			this.setVolume(this.volume);
+		});
+
+		this.on("pause", () => {
+			this.status 				= TeusPlayer.Status.PAUSED;
+		});
+
+		this.on("stop", () => {
+			this.status 				= TeusPlayer.Status.STOPPED;
+		});
 
 		this.on("error", (e) => {
 			this.status 				= TeusPlayer.Status.STOPPED;
@@ -233,7 +244,7 @@ class TeusPlayer extends EventTarget {
 	setVolume(volume) {
 		this.volume 					= volume;
 
-		if (this.currentItem.url === undefined) {
+		if (this.currentItem.player === undefined || this.currentItem.url === undefined) {
 			return false;
 		}
 
@@ -306,37 +317,6 @@ module.exports 							= function(context) {
 		autoConnect: 					false
 	});
 
-	context.socket.on("data", (data) => {
-		appData 						= data;
-
-		$.get("https://webapi.streamcraft.com/live/room/anchorinfo?uin=" + data.channel, (streamerData) => {
-			appData.streamer 			= streamerData.data.user;
-
-			appData.stream 				= appData.stream.title ? appData.stream : {
-				title: 					streamerData.data.streams.LiveTitle,
-				views: 					streamerData.data.streams.TotalViewCount,
-				viewers: 				0
-			};
-
-			$.get("https://webapi.streamcraft.com/live/room/anchorinfo?uin=" + data.channel, (botData) => {
-				appData.bot 			= botData.data.user;
-				appData.commands		= appData.commands || [];
-
-				if (!appData.isRendered) {
-					context.renderTemplate("main");
-					appData.isRendered 	= true;
-
-					context.socket.emit("modules");
-				}
-			});
-		});
-	});
-
-	context.socket.on("connect", () => {
-		$(window).trigger("bot.connected");
-		context.socket.emit("data");
-	});
-
 	/**
 	 * -----------------------------------------------------------------
 	 * Initializations
@@ -349,8 +329,10 @@ module.exports 							= function(context) {
 	context.appContainer 		= appContainer;
 	context.appPreloader 		= appPreloader;
 
-	let appData 				= {
-		isRendered: 			false
+	context.appData 			= {
+		isRendered: 			false,
+		commands: 				[],
+		timers: 				[]
 	};
 
 	let appCache 				= {};
@@ -367,7 +349,7 @@ module.exports 							= function(context) {
 		}
 
 		const renderData 		= {
-			data: 				Object.assign(appData, data),
+			data: 				Object.assign(context.appData, data),
 			renderTemplate: 	(tpl, data) => context.renderTemplate(tpl, Object.assign({}, renderData, data), true)
 		};
 
@@ -380,6 +362,42 @@ module.exports 							= function(context) {
 			appContainer.show().html(content);
 		}
 	};
+
+	/**
+	 * -----------------------------------------------------------------
+	 * Socket Events
+	 * -----------------------------------------------------------------
+	 */
+
+	context.socket.on("data", (data) => {
+		context.appData 				= Object.assign({}, context.appData, data);
+
+		$.get("https://webapi.streamcraft.com/live/room/anchorinfo?uin=" + data.channel, (streamerData) => {
+			context.appData.streamer 	= streamerData.data.user;
+
+			context.appData.stream 		= context.appData.stream.title ? context.appData.stream : {
+				title: 					streamerData.data.streams.LiveTitle,
+				views: 					streamerData.data.streams.TotalViewCount,
+				viewers: 				0
+			};
+
+			$.get("https://webapi.streamcraft.com/live/room/anchorinfo?uin=" + data.channel, (botData) => {
+				context.appData.bot 	= botData.data.user;
+
+				if (!context.appData.isRendered) {
+					context.renderTemplate("main");
+					context.appData.isRendered 	= true;
+
+					context.socket.emit("modules");
+				}
+			});
+		});
+	});
+
+	context.socket.on("connect", () => {
+		$(window).trigger("bot.connected");
+		context.socket.emit("data");
+	});
 };
 
 /**
@@ -423,12 +441,45 @@ module.exports 				= function(context) {
 
 			$form.find("input").val("");
 
-			$("#nav-commands .list-group").append(context.renderTemplate("partials/command", { cmd: data }, true));
+			// Get content
+			const content 	= context.renderTemplate("partials/command", { cmd: data }, true);
 
-			context.bootbox.alert("Command successfully added!");
+			// Check if it was an edit
+			if (!data.isEdit) {
+				// Append new command
+				$("#nav-commands .list-group").append(content);
+			} else {
+				// Replace actual command with new command content
+				$(".bot-command[data-id=" + id + "]").replaceWith(content);
+			}
+
+			// Set new command data
+			const index 					= context.appData.commands.findIndex((cmd) => cmd.id === id);
+			context.appData.commands[index] = data;
+
+			// Alert success
+			context.bootbox.alert("Command successfully " + (data.isEdit ? "saved" : "added") + "!");
 		});
 
 		context.socket.emit("command.add", { id, name, type, content });
+	});
+
+	$(document).on("click", ".bot-command [data-type=edit]", function(e) {
+		e.preventDefault();
+
+		const $command 		= $(this).parents(".bot-command");
+		const $modal 		= $("#add-command");
+
+		const command 		= $command.attr("data-command");
+		const id 			= parseInt($command.attr("data-id"), 10);
+
+		$modal.modal("show");
+
+		const data 			= context.appData.commands.find((cmd) => cmd.id === id);
+
+		Object.keys(data).forEach((key) => {
+			$modal.find("[name=" + key + "]").val(data[key]);
+		});
 	});
 
 	$(document).on("click", ".bot-command [data-type=remove]", function(e) {
@@ -646,12 +697,14 @@ module.exports 				= function(context) {
 		playList.forEach((song) => {
 			if (!$("#bot-songrequest [data-url='" + song.url + "']").length) {
 				$("#bot-songrequest").append(`
-					<div data-url="${song.url}" class="list-group-item list-group-item-action">
-						${song.title}
+					<div data-url="${song.url}" class="list-group-item list-group-item-action d-flex justify-items-between">
+						<span class="col-9">${song.title}</span>
 
-						<button class="btn btn-danger" title="Remove song from playlist">
-							<i class="fa fa-fw fa-times"></i>
-						</button>
+						<div class="col-3">
+							<button class="btn btn-danger" title="Remove song from playlist">
+								<i class="fa fa-fw fa-times"></i>
+							</button>
+						</div>
 					</div>
 				`);
 			}
@@ -795,12 +848,36 @@ module.exports 				= function(context) {
 
 			$form.find("input").val("");
 
-			$("#nav-timers .list-group").append(context.renderTemplate("partials/timer", { timer: data }, true));
+			const content 	= context.renderTemplate("partials/timer", { timer: data }, true);
 
-			context.bootbox.alert("Timer successfully added!");
+			if (!data.isEdit) {
+				$("#nav-timers .list-group").append(content);
+			} else {
+				$(".bot-timer[data-id=" + id + "]").replaceWith(content);
+			}
+
+			context.bootbox.alert("Timer successfully " + (data.isEdit ? "saved" : "added") + "!");
 		});
 
 		context.socket.emit("timer.add", { id, name, type, content, interval });
+	});
+
+	$(document).on("click", ".bot-timer [data-type=edit]", function(e) {
+		e.preventDefault();
+
+		const $timer 		= $(this).parents(".bot-timer");
+		const $modal 		= $("#add-timer");
+
+		const timer 		= $timer.attr("data-timer");
+		const id 			= parseInt($timer.attr("data-id"), 10);
+
+		$modal.modal("show");
+
+		const data 			= context.appData.timers.find((cmd) => cmd.id === id);
+
+		Object.keys(data).forEach((key) => {
+			$modal.find("[name=" + key + "]").val(data[key]);
+		});
 	});
 
 	$(document).on("click", ".bot-timer [data-type=remove]", function(e) {

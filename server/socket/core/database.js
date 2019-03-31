@@ -198,7 +198,7 @@ class BotDatabase {
 				where: 				{
 					channel: 		channel
 				},
-				attributes: 		["id", "name", "type", "content", "createdAt", "updatedAt"]
+				attributes: 		["id", "name", "type", "content", "interval", "createdAt", "updatedAt"]
 			})
 			.then(resolve)
 			.catch(reject);

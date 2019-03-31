@@ -1,8 +1,13 @@
 <div id="bot-overlays">
 	<div class="list-group">
 		<div class="list-group-item">
-			<strong>Chat overlay</strong><br/>
+			<strong>Chat Box</strong><br/>
 			<a href="/overlay/?token=<%=data.token%>&module=chat.message">Right click -> copy link</a>
+		</div>
+
+		<div class="list-group-item">
+			<strong>Now Playing</strong><br/>
+			<a href="/overlay/?token=<%=data.token%>&module=nowplaying.update&in=0&out=0&append=0">Right click -> copy link</a>
 		</div>
 	</div>
 </div>

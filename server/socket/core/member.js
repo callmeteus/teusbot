@@ -15,6 +15,8 @@ class BotMember {
 		this.points 		= data.points;
 
 		this.tag 			= data.tag;
+
+		this.addons 		= data.addons;
 	}
 
 	isSuspicious() {

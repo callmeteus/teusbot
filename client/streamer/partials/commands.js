@@ -18,12 +18,45 @@ module.exports 				= function(context) {
 
 			$form.find("input").val("");
 
-			$("#nav-commands .list-group").append(context.renderTemplate("partials/command", { cmd: data }, true));
+			// Get content
+			const content 	= context.renderTemplate("partials/command", { cmd: data }, true);
 
-			context.bootbox.alert("Command successfully added!");
+			// Check if it was an edit
+			if (!data.isEdit) {
+				// Append new command
+				$("#nav-commands .list-group").append(content);
+			} else {
+				// Replace actual command with new command content
+				$(".bot-command[data-id=" + id + "]").replaceWith(content);
+			}
+
+			// Set new command data
+			const index 					= context.appData.commands.findIndex((cmd) => cmd.id === id);
+			context.appData.commands[index] = data;
+
+			// Alert success
+			context.bootbox.alert("Command successfully " + (data.isEdit ? "saved" : "added") + "!");
 		});
 
 		context.socket.emit("command.add", { id, name, type, content });
+	});
+
+	$(document).on("click", ".bot-command [data-type=edit]", function(e) {
+		e.preventDefault();
+
+		const $command 		= $(this).parents(".bot-command");
+		const $modal 		= $("#add-command");
+
+		const command 		= $command.attr("data-command");
+		const id 			= parseInt($command.attr("data-id"), 10);
+
+		$modal.modal("show");
+
+		const data 			= context.appData.commands.find((cmd) => cmd.id === id);
+
+		Object.keys(data).forEach((key) => {
+			$modal.find("[name=" + key + "]").val(data[key]);
+		});
 	});
 
 	$(document).on("click", ".bot-command [data-type=remove]", function(e) {
