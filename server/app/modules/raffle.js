@@ -130,8 +130,8 @@ module.exports 						= {
 		if (processor.arguments.length === 0 && entriesOpen) {
 			const medium 			= processor.sender.getMediumMessages(this.client.stream.started, 30);
 
-			// Check if medium is below 0.5 and raffle needs active users
-			if (medium < 0.5 && this.client.config.raffleNeedActive) {
+			// Check if medium is below 0.15 and raffle needs active users
+			if (medium < 0.15 && this.client.config.raffleNeedActive) {
 				return processor.sendLangMessage("RAFFLE_NOT_SUITABLE");
 			}
 

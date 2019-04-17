@@ -15,15 +15,15 @@ const getWindowsPlayerList 			= require("./src/windows");
  * Configuration
  */
 
-const config 	 					= fs.existsSync("config.json") ? require("./config") : {};
-
-const appDomain 					= "127.0.0.1:3200";
+const config 	 					= fs.existsSync("config.json") ? JSON.parse(fs.readFileSync("./config.json", "utf8")) : {};
+config.token 						= config.token || null;
+config.domain 						= config.domain || "teus.herokuapp.com";
 
 /**
  * Initialization
  */
 
-const socket 						= socketIo("ws://" + appDomain + "/obs", {
+const socket 						= socketIo("ws://" + config.domain + "/obs", {
 	autoConnect: 					false,
 	transports: 					["websocket"]
 });
@@ -35,18 +35,25 @@ let running 						= {};
 function doListener() {
 	let playerList 					= null;
 
+	// Platform check
 	if (os.platform() === "win32") {
 		playerList 					= getWindowsPlayerList;
 	}
 
+	// Check if playlist function is set
 	if (playerList !== null) {
+		// Get current playlist
 		playerList()
 		.then((current) => {
+			// Check if current song is different than retrieved song
 			if (current.song !== running.song) {
+				// Update it
 				running 			= current;
 
+				// Log into the console
 				console.log(colors.green("Listening to " + running.song + " on " + running.from));
 
+				// Emit to server
 				socket.emit("nowplaying.update", current);
 			}
 		});
@@ -55,7 +62,9 @@ function doListener() {
 	}
 }
 
+// On socket authenticate
 socket.on("auth", function(success) {
+	// Check if authentication succeeded
 	if (!success) {
 		console.error(colors.red("Error: authentication with TeusBot API failed. Check if your token is correct."));
 		console.error(colors.red("If you have changed your API key, remove the config.json file and run the program again."));
@@ -84,7 +93,9 @@ console.info(colors.cyan(`
                                      
                                      `));
 
-if (token === undefined) {
+console.info("Connecting to " + config.domain + "...");
+
+if (token === undefined || token === null) {
 	const readline 						= require("readline");
 
 	const rl 							= readline.createInterface({

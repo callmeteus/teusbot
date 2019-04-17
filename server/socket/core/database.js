@@ -1,4 +1,6 @@
 const Sequelize 					= require("sequelize");
+const fs 							= require("fs");
+
 const BotMember 					= require("./member");
 
 class BotDatabase {
@@ -38,11 +40,8 @@ class BotDatabase {
 			},
 			picture: 				{
 				type: 				Sequelize.STRING,
-				allowNull: 			null,
-				defaultValue: 		null,
-				validate: 			{
-					isUrl: 			true
-				}
+				allowNull: 			false,
+				defaultValue: 		"http://teus.herokuapp.com/img/default.png"
 			},
 			level: 					Sequelize.INTEGER.UNSIGNED,
 			messages: 				{
