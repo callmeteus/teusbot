@@ -4,7 +4,6 @@
 **/config.json
 *.exe
 **/node_modules/
-server/app/modules/**/*.*
 node_modules/
 original sc files/
 cloc_found.txt
