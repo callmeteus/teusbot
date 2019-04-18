@@ -21,7 +21,7 @@ class BotDatabase {
 		this.Members 				= this.sequelize.define("member", {
 			id: 					{
 				type: 				Sequelize.INTEGER.UNSIGNED,
-				primaryKey: 		true
+				primaryKey: 		false 	// Members cannot have primary keys
 			},
 			username: 				{
 				type: 				Sequelize.STRING,
