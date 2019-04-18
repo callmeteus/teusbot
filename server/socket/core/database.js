@@ -21,7 +21,10 @@ class BotDatabase {
 		this.Members 				= this.sequelize.define("member", {
 			id: 					{
 				type: 				Sequelize.INTEGER.UNSIGNED,
-				primaryKey: 		false 	// Members cannot have primary keys
+				primaryKey: 		false
+			},
+			uid: 					{
+				type: 				Sequelize.INTEGER.UNSIGNED
 			},
 			username: 				{
 				type: 				Sequelize.STRING,
@@ -274,7 +277,7 @@ class BotDatabase {
 				if (message.FromUin !== undefined) {
 					// Prepare member data from message
 					data 			= {
-						id: 		message.FromUin,
+						uid: 		message.FromUin,
 						nickname: 	message.FromNickName.trim(),
 						picture: 	message.FromHeadImg,
 						level: 		message.FromUserLv,
@@ -284,7 +287,7 @@ class BotDatabase {
 					};
 				} else {
 					data 			= {
-						id: 		message.Uin,
+						uid: 		message.Uin,
 						nickname: 	message.NickName,
 						username: 	message.UserName,
 						picture: 	message.HeadImg,
@@ -299,7 +302,7 @@ class BotDatabase {
 			}
 
 			const memberWhere 		= {
-				id: 				data.id,
+				uid: 				data.uid,
 				channel: 			channel ? channel : data.channel
 			};
 
