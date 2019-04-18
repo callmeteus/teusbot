@@ -36,7 +36,7 @@ class BotCommand {
 	}
 
 	sendMessage(message) {
-		return this[botSocket].sendMessage(message);
+		return this[botClient].config.canReply && this[botSocket].sendMessage(message);
 	}
 
 	getMember(id) {

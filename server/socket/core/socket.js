@@ -549,14 +549,14 @@ class BotSocket extends WebSocket {
 					EmojiFlag: 		0,
 					CreateTime: 	date
 				}]
-		};
+			};
 
 		this.debug(colors.blue(">>"), message);
 
 		// Check if bot can reply or
 		// if the stream is online
 		// and it's not a debug
-		if ((!this.client.config.canReply || !this.client.stream.online) && !this.client.isDebug) {
+		if ((!this.client.config.canSend || !this.client.stream.online) && !this.client.isDebug) {
 			return false;
 		}
 
