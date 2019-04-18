@@ -294,7 +294,7 @@ class BotDatabase {
 
 				data.username 		= data.username || null;
 			} else {
-				data.id 			= message;
+				data.uid 			= message;
 			}
 
 			const memberWhere 		= {
