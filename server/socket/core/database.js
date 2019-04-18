@@ -19,10 +19,6 @@ class BotDatabase {
 
 		// Define members
 		this.Members 				= this.sequelize.define("member", {
-			id: 					{
-				type: 				Sequelize.INTEGER.UNSIGNED,
-				primaryKey: 		true
-			},
 			uid: 					{
 				type: 				Sequelize.INTEGER.UNSIGNED
 			},
