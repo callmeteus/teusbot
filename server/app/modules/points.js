@@ -99,7 +99,7 @@ module.exports 										= {
 			this.module.currentPoints 				= Math.floor(Math.random() * 50) + 1;
 			this.module.currentArgument 			= Math.random().toString(36).replace(/[^a-z]+/g, "").substr(2, 7);
 
-			if (this.client.sockets.passive) {
+			if (this.client.sockets.passive && this.client.config.canReply) {
 				this.client.sockets.passive.sendMessage(this.client.getMessage(this.client.getLangMessage("POINTS_RAFFLE_START"), {
 					points: 						this.module.currentPoints,
 					argument: 						this.module.currentArgument

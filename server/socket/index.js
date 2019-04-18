@@ -11,7 +11,7 @@ class BotClient extends EventEmitter {
 	constructor(app) {
 		super();
 
-		this.isDebug 						= true;
+		this.isDebug 						= process.env.NODE_ENV === "production";
 
 		// Save app instance
 		this[botApp] 						= app;
