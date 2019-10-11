@@ -16,6 +16,26 @@ class BotPackets {
 		this.socket.sendPacket(300102, this.socket.jsonstr(data, seq), seq);
 	}
 
+	getClipList(){
+		const seq 						= this.socket.seqno();
+
+		const data 						= {
+			RoomId: 					this.socket._sid
+		};
+
+		this.socket.sendPacket(620005, this.socket.jsonstr(data, seq), seq);
+	};
+
+	getBettingRank() {
+		const seq 						= this.socket.seqno();
+
+		const data 						= {
+			RoomId: 					this.socket._sid
+		};
+
+		this.socket.sendPacket(900079, this.socket.jsonstr(data, seq), seq);
+	};
+
 	getWatchLiveRewardList(initFlag = 1) {
 		const seq 						= this.socket.seqno();
 

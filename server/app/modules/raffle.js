@@ -92,7 +92,10 @@ const raffleViewers 				= function(processor) {
 		// Get random winner that is not the bot itselt
 		do {
 			winner 					= viewers[viewers.length * Math.random() | 0];
-		} while(winner.Uin === this.socket.client.data.user.uin);
+		} while(
+			winner.Uin === this.socket.client.data.user.uin ||
+			winner.NickName.indexOf("Guest") === 0
+		);
 
 		console.info("[bot] raffle winner is", winner.Uin, winner.NickName);
 
@@ -130,10 +133,11 @@ module.exports 						= {
 		if (processor.arguments.length === 0 && entriesOpen) {
 			const medium 			= processor.sender.getMediumMessages(this.client.stream.started, 30);
 
+			/*
 			// Check if medium is below 0.15 and raffle needs active users
 			if (medium < 0.15 && this.client.config.raffleNeedActive) {
 				return processor.sendLangMessage("RAFFLE_NOT_SUITABLE");
-			}
+			}*/
 
 			// Check if user isn't already in the raffle
 			if (entries.indexOf(processor.sender.id) === -1) {

@@ -19,8 +19,9 @@ class BotDatabase {
 
 		// Define members
 		this.Members 				= this.sequelize.define("member", {
-			uid: 					{
-				type: 				Sequelize.INTEGER.UNSIGNED
+			id: 					{
+				type: 				Sequelize.INTEGER.UNSIGNED,
+				primaryKey: 		true
 			},
 			username: 				{
 				type: 				Sequelize.STRING,
@@ -40,7 +41,7 @@ class BotDatabase {
 			picture: 				{
 				type: 				Sequelize.STRING,
 				allowNull: 			false,
-				defaultValue: 		"http://teus.herokuapp.com/img/default.png"
+				defaultValue: 		"http://127.0.0.1/img/default.png"
 			},
 			level: 					Sequelize.INTEGER.UNSIGNED,
 			messages: 				{
@@ -273,7 +274,7 @@ class BotDatabase {
 				if (message.FromUin !== undefined) {
 					// Prepare member data from message
 					data 			= {
-						uid: 		message.FromUin,
+						id: 		message.FromUin,
 						nickname: 	message.FromNickName.trim(),
 						picture: 	message.FromHeadImg,
 						level: 		message.FromUserLv,
@@ -283,7 +284,7 @@ class BotDatabase {
 					};
 				} else {
 					data 			= {
-						uid: 		message.Uin,
+						id: 		message.Uin,
 						nickname: 	message.NickName,
 						username: 	message.UserName,
 						picture: 	message.HeadImg,
@@ -294,11 +295,11 @@ class BotDatabase {
 
 				data.username 		= data.username || null;
 			} else {
-				data.uid 			= message;
+				data.id 			= message;
 			}
 
 			const memberWhere 		= {
-				uid: 				data.uid,
+				id: 				data.id,
 				channel: 			channel ? channel : data.channel
 			};
 

@@ -11,7 +11,7 @@ class BotClient extends EventEmitter {
 	constructor(app) {
 		super();
 
-		this.isDebug 						= process.env.NODE_ENV === "production";
+		this.isDebug 						= true;
 
 		// Save app instance
 		this[botApp] 						= app;
@@ -21,6 +21,12 @@ class BotClient extends EventEmitter {
 
 		// Save Streamlabs instance
 		this.streamlabs 					= app.streamlabs;
+
+		// Instance all bot modules
+		this.modules 						= {
+			emotes: 						require("./modules/emotes"),
+			chat: 							require("./modules/chat")
+		};
 
 		// Stream data
 		this.stream 						= {
@@ -64,7 +70,9 @@ class BotClient extends EventEmitter {
 	emit(type, data, endpoint = ["streamer", "obs"]) {
 		super.emit(type, data);
 
+		// Check if endpoint is an array
 		if (!Array.isArray(endpoint)) {
+			// If not, instanciate the endpoint as array
 			endpoint 						= [endpoint];
 		}
 
@@ -291,7 +299,7 @@ class BotClient extends EventEmitter {
 	 */
 	startTimer(timer) {
 		if (typeof timer !== "object") {
-			timer 						= this.timers[timer];
+			timer 							= this.timers[timer];
 		}
 
 		if (timer === undefined) {
@@ -301,18 +309,18 @@ class BotClient extends EventEmitter {
 		// Check if timer type is text
 		if (timer.type === "text") {
 			// Create a new instance to send 'timer.content' every 'timer.interval'
-			timer.instance 				= setInterval(() => this.sockets.passive.sendMessage(timer.content), timer.interval);
+			timer.instance 					= setInterval(() => this.sockets.passive.sendMessage(timer.content), timer.interval);
 		} else
 		// Check if timer type is command
 		if (timer.type === "command") {
 			// Split timer content
-			let command 				= timer.content.split(" ");
+			let command 					= timer.content.split(" ");
 
 			// Create the command handler
-			command 					= this.createCommand(command.shift().replace("!", ""), command, this.sockets.passive, this.botMember);
+			command 						= this.createCommand(command.shift().replace("!", ""), command, this.sockets.passive, this.botMember);
 
 			// Create a new instance to run 'command' every 'timer.interval'
-			timer.instance 				= setInterval(() => this.processCommand(command), timer.interval);
+			timer.instance 					= setInterval(() => this.processCommand(command), timer.interval);
 		}
 	}
 
@@ -365,8 +373,8 @@ class BotClient extends EventEmitter {
 		// Member enter and member quit
 		if (message.MsgType === 20002 || message.MsgType === 20003) {
 			// Update current viewers and views
-			this.stream.viewers 		= data.RealCount;
-			this.stream.views 			= data.TotalViewCount;
+			this.stream.viewers 			= data.RealCount;
+			this.stream.views 				= data.TotalViewCount;
 
 			this.emit("stream.update", this.stream);
 		}
@@ -378,6 +386,7 @@ class BotClient extends EventEmitter {
 			break;
 
 			// Ignore this packets
+			case 1: 	// Normal chat message
 			case 20003: // Member join
 			case 4: 	// Member charm (like)
 
@@ -416,7 +425,8 @@ class BotClient extends EventEmitter {
 					sender: 				user,
 					message: 				this.getMessage(this.getLangMessage("CHAT_JOIN"), {
 						sender: 			user
-					})
+					}),
+					special: 				true
 				});
 
 				// Emit chat join
@@ -438,53 +448,36 @@ class BotClient extends EventEmitter {
 					emote: 					emoteData
 				};
 
-				// Process emote message
-				const emoteMessage 			= this.getMessage(this.getLangMessage("CHAT_EMOTE"), {
-					sender: 				user,
-					emote: 					emote
-				});
+				// Call emotes module
+				this.modules.emotes.call(this, emote, emoteData);
+			break;
 
+			// Channel follow
+			case 10004:
 				// Emit chat message
 				this.emit("chat.message", {
 					sender: 				user,
-					message: 				emoteMessage,
+					message: 				this.getMessage(this.getLangMessage("CHAT_SHARE"), {
+						sender: 			user
+					}),
 					special: 				true
 				});
 
 				// Emit emote sent
-				this.emit("chat.emote", {
-					sender: 				user,
-					emote: 					emote
+				this.emit("chat.share", {
+					sender: 				user
 				});
-
-				// TODO: make the Rocketship and the Fan Club Ticket appear on the screen
-				// not using the addDonation function
-
-				// Check if emote has a cost
-				if (emoteData.coins > 0) {
-					// Create a new donation at StreamLabs
-					this.config.canReply && this.streamlabs.addDonation(this.config.streamLabsToken, {
-						name: 				user.nickname,
-						identifier: 		"streamcraft#" + user.id,
-						amount: 			emote.cost / 100,
-						currency: 			"USD",
-						message: 			user.nickname + " " + emoteMessage.replace(/<(?:.|\n)*?>/gm, "")
-					});
-				}
-
-				// Check if is a fan club first subscription
-				if (emoteData.name === "Fan Club Ticket" && user.tag.length === 0) {
-					// Create a new alert at StreamLabs
-					this.config.canReply && this.streamlabs.addAlert(this.config.streamLabsToken, {
-						name: 				user.nickname,
-						type: 				"subscription",
-						message: 			user.nickname + " " + this.getMessage(this.getLangMessage("CHAT_FAN"), { sender: user.nickname })
-					});
-				}
 			break;
 
 			// Channel follow
 			case 10005:
+				// Create a new alert at StreamLabs
+				this.config.canReply && this.streamlabs.addAlert(this.config.streamLabsToken, {
+					name: 					user.nickname,
+					type: 					"subscription",
+					message: 				user.nickname + " " + this.getMessage(this.getLangMessage("CHAT_FOLLOW"), { sender: user.nickname })
+				});
+
 				// Emit chat message
 				this.emit("chat.message", {
 					sender: 				user,
@@ -517,7 +510,7 @@ class BotClient extends EventEmitter {
 		const socket 						= new BotActiveSocket(url, type, this);
 		this.sockets[type] 					= socket;
 
-		socket.debug("connecting...");
+		socket.debug("connecting to", url);
 
 		// On socket error, reconnect
 		socket.on("error", () => {
@@ -525,7 +518,7 @@ class BotClient extends EventEmitter {
 				console.error("[bot] giving up. Impossible to reconnect to", type, "server!");
 
 				// Check if active server failed
-				if (type === "active") {
+				if (type === "active" && this.sockets.passive) {
 					// Pass authority to passive server
 					// Maybe this works
 					this.sockets.active 	= this.sockets.passive;
@@ -539,7 +532,7 @@ class BotClient extends EventEmitter {
 
 			console.info("[bot] trying to reconnect in", socket.ReconSec, "seconds");
 
-			const newUrl 					= url.indexOf("5566") > -1 ? url.replace("5566", "6677") : url.replace("6677", "5566");
+			const newUrl 					= url.indexOf("1689") > -1 ? url.replace("1689", "1690") : url.replace("1690", "1689");
 
 			setTimeout(() => {
 				this.createClient(type, newUrl, retry ? retry + 1 : 1);
@@ -549,77 +542,13 @@ class BotClient extends EventEmitter {
 		// On receive gift list
 		socket.on("giftList", (list) => {
 			this.config 					= this.config || {};
+
+			// Update the gift list
 			this.config.giftList 			= list;
 		});
 
 		// On receive chat
-		socket.on("chat", (message) => {
-			// Get text from message content
-			const text 						= message.MsgContent.Buff;
-
-			// Bot has been connected in another place
-			if (message.MsgType === 20008) {
-				socket.debug("bot has been connected in another place.");
-				return this.emit("bot.disconnect", "another_device");
-			}
-
-			// Assign message channel
-			message.Channel 					= this.data.data.user.uin;
-
-			// Get member from database
-			this.database.getMember(message)
-			.then((user) => {
-				// Check if it's the bot user
-				if (user.id === this.data.user.uin) {
-					this.botMember 				= user;
-				}
-
-				// Check if text message is JSON
-				if (text.indexOf("{\n") > -1) {
-					// Parse JSON
-					const data 					= JSON.parse(text);
-					return this.processDataMessage(message, user, data);
-				}
-
-				// Emit the message
-				this.emit("chat.message", {
-					sender: 					user,
-					message: 					text
-				});
-
-				// Check if stream is online
-				// or is debug
-				if (this.stream.online || this.isDebug) {
-					const firstLetter 			= text.split(" ")[0][0];
-
-					// Check if it's a command
-					if (firstLetter === "!" || firstLetter === "+" || firstLetter === "/") {
-						let args 				= text.split(" ");
-						let command 			= args.shift();
-						let realCommand 		= command.substr(1, command.length - 1);
-
-						const processor 		= this.createCommand(realCommand, args, socket, user);
-
-						// Call the processor
-						this.processCommand(processor);
-					}
-
-					// Increment user messages, total messages and points
-					this.database.Members.increment({
-						messages: 				1,
-						totalMessages: 			1,
-						points: 				this.config.pointsPerMessage || 0.2
-					}, {
-						where: 					{
-							id: 				user.id
-						}
-					});
-				}
-			})
-			.catch((e) => {
-				this.sockets.passive.debug("Error getting member data: " + e.message);
-			});
-		});
+		socket.on("chat", (message) => this.modules.chat.call(this, message, socket));
 
 		return socket;
 	}

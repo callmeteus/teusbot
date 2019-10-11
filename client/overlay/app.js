@@ -10,6 +10,7 @@ const gifffer 				= require("gifffer/lib/gifffer");
 const query 				= new URLSearchParams(window.location.search);
 
 const app 					= {
+	template: 				null,
 	token: 					query.get("token"),
 	module: 				query.get("module"),
 	event: 					query.has("event") ? query.get("event") : query.get("module"),
@@ -18,6 +19,7 @@ const app 					= {
 	append: 				query.has("append") ? (query.get("append") === "true" || query.get("append") === "1") : true,
 	queue: 					[],
 	testData: 				{
+		name: 				"Teste Aposta",
 		sender: 			{
 			id: 			1,
 			nickname: 		"Test",
@@ -31,7 +33,8 @@ const app 					= {
 				name: 		"Test Emote",
 				animation: 	"https://media2.giphy.com/media/nNxT5qXR02FOM/giphy.gif"
 			}
-		}
+		},
+		options: 			["teste1", "teste2"]
 	}
 };
 
@@ -85,16 +88,16 @@ const $parent 				= $("<div id='" + app.module.replace(/\./g, "-") + "-parent'/>
 const duration 				= query.has("duration") ? parseInt(query.get("duration"), 10) : (5000);
 const animateDuration 		= query.has("aduration") ? parseInt(query.get("aduration"), 10) : 1000;
 const animateIn 			= query.has("in") ? query.get("in") : "fadeInLeft";
-const animateOut 			= query.has("out") ? query.get("out") : "fadeOutLeft";
+const animateOut 				= query.has("out") ? query.get("out") : "fadeOutLeft";
 
-let template 				= null;
+app.container 					= $parent;
 
 function appPrepareNotification($element, callback) {
-	const $preload 			= $element.find("img, audio");
-	const count 			= $preload.length;
+	const $preload 				= $element.find("img, audio");
+	const count 				= $preload.length;
 
-	let actual 				= 0;
-	let cancelled 			= false;
+	let actual 					= 0;
+	let cancelled 				= false;
 
 	if ($preload.length === 0) {
 		callback();
@@ -102,10 +105,10 @@ function appPrepareNotification($element, callback) {
 
 	// Preloader images
 	$preload.each(function() {
-		const src 			= $(this).attr("src");
-		const element 		= $(this).is("audio") ? new Audio() : new Image();
+		const src 				= $(this).attr("src");
+		const element 			= $(this).is("audio") ? new Audio() : new Image();
 
-		element.src 		= src;
+		element.src 			= src;
 
 		$(element).on("load canplaythrough", function() {
 			actual++;
@@ -136,12 +139,12 @@ function appPrepareNotification($element, callback) {
  */
 function appNotificate(data, callback) {
 	// Check if template is loaded
-	if (template === null) {
+	if (app.template === null) {
 		return false;
 	}
 
-	const content 			= ejs.render(template, data);
-	const $element 			= $(content);
+	const content 				= ejs.render(app.template, data);
+	const $element 				= $(content);
 
 	// Prepare element
 	appPrepareNotification($element, () => {
@@ -151,11 +154,11 @@ function appNotificate(data, callback) {
 
 		$element.prependTo($parent);
 
-		let fDuration 		= duration;
+		let fDuration 			= duration;
 
 		// Check if data contains emote
 		if (data.emote) {
-			fDuration 		= data.emote.emote.duration < 10000 ? 1000 : data.emote.emote.duration * 2;
+			fDuration 			= data.emote.emote.duration < 10000 ? 1000 : data.emote.emote.duration * 2;
 		}
 
 		$element.find("audio").each(function() {
@@ -185,10 +188,10 @@ function appNotificate(data, callback) {
 		}
 
 		// Process notification gifs
-		const gifs 			= gifffer({
+		const gifs 				= gifffer({
 			playButtonStyles: {
-				width: 0,
-				height: 0
+				width: 			0,
+				height: 		0
 			}
 		});
 
@@ -202,7 +205,7 @@ function appNotificate(data, callback) {
 }
 
 function appProcessQueue() {
-	let notification 		= app.queue.shift();
+	let notification 			= app.queue.shift();
 
 	appNotificate(notification, function() {
 		if (app.queue.length) {
@@ -211,9 +214,13 @@ function appProcessQueue() {
 	});
 }
 
-// Get module template
+if (app.module === "bet") {
+	app.module 					= "bet.start";
+}
+
+// Get module app.template
 $.get("inc/tpl/" + app.module + ".ejs", (tpl) => {
-	template 				= tpl;
+	app.template 				= tpl;
 
 	// Check if test
 	if (app.test) {
@@ -221,21 +228,28 @@ $.get("inc/tpl/" + app.module + ".ejs", (tpl) => {
 		appNotificate(app.testData);
 	}
 
-	// Add event listener to module
-	socket.on("obs.data", (type, data) => {
-		// Check if is queue
-		if (!app.isQueue) {
-			// Show notification imediately
-			appNotificate(data);
-		} else {
-			// Add notificationt to queue
-			app.queue.push(data);
+	if (app.module === "bet.start") {
+		require("./bet")(socket, app);
+	} else
+	if (app.module === "chat.firework") {
+		require("./firework")(socket, app);
+	} else {
+		// Add event listener to module
+		socket.on("obs.data", (type, data) => {
+			// Check if is queue
+			if (!app.isQueue) {
+				// Show notification imediately
+				appNotificate(data);
+			} else {
+				// Add notificationt to queue
+				app.queue.push(data);
 
-			if (app.queue.length === 1) {
-				appProcessQueue();
+				if (app.queue.length === 1) {
+					appProcessQueue();
+				}
 			}
-		}
-	});
+		});
+	}
 
 	// Open socket connection
 	socket.connect();

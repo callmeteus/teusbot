@@ -380,7 +380,7 @@ module.exports 												= function(io) {
 			} else
 			if (type === "donation") {
 				this.streamlabs.addDonation(socket.config.streamLabsToken, {
-					name: 									this.auth.getData().user.nickname,
+					name: 									"Test",
 					identifier: 							"streamcraft#123test",
 					amount: 								0.1,
 					currency: 								"USD",

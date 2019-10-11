@@ -54,7 +54,7 @@ class BotApp {
 		const slConfig 					= {
 			id: 						process.env.STREAMLABS_ID,
 			secret: 					process.env.STREAMLABS_SECRET,
-			url: 						process.env.NODE_ENV === "production" ? "https://teus.herokuapp.com" : "http://127.0.0.1:3200",
+			url: 						"http://127.0.0.1:3200",
 			scopes: 					"donations.create alerts.create"
 		};
 

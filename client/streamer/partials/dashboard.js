@@ -12,7 +12,7 @@ module.exports 						= function(context) {
 				`);
 
 				$("#bot-chat").prepend($message);
-				$("#bot-chat").find(".list-group-item:gt(10)").remove();
+				$("#bot-chat").find(".list-group-item:gt(25)").remove();
 				$("#bot-chat").find(".list-group-item.text-muted").remove();
 
 				if (data.special) {

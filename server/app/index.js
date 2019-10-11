@@ -47,9 +47,7 @@ function doStartup() {
 		saveUninitialized: 			false
 	});
 
-	app.use(bodyParser({
-		extended: 					false
-	}));
+	app.use(bodyParser.urlencoded({ extended: true }));
 
 	// Session
 	app.use(session);

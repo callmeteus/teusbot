@@ -524,7 +524,7 @@ module.exports 						= function(context) {
 				`);
 
 				$("#bot-chat").prepend($message);
-				$("#bot-chat").find(".list-group-item:gt(10)").remove();
+				$("#bot-chat").find(".list-group-item:gt(25)").remove();
 				$("#bot-chat").find(".list-group-item.text-muted").remove();
 
 				if (data.special) {
@@ -817,6 +817,10 @@ module.exports 				= function(context) {
 		e.preventDefault();
 		
 		context.bootbox.prompt("Enter the command", function(string) {
+			if (!string) {
+				return true;
+			}
+
 			string 			= string.split(" ");
 
 			const command 	= string.shift().replace("!", "");

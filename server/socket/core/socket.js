@@ -12,9 +12,10 @@ const randomString 								= "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPLKJH
 
 class BotSocket extends WebSocket {
 	constructor(url, type, client) {
-		super(url, [], {
+		super(url, {
 			protocolVersion: 					13,
-			origin: 							"https://streamcraft.com"
+			origin: 							"https://streamcraft.com",
+			rejectUnauthorized: 				false
 		});
 
 		this.client 							= client;
@@ -186,7 +187,7 @@ class BotSocket extends WebSocket {
 		}, this.pingInterval);
 	}
 
-		/**
+	/**
 		* Create a packet with a data buffer to be sent
 		* @param  {Object} data Buffer data
 		* @return {Object}		Packet
@@ -549,14 +550,14 @@ class BotSocket extends WebSocket {
 					EmojiFlag: 		0,
 					CreateTime: 	date
 				}]
-			};
+		};
 
 		this.debug(colors.blue(">>"), message);
 
 		// Check if bot can reply or
 		// if the stream is online
 		// and it's not a debug
-		if ((!this.client.config.canSend || !this.client.stream.online) && !this.client.isDebug) {
+		if ((!this.client.config.canReply || !this.client.stream.online) && !this.client.isDebug) {
 			return false;
 		}
 

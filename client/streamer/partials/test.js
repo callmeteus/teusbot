@@ -40,6 +40,10 @@ module.exports 				= function(context) {
 		e.preventDefault();
 		
 		context.bootbox.prompt("Enter the command", function(string) {
+			if (!string) {
+				return true;
+			}
+
 			string 			= string.split(" ");
 
 			const command 	= string.shift().replace("!", "");

@@ -19,6 +19,10 @@ class BotMember {
 		this.addons 		= data.addons;
 	}
 
+	getFixedNickname() {
+		return this.nickname.replace(/ /g, "_").substr(0, 25);
+	}
+
 	isSuspicious() {
 		return (
 			// Is member picture null?

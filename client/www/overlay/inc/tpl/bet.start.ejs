@@ -1,0 +1,16 @@
+<div class="row mx-0">
+	<div class="col-12 text-center">
+		<h3><%= name; %></h3>
+	</div>
+
+	<div class="col-12">
+		<div class="list-group">
+			<% Object.keys(options).forEach((option) => { %>
+				<div data-option="<%= option; %>" class="list-group-item d-flex justify-content-between">
+					<span class="name"><%= option; %></span>
+					<strong class="votes">0%</strong>
+				</div>
+			<% }); %>
+		</div>
+	</div>
+</div>
